@@ -496,7 +496,7 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
 
         override fun provideTooltipLines(mouseX: Int, mouseY: Int, parentSelected: Boolean, keyboardFocused: Boolean): List<Text> {
             if (!((parentSelected && isFocused) || isMouseOver(mouseX.toDouble(), mouseY.toDouble()))) return TooltipChild.EMPTY
-            return super.provideTooltipLines(mouseX, mouseY, parentSelected, keyboardFocused)
+            return entry.entryDescriptionProvider.apply(thisVal, entry.descriptionKey()).takeIf { it.string != "" }?.let { listOf(it) } ?: TooltipChild.EMPTY
         }
 
         override fun onPress() {
