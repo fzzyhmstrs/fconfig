@@ -163,7 +163,7 @@ class TestConfigImpl2: Config(Identifier.of("fzzy_config_test","test_config2")) 
 
     var id1 = ValidatedIdentifier.ofList(Identifier.of("stick"), listOf(Identifier.of("stick"), Identifier.of("blaze_rod"), Identifier.of("coal"), Identifier.of("charcoal")))
 
-    var choice1 = ValidatedList.ofInt(1, 2, 5, 10).toChoices(translationProvider = { t, u -> ("$u.$t").translate() }, descriptionProvider = { t, u -> ("$u.$t").translate() })
+    var choice1 = ValidatedList.ofInt(1, 2, 5, 10).toChoices(translationProvider = { t, u -> ("$u.$t").translate() }, descriptionProvider = { t, u -> "Rad description for $u, $t".lit() })
     var choice2 = ValidatedList.ofInt(1, 2, 5, 10).toChoices(widgetType = ValidatedChoice.WidgetType.INLINE, translationProvider = { t, u -> ("$u.$t").translate() }, descriptionProvider = { t, u -> ("$u.$t").translate() })
     var choice3 = ValidatedList.ofInt(1, 2, 5, 10, 20, 40, 80, 160).toChoices(widgetType = ValidatedChoice.WidgetType.SCROLLABLE)
     var choice3a = ValidatedList.ofInt(1, 2, 5, 10, 20, 40).toChoices(widgetType = ValidatedChoice.WidgetType.SCROLLABLE)
