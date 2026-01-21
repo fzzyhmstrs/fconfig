@@ -398,6 +398,7 @@ interface Translatable {
         companion object {
             val WIDGET_TITLE = object : Type<Text> {}
             val WIDGET_WIDTH = object : Type<Int> {}
+            val NUMBER_STEP = object : Type<Number> {}
         }
     }
 

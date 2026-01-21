@@ -55,6 +55,7 @@
   "fzzy_config_test.test_config2.choice1.10" : "Ten",
   "fzzy_config_test.test_config2.choice1.desc.10" : "Common rarity",
   "fzzy_config_test.test_config2.choiceList2" : "Features with Translation",
+  "fzzy_config_test.test_config2.choiceList2.desc" : "Tooltip?",
   "fzzy_config_test.test_config2.choiceList2.1" : "One",
   "fzzy_config_test.test_config2.choiceList2.desc.1" : "Feature One",
   "fzzy_config_test.test_config2.choiceList2.2" : "Two",
