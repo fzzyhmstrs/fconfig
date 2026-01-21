@@ -217,4 +217,12 @@ class LayoutClickableWidget(x: Int, y: Int, width: Int, height: Int, private val
             selectedElementNarrationData.selectable.appendNarrations(builder.nextMessage())
         }
     }
+
+    override fun provideTooltipLines(mouseX: Int, mouseY: Int, parentSelected: Boolean, keyboardFocused: Boolean): List<Text> {
+        return tooltipProviders.flatMap { it.provideTooltipLines(mouseX, mouseY, parentSelected, keyboardFocused) }
+    }
+
+    override fun provideNarrationLines(): List<Text> {
+        return tooltipProviders.flatMap { it.provideNarrationLines() }
+    }
 }
