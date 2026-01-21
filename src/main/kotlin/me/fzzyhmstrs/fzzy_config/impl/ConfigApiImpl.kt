@@ -614,14 +614,14 @@ internal object ConfigApiImpl {
             }
 
             for (prop in props.cast<List<KMutableProperty1<T, *>>>()) {
-                if (isDeprecated(prop)) { //don't bother checking for a deprecated prop in an update
-                    continue
-                }
                 val propVal = prop.get(config)
                 if (propVal is EntryTransient) continue
                 val name = prop.name
                 val tomlElement = tomlMap.remove(name)
                 if ((tomlElement == null || tomlElement is TomlNull)) {
+                    if (isDeprecated(prop)) { //don't bother checking for a deprecated prop in an update
+                        continue
+                    }
                     errorBuilder.addError(ValidationResult.Errors.DESERIALIZATION, "TomlElement [$name] was missing or null.")
                     continue
                 }
