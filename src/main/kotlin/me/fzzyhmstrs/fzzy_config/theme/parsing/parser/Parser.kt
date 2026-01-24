@@ -39,10 +39,6 @@ object Parser {
         override fun filterInput(string: String): String {
             return string
         }
-
-        override fun producers(): List<TokenProducer> {
-            return listOf()
-        }
     }
 
     val SPECIAL_TYPE = object : ParseTokenizerType {
@@ -53,17 +49,13 @@ object Parser {
         override fun filterInput(string: String): String {
             return string
         }
-
-        override fun producers(): List<TokenProducer> {
-            return listOf()
-        }
     }
 
     private val UNKNOWN = TokenType<String>("Unknown", UNKNOWN_TYPE, true)
     val EOL = TokenType<Unit>("EOL", SPECIAL_TYPE, false, raw = "\n")
     val EOF = TokenType<Unit>("EOF", SPECIAL_TYPE, false, valueCreator = { "" })
 
-    fun <T: Any, B: ParseStrategy.Builder<T>> parse(input: BufferedReader, type: ParseTokenizerType, strategy: ParseStrategy<T, B>, vararg args: String): ValidationResult<Optional<T>> {
+    fun <T: Any, B: ParseStrategy.Builder<T>> parse(input: BufferedReader, type: ParseTokenizerType, strategy: ParseStrategy<T, B>, vararg args: String): ValidationResult<Pair<T, Int>> {
         val a = System.currentTimeMillis()
         val spec = parseSpecs[type] ?: throw IllegalStateException("Parse spec ${type.id()} not registered")
         val lines = input.use { inputReader ->
@@ -74,8 +66,6 @@ object Parser {
         val tokens: LinkedList<Token<*>> = LinkedList()
 
         var pendingProducer: TokenProducer? = null
-
-        var errored = ""
 
         for ((index, line) in lines.withIndex()) {
 
@@ -89,11 +79,7 @@ object Parser {
                 }
 
                 override fun token(token: Token<*>) {
-                    if (type.errorOnErrorToken() && token.message() != "") {
-                        errored = token.message()
-                    } else {
-                        lineTokens.add(token)
-                    }
+                    lineTokens.add(token)
                 }
             }
 
@@ -111,7 +97,7 @@ object Parser {
                     pendingProducer = pp
                 }
             }
-            val totalProducers = spec.prioritySiblings.flatMap { it.producers() } + type. +
+
             while (context.reader().canRead()) {
                 var unknown = true
                 for (producer in spec.producers) {
@@ -122,9 +108,6 @@ object Parser {
                         }
                         val before = context.reader().getColumn()
                         val complete = producer.produce(context)
-                        if (errored != "") {
-                            return ValidationResult.error(Optional.empty(), "Error parsing ${type.id()}, $errored")
-                        }
                         if (context.reader().getColumn() == before) {
                             throw IllegalStateException("Provider ${producer.id()} didn't consume any input characters at column $before")
                         }
@@ -167,7 +150,11 @@ object Parser {
 
         println("Timing: 1:${b - a}ms / 2:${c - b}ms / 3:${d - c}ms")
 
-        return buildResult.map { builder -> Optional.of(builder.build().get()) }
+        return buildResult.map { builder -> builder.build().map{ result -> result to size } }.get()
+    }
+
+    fun addTokenizer(type: ParseTokenizerType, providers: List<TokenProducer>) {
+        parseSpecs[type] = Spec(providers)
     }
 
     private fun BufferedReader.indexedLines(): Stream<Pair<Int, String>> {
@@ -217,44 +204,5 @@ object Parser {
         }
     }
 
-    fun addTokenizer(type: ParseTokenizerType, builder: TokenizerBuilder.() -> TokenizerBuilder) {
-        val b = builder(object : TokenizerBuilder, SpecCreator {
-            private val prioritySiblings: MutableList<ParseTokenizerType> = mutableListOf()
-            private val siblings: MutableList<ParseTokenizerType> = mutableListOf()
-
-            override fun prioritySibling(type: ParseTokenizerType): TokenizerBuilder {
-                prioritySiblings.add(type)
-                return this
-            }
-
-            override fun sibling(type: ParseTokenizerType): TokenizerBuilder {
-                siblings.add(type)
-                return this
-            }
-
-            override fun createSpec(): Spec {
-                return Spec(prioritySiblings, siblings)
-            }
-
-        })
-        parseSpecs[type] = (b as SpecCreator).createSpec()
-    }
-
-    /*
-    * */
-
-    interface TokenizerBuilder {
-        fun prioritySibling(type: ParseTokenizerType): TokenizerBuilder
-        fun sibling(type: ParseTokenizerType): TokenizerBuilder
-    }
-
-    private interface SpecCreator {
-        fun createSpec(): Spec
-    }
-
-    private class Spec(private val prioritySiblings: List<ParseTokenizerType>, val siblings: List<ParseTokenizerType>) {
-        fun priorityProducers(): List<TokenProducer> {
-            return prioritySiblings.flatMap {  }
-        }
-    }
+    private class Spec(val producers: List<TokenProducer>)
 }

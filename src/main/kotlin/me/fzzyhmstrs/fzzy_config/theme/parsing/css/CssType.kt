@@ -97,9 +97,22 @@ object CssType: ParseTokenizerType {
         return builder.toString()
     }
 
-    override fun errorOnErrorToken(): Boolean {
-        return false
+    private fun createTypeConsumer(args: Array<String>): ParseTokenizerType.Consumer<CssStyleSheet> {
+        return object : ParseTokenizerType.Consumer<CssStyleSheet> {
+
+            private val tokens: MutableList<Token<*>> = mutableListOf()
+
+            override fun consumeToken(token: Token<*>) {
+                tokens.add(token)
+            }
+
+            override fun finish(): ValidationResult<CssStyleSheet> {
+                return ValidationResult.success(CssStyleSheet(tokens))
+            }
+        }
     }
+
+
 
     ///////////////////////////////
     /////        Utils        /////
@@ -144,7 +157,7 @@ object CssType: ParseTokenizerType {
         return builder.toString()
     }
 
-    private fun isEscapeChar(char: Char): Boolean {
+    internal fun isEscapeChar(char: Char): Boolean {
         return Character.digit(char, 16) != -1
     }
 
@@ -161,7 +174,7 @@ object CssType: ParseTokenizerType {
                     break
                 }
             }
-            val escapeCode = escapeBuilder.toString().toIntOrNull(16) ?: return '\uFFFD'
+            val escapeCode = escapeBuilder.toString().toIntOrNull() ?: return '\uFFFD'
             if (escapeCode < 0 || escapeCode > Char.MAX_VALUE.code) return '\uFFFD'
             return escapeCode.toChar()
         } else {

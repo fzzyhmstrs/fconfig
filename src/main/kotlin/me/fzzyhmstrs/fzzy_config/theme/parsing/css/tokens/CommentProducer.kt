@@ -21,7 +21,7 @@ object CommentProducer: TokenProducer() {
     }
 
     override fun canProduce(reader: StringReader): Boolean {
-        return reader.peekFor("/*")
+        return reader.canRead(2) && reader.peek() == '/' && reader.peek(1) == '*'
     }
 
     override fun produce(context: ParseContext): Boolean {
