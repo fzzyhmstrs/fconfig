@@ -33,7 +33,7 @@ object PlusProducer: TokenProducer() {
         if (isValidNumber(reader)) {
             DigitProducer.produce(context)
         } else {
-            context.token(DELIM, reader.read().toString(), startLine, startColumn, "Delimiter + found")
+            context.token(DELIM, reader.read().toString(), startLine, startColumn)
         }
         return true
     }

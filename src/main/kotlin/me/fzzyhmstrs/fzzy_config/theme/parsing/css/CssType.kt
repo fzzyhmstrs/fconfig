@@ -14,6 +14,7 @@ import me.fzzyhmstrs.fzzy_config.theme.parsing.ParseTokenizerType
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.tokens.*
 import me.fzzyhmstrs.fzzy_config.theme.parsing.parser.Parser
 import me.fzzyhmstrs.fzzy_config.theme.parsing.parser.StringReader
+import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy_v2.consume.*
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.Token
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenProducer
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenType
@@ -47,6 +48,15 @@ object CssType: ParseTokenizerType {
     val CLOSE_BRACKET = TokenType<Char>("Bracket Close", this)
     val OPEN_BRACE = TokenType<Char>("Brace Open", this)
     val CLOSE_BRACE = TokenType<Char>("Brace Close", this)
+
+    val SIMPLE_BLOCK = TokenType<SimpleBlockConsumer.Block>("Simple Block", this)
+    val FUNCTION_CONSUMED = TokenType<FunctionConsumer.Function>("Function", this)
+    val STYLE_BLOCK = TokenType<StyleBlockConsumer.StyleBlock>("Style Block", this)
+    val DECLARATION = TokenType<DeclarationConsumer.Declaration>("Declaration", this)
+    val AT_RULE = TokenType<ListOfRulesConsumer.Rule>("At-Rule", this)
+    val QUALIFIED_RULE = TokenType<ListOfRulesConsumer.Rule>("Qualified Rule", this)
+    val EMPTY_RULE = TokenType<ListOfRulesConsumer.Rule>("Empty Rule", this)
+    val UNKNOWN_RULE = TokenType<ListOfRulesConsumer.Rule>("Unknown Rule", this, true)
 
     init {
         Parser.addTokenizer(this, listOf(
@@ -96,23 +106,6 @@ object CssType: ParseTokenizerType {
         }
         return builder.toString()
     }
-
-    private fun createTypeConsumer(args: Array<String>): ParseTokenizerType.Consumer<CssStyleSheet> {
-        return object : ParseTokenizerType.Consumer<CssStyleSheet> {
-
-            private val tokens: MutableList<Token<*>> = mutableListOf()
-
-            override fun consumeToken(token: Token<*>) {
-                tokens.add(token)
-            }
-
-            override fun finish(): ValidationResult<CssStyleSheet> {
-                return ValidationResult.success(CssStyleSheet(tokens))
-            }
-        }
-    }
-
-
 
     ///////////////////////////////
     /////        Utils        /////

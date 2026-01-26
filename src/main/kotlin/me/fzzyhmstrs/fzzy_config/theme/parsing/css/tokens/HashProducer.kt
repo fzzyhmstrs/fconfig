@@ -34,12 +34,12 @@ object HashProducer: TokenProducer() {
         val startColumn = reader.getColumn()
         val hash = reader.read()
         if (!reader.canRead()) {
-            context.token(DELIM, hash.toString(), reader.getLine(), reader.getColumn(), "Delimiter # found")
+            context.token(DELIM, hash.toString(), reader.getLine(), reader.getColumn())
         } else if (CssType.isIdentSequenceStart(reader)) {
             val id = consumeIdent(reader)
             context.token(HASH, id, startLine, startColumn)
         } else {
-            context.token(DELIM, hash.toString(), reader.getLine(), reader.getColumn(), "Delimiter # found")
+            context.token(DELIM, hash.toString(), reader.getLine(), reader.getColumn())
         }
         return true
     }

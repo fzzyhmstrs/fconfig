@@ -42,7 +42,7 @@ object MinusProducer: TokenProducer() {
         } else if (isIdentSequenceStart(reader)) {
             IdentProducer.produce(context)
         } else {
-            context.token(DELIM, reader.read().toString(), startLine, startColumn, "Delimiter - found")
+            context.token(DELIM, reader.read().toString(), startLine, startColumn)
         }
         return true
     }

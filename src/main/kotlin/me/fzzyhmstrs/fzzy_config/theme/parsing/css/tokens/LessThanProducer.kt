@@ -37,7 +37,7 @@ object LessThanProducer: TokenProducer() {
             reader.skip()
             context.token(CDO, startLine, startColumn)
         } else {
-            context.token(DELIM, lessThan.toString(), startLine, startColumn, "Delimiter < found")
+            context.token(DELIM, lessThan.toString(), startLine, startColumn)
         }
         return true
     }

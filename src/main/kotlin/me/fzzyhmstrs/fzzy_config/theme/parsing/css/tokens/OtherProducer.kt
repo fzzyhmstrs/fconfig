@@ -18,7 +18,7 @@ import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenProducer
 object OtherProducer: TokenProducer() {
 
     override fun id(): String {
-        return "at"
+        return "other"
     }
 
     override fun canProduce(reader: StringReader): Boolean {
@@ -30,7 +30,7 @@ object OtherProducer: TokenProducer() {
         val startColumn = reader.getColumn()
         val startLine = reader.getLine()
         val at = reader.read().toString()
-        context.token(DELIM, at, startLine, startColumn, "Delimiter $at found")
+        context.token(DELIM, at, startLine, startColumn, at)
         return true
     }
 }

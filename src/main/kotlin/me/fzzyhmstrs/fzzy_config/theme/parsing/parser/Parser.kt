@@ -13,6 +13,7 @@ package me.fzzyhmstrs.fzzy_config.theme.parsing.parser
 import me.fzzyhmstrs.fzzy_config.theme.parsing.ParseContext
 import me.fzzyhmstrs.fzzy_config.theme.parsing.ParseTokenizerType
 import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy.ParseStrategy
+import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy_v2.TokenConsumer
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.*
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenType
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
@@ -55,7 +56,7 @@ object Parser {
     val EOL = TokenType<Unit>("EOL", SPECIAL_TYPE, false, raw = "\n")
     val EOF = TokenType<Unit>("EOF", SPECIAL_TYPE, false, valueCreator = { "" })
 
-    fun <T: Any, B: ParseStrategy.Builder<T>> parse(input: BufferedReader, type: ParseTokenizerType, strategy: ParseStrategy<T, B>, vararg args: String): ValidationResult<Pair<T, Int>> {
+    fun <T: Any> parse(input: BufferedReader, type: ParseTokenizerType, consumer: TokenConsumer<T>, vararg args: String): ValidationResult<ParseResult<T>> {
         val a = System.currentTimeMillis()
         val spec = parseSpecs[type] ?: throw IllegalStateException("Parse spec ${type.id()} not registered")
         val lines = input.use { inputReader ->
@@ -133,7 +134,7 @@ object Parser {
 
         val size = tokens.size
 
-        if (args.contains("-print-tokens")) {
+        if (args.contains("--print-tokens")) {
             for (token in tokens) {
                 println(token)
             }
@@ -143,55 +144,15 @@ object Parser {
 
         val c = System.currentTimeMillis()
 
-        @Suppress("UNCHECKED_CAST")
-        val buildResult = strategy.startProcessingTokens(queue, args as Array<String>)
+        val buildResult = consumer.consume(queue, args.toSet())
 
         val d = System.currentTimeMillis()
 
-        println("Timing: 1:${b - a}ms / 2:${c - b}ms / 3:${d - c}ms")
-
-        return buildResult.map { builder -> builder.build().map{ result -> result to size } }.get()
+        return buildResult.map { result -> ParseResult(result, size, "Timing: 1:${b - a}ms / 2:${c - b}ms / 3:${d - c}ms") }
     }
 
     fun addTokenizer(type: ParseTokenizerType, providers: List<TokenProducer>) {
         parseSpecs[type] = Spec(providers)
-    }
-
-    private fun BufferedReader.indexedLines(): Stream<Pair<Int, String>> {
-        val itr: Iterator<Pair<Int, String>> = object : Iterator<Pair<Int, String>> {
-            var nextLine: String? = null
-            var index = 0
-
-            override fun hasNext(): Boolean {
-                return if (nextLine != null) {
-                    true
-                } else {
-                    generateNext() != null
-                }
-            }
-
-            private fun generateNext(): String? {
-                return try {
-                    val nl = readLine()
-                    nextLine = nl
-                    nl
-                } catch (e: IOException) {
-                    throw UncheckedIOException(e)
-                }
-            }
-
-            override fun next(): Pair<Int, String> {
-                val line = nextLine ?: generateNext()
-                if (line != null) {
-                    nextLine = null
-                    return index++ to line
-                } else {
-                    throw NoSuchElementException()
-                }
-            }
-        }
-        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(
-                itr, Spliterator.ORDERED or Spliterator.NONNULL), false)
     }
 
     open class NumberValue(private val value: Number) {
@@ -203,6 +164,8 @@ object Parser {
             return value.toString()
         }
     }
+
+    class ParseResult<T: Any>(val value: T, val size: Int, val timings: String)
 
     private class Spec(val producers: List<TokenProducer>)
 }

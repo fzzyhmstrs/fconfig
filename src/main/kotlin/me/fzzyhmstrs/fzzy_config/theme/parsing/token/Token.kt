@@ -10,6 +10,9 @@
 
 package me.fzzyhmstrs.fzzy_config.theme.parsing.token
 
+import me.fzzyhmstrs.fzzy_config.theme.parsing.ParsePrinter
+import java.util.function.Consumer
+
 /**
  * A single "unit" of proto-parsing
  * @param type this defines "what" token it is, without having to have 5000 inherited ProtoToken subclasses. This is used by token producers to ask for certain types in some order
@@ -18,7 +21,7 @@ package me.fzzyhmstrs.fzzy_config.theme.parsing.token
  * @author fzzyhmstrs
  * @since ?.?.?
  */
-class Token<T: Any> private constructor(val type: TokenType<T>, val value: T, private val info: TokenInfo = TokenInfo.EMPTY) {
+class Token<T: Any> private constructor(val type: TokenType<T>, val value: T, private val info: TokenInfo = TokenInfo.EMPTY): ParsePrinter {
     constructor(type: TokenType<T>, value: T, line: Int, column: Int): this(type, value, TokenInfo(line, column, ""))
     constructor(type: TokenType<T>, value: T, line: Int, column: Int, message: String): this(type, value, TokenInfo(line, column, message))
 
@@ -38,6 +41,10 @@ class Token<T: Any> private constructor(val type: TokenType<T>, val value: T, pr
         return type.createValue(if (value == Unit) type.raw() else value.toString())
     }
 
+    fun <V: Any> value(type: TokenType<V>): V? {
+        return if (type == this.type) value as? V else null
+    }
+
     override fun toString(): String {
         return if (value == Unit) {
             if (info != TokenInfo.EMPTY) {
@@ -51,6 +58,15 @@ class Token<T: Any> private constructor(val type: TokenType<T>, val value: T, pr
             } else {
                 "Token($type : $value)"
             }
+        }
+    }
+
+    override fun print(printer: Consumer<String>) {
+        printer.accept("Token($type | $info)")
+        if (value is ParsePrinter) {
+            value.print { s -> printer.accept("  $s") }
+        } else if (value != Unit && asString().isNotBlank()) {
+            printer.accept(value.toString())
         }
     }
 

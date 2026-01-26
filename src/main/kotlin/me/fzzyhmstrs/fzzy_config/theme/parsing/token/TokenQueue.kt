@@ -10,13 +10,25 @@
 
 package me.fzzyhmstrs.fzzy_config.theme.parsing.token
 
+import me.fzzyhmstrs.fzzy_config.theme.parsing.ParsePrinter
 import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy.ParseStrategy
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import java.lang.IllegalStateException
 import java.util.*
+import java.util.function.Consumer
 import java.util.function.Predicate
 
-sealed class TokenQueue(protected val tokens: LinkedList<Token<*>>) {
+sealed class TokenQueue(protected val tokens: LinkedList<Token<*>>): ParsePrinter {
+
+    companion object {
+        fun single(token: Token<*>): TokenQueue {
+            return Impl(LinkedList(listOf(token)))
+        }
+
+        fun empty(): TokenQueue {
+            return Impl(LinkedList(listOf()))
+        }
+    }
 
     fun <T: Any> split(splitConsumer: (Split) -> Optional<ValidationResult<out ParseStrategy.Builder<T>>>): Optional<ValidationResult<out ParseStrategy.Builder<T>>> {
         val split = Split(LinkedList(tokens), this)
@@ -115,5 +127,15 @@ sealed class TokenQueue(protected val tokens: LinkedList<Token<*>>) {
 
     open fun poll(): Token<*> {
         return tokens.remove()
+    }
+
+    override fun toString(): String {
+        return tokens.toString()
+    }
+
+    override fun print(printer: Consumer<String>) {
+        for (token in tokens) {
+            token.print { s -> printer.accept("  $s") }
+        }
     }
 }

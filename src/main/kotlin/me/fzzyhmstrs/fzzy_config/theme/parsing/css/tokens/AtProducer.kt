@@ -37,7 +37,7 @@ object AtProducer: TokenProducer() {
             val ident = consumeIdent(reader)
             context.token(AT, ident, startLine, startColumn)
         } else {
-            context.token(DELIM, at.toString(), startLine, startColumn, "Delimiter @ found")
+            context.token(DELIM, at.toString(), startLine, startColumn)
         }
         return true
     }

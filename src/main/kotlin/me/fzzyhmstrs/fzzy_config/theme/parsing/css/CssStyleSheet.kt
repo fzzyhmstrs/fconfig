@@ -10,13 +10,23 @@
 
 package me.fzzyhmstrs.fzzy_config.theme.parsing.css
 
+import me.fzzyhmstrs.fzzy_config.theme.parsing.ParsePrinter
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.Token
+import java.util.function.Consumer
 
-class CssStyleSheet(private val tokens: List<Token<*>>) {
+class CssStyleSheet(private val tokens: List<Token<*>>): ParsePrinter {
+
+    val length: Int = tokens.size
 
     fun print() {
         for (token in tokens) {
             println(token)
+        }
+    }
+
+    override fun print(printer: Consumer<String>) {
+        for (token in tokens) {
+            token.print(printer)
         }
     }
 }
