@@ -30,6 +30,15 @@ sealed class TokenQueue(protected val tokens: LinkedList<Token<*>>): ParsePrinte
         }
     }
 
+    fun <T: Any> attempt(attempt: (Split) -> ValidationResult<T>): ValidationResult<T> {
+        val split = Split(LinkedList(tokens), this)
+        val result = attempt(split)
+        if (result.isValid()) {
+            split.commit()
+        }
+        return result
+    }
+
     fun <T: Any> split(splitConsumer: (Split) -> Optional<ValidationResult<out ParseStrategy.Builder<T>>>): Optional<ValidationResult<out ParseStrategy.Builder<T>>> {
         val split = Split(LinkedList(tokens), this)
         return splitConsumer(split)
@@ -121,8 +130,16 @@ sealed class TokenQueue(protected val tokens: LinkedList<Token<*>>): ParsePrinte
         return tokens.isNotEmpty()
     }
 
+    open fun tryPeek(): Token<*>? {
+        return tokens.peek()
+    }
+
     open fun peek(): Token<*> {
         return tokens.element()
+    }
+
+    open fun tryPoll(): Token<*>? {
+        return tokens.poll()
     }
 
     open fun poll(): Token<*> {

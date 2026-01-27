@@ -60,26 +60,26 @@ object CssType: ParseTokenizerType {
 
     init {
         Parser.addTokenizer(this, listOf(
+            IdentProducer,
             WhitespaceProducer,
-            TokenProducer.SingleChar(SEMI_COLON, ';', "Semi-colon"),
             TokenProducer.SingleChar(COLON, ':', "Colon"),
-            TokenProducer.SingleChar(OPEN_PARENTHESIS, '(', "Open Parenthesis"),
-            TokenProducer.SingleChar(CLOSE_PARENTHESIS, ')', "Close Parenthesis"),
+            TokenProducer.SingleChar(SEMI_COLON, ';', "Semi-colon"),
+            TokenProducer.SingleChar(COMMA, ',', "Comma"),
             TokenProducer.SingleChar(OPEN_BRACE, '{', "Open Brace"),
             TokenProducer.SingleChar(CLOSE_BRACE, '}', "Close Brace"),
             TokenProducer.SingleChar(OPEN_BRACKET, '[', "Open Bracket"),
             TokenProducer.SingleChar(CLOSE_BRACKET, ']', "Close Bracket"),
-            TokenProducer.SingleChar(COMMA, ',', "Comma"),
+            TokenProducer.SingleChar(OPEN_PARENTHESIS, '(', "Open Parenthesis"),
+            TokenProducer.SingleChar(CLOSE_PARENTHESIS, ')', "Close Parenthesis"),
+            StringProducer,
+            DigitProducer,
+            AtProducer,
             PlusProducer,
             MinusProducer,
-            DigitProducer,
             HashProducer,
-            IdentProducer,
-            StringProducer,
             CommentProducer,
             PeriodProducer,
             LessThanProducer,
-            AtProducer,
             OtherProducer
         ))
     }

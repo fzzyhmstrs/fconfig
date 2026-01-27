@@ -12,22 +12,16 @@ package me.fzzyhmstrs.fzzy_config.theme.parsing.parser
 
 import me.fzzyhmstrs.fzzy_config.theme.parsing.ParseContext
 import me.fzzyhmstrs.fzzy_config.theme.parsing.ParseTokenizerType
-import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy.ParseStrategy
 import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy_v2.TokenConsumer
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.*
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenType
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.map
 import java.io.BufferedReader
-import java.io.IOException
-import java.io.UncheckedIOException
 import java.util.*
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.stream.Collectors
-import java.util.stream.Stream
-import java.util.stream.StreamSupport
-
-//non-selector strings aren't giving back their quotes
-//multi-line comments not handled properly
+import kotlin.collections.ArrayList
 
 object Parser {
     private val parseSpecs: MutableMap<ParseTokenizerType, Spec> = hashMapOf()
@@ -56,7 +50,8 @@ object Parser {
     val EOL = TokenType<Unit>("EOL", SPECIAL_TYPE, false, raw = "\n")
     val EOF = TokenType<Unit>("EOF", SPECIAL_TYPE, false, valueCreator = { "" })
 
-    fun <T: Any> parse(input: BufferedReader, type: ParseTokenizerType, consumer: TokenConsumer<T>, vararg args: String): ValidationResult<ParseResult<T>> {
+    fun <T: Any> parse(input: BufferedReader, type: ParseTokenizerType, consumer: TokenConsumer<T>, vararg args: String): ValidationResult<Result<T>> {
+        val argSet = args.toSet()
         val a = System.currentTimeMillis()
         val spec = parseSpecs[type] ?: throw IllegalStateException("Parse spec ${type.id()} not registered")
         val lines = input.use { inputReader ->
@@ -123,7 +118,9 @@ object Parser {
                     unknownBuilder.append(context.reader().read())
                 }
             }
-            context.token(EOL, context.reader().getLine(), context.reader().getColumn(), "EOL")
+            if (argSet.contains("--eol")) {
+                context.token(EOL, context.reader().getLine(), context.reader().getColumn(), "EOL")
+            }
             tokens.addAll(lineTokens)
         }
 
@@ -134,21 +131,31 @@ object Parser {
 
         val size = tokens.size
 
-        if (args.contains("--print-tokens")) {
+        if (argSet.contains("--print-tokens")) {
             for (token in tokens) {
                 println(token)
             }
         }
 
+        val cs = if (argSet.contains("--count-tokens")) {
+            val counts: MutableMap<TokenType<*>, AtomicInteger> = mutableMapOf()
+            for (token in ArrayList(tokens)) {
+                counts.computeIfAbsent(token.type) { _ -> AtomicInteger(0) }.incrementAndGet()
+            }
+            counts.entries.map { it.key to it.value }.sortedWith { aa, bb -> (aa.second.get().compareTo(bb.second.get()) * -1) }
+        } else {
+            listOf()
+        }
         val queue = TokenQueue.Impl(tokens)
 
         val c = System.currentTimeMillis()
 
-        val buildResult = consumer.consume(queue, args.toSet())
+        val buildResult = consumer.consume(queue, argSet)
+
 
         val d = System.currentTimeMillis()
 
-        return buildResult.map { result -> ParseResult(result, size, "Timing: 1:${b - a}ms / 2:${c - b}ms / 3:${d - c}ms") }
+        return buildResult.map { result -> Result(result, size, "Timing: 1:${b - a}ms / 2:${c - b}ms / 3:${d - c}ms", cs) }
     }
 
     fun addTokenizer(type: ParseTokenizerType, providers: List<TokenProducer>) {
@@ -165,7 +172,7 @@ object Parser {
         }
     }
 
-    class ParseResult<T: Any>(val value: T, val size: Int, val timings: String)
+    class Result<T: Any>(val value: T, val size: Int, val timings: String, val counts: Collection<Pair<TokenType<*>, AtomicInteger>>)
 
     private class Spec(val producers: List<TokenProducer>)
 }
