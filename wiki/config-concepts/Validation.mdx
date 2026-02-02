@@ -224,3 +224,68 @@ Any `ValidatedField` can be used to generate a `Codec` of the validation's type.
 ```
 
 </CodeTabs>
+
+## <div><div style={{display: "inline"}}><Grid2x2PlusIcon height={26} width={22} style={{display: "inline", color: "#B2BFF9", paddingTop: "4px", verticalAlign: "top"}} /> Attachments</div> <a href="#-validation-manipulation" style={{color: "#B2BFF9"}}>⤴</a></div>
+
+<Callout>
+Added in Fzzy Config 0.7.5
+</Callout>
+
+Validation can be provided with custom behavior using various attachment mechanisms.
+
+These providers attach "live" providers to the setting that are evaluated whenever needed. This means they are always provided with the most up-to-date versions of their inputs, and the provider should return a new value every time it is applicable to.
+
+###  [`translationProvider`](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.validation/-validated-field/-companion/translation-provider.html)
+Attaches a custom translation mechanism for the setting name (the label on the left side of the config GUI)
+* This applies at the second priority for naming. [See the translation page for details.](Translation#-hierarchy)
+
+### [`descriptionProvider`](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.validation/-validated-field/-companion/description-provider.html)
+Attaches a custom description to the setting (the tooltip shown when hovering over the setting row in the GUI)
+* This applies at the second priority for naming. [See the translation page for details.](Translation#-hierarchy)
+
+### [`attachProvider`](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.validation/-validated-field/-companion/attach-provider.html) 
+Attaches an arbitrary `Provider` to the setting, with various uses and effects in-game
+
+As of 0.7.6, the only usable provider is `Translatable.Provider.WIDGET_TITLE`. Use this to provide a custom widget title for the setting (not the name on the left, the actual label directly written on the button(s)).
+
+<CodeTabs>
+
+```java !!tabs Java
+ValidatedBoolean myField1 = ValidatedField
+        //attach a custom translation provider to the setting. 
+        //this example just echoes out the current value of the setting without any decoration
+        .translationProvider(new ValidatedBoolean(), (value, translationKey) -> Text.literal(value.toString()));
+
+ValidatedBoolean myField2 = ValidatedField
+        //attach a custom description (tooltip) provider to the setting. 
+        //this example attaches a simple literal string. Probably don't do this in practice (just use the lang file for this)
+        .descriptionProvider(new ValidatedBoolean(), (value, translationKey) -> Text.literal("This setting controls the blahblah blah."));
+
+ValidatedBoolean myField3 = ValidatedField
+        //attach a widget title to the setting. This will appear as the label on the setting button in the GUI
+        //this example replaces "True" and "False", the boolean setting widget labels, with "Enabled" and "Disabled"
+        .attachProvider(new ValidatedBoolean(), Provider.getWIDGET_TITLE(), (bl, defaultText) -> {
+            return bl ? Text.translatable("my.key.enabled") : Text.translatable("my.key.disabled"); //translate to "Enabled" and "Disabled"
+        });
+```
+
+```kotlin !!tabs Kotlin
+var myField1: ValidatedBoolean = ValidatedField 
+    //attach a custom translation provider to the setting. 
+    //this example just echoes out the current value of the setting without any decoration
+    .translationProvider(ValidatedBoolean()) { value, translationKey -> Text.literal(value.toString()) }
+
+var myField2: ValidatedBoolean = ValidatedField 
+    //attach a custom description (tooltip) provider to the setting. 
+    //this example attaches a simple literal string. Probably don't do this in practice (just use the lang file for this)
+    .descriptionProvider(ValidatedBoolean()) { value, translationKey -> Text.literal("This setting controls the blahblah blah.") }
+
+var myField3: ValidatedBoolean = ValidatedField 
+    //attach a widget title to the setting. This will appear as the label on the setting button in the GUI
+    //this example replaces "True" and "False", the boolean setting widget labels, with "Enabled" and "Disabled"
+    .attachProvider(ValidatedBoolean(), Provider.getWIDGET_TITLE()) { bl, defaultText ->
+      if (bl) Text.translatable("my.key.enabled") else Text.translatable("my.key.disabled") //translate to "Enabled" and "Disabled"
+    }
+```
+
+</CodeTabs>

@@ -46,6 +46,11 @@ If you want to override default translations, or provide translations without im
 
 This annotation is useful for repeating parts. If you have a config object that repeats, normally you would have to provide a translation for every setting. `@Translation` allows you to define one common lang key for all instances of the annotated field.
 
+### `translationProvider`, `descriptionProvider`
+Validated settings can be provided with a custom name and/or tooltip via a `translationProvider`/`descriptionProvider`. This may or may not be an actual translated text, it all depends on the implementation of the provider. In general, it is recommended to use translatable text wherever possible, even in a custom provider.
+
+Learn about these [here.](Validation#translationprovider)
+
 ## <div><IterationCwIcon height={26} width={22} style={{display: "inline", color: "#B2BFF9", paddingTop: "4px", verticalAlign: "top"}} /> Fallbacks</div>
 If not provided with translations, Fzzy Config will do it's best to provide fallbacks where possible.
 * Fields will use the capitalized and split-by-word field name: `myValidatedField` to `My Validated Field`
@@ -53,6 +58,13 @@ If not provided with translations, Fzzy Config will do it's best to provide fall
 * Configs will use the simple class name split by words: `ItemsConfig` to `Items Config`.
 * Descriptions and prefixes are blank by default.
 * If a field is annotated with `@Comment` or `@TomlComment`, it will be used as the fallback tooltip description.
+
+## <div><ArrowDownWideNarrowIcon height={26} width={22} style={{display: "inline", color: "#B2BFF9", paddingTop: "4px", verticalAlign: "top"}} /> Hierarchy</div>
+All the name, description, and prefix options fit into a 4-tier hierarchy, top-to-bottom. The first encountered valid text is the one used.
+1. `@Translation` - texts defined with this annotation override any other type of text generation
+2. `translationProvider`, `descriptionProvider` - a custom name or tooltip will take precedence over built in translations
+3. `my_mod.my_config.my_section.myField` Translation - the baseline translation system
+4. Fallback - if no valid translation mechanisms are otherwise provided, a fallback as described above will be used
 
 ## <div><NotebookPenIcon height={26} width={22} style={{display: "inline", color: "#B2BFF9", paddingTop: "4px", verticalAlign: "top"}} /> Example</div>
 
@@ -66,7 +78,7 @@ If not provided with translations, Fzzy Config will do it's best to provide fall
 {
   "_comment1": "the lang for an example 'fieldName' setting in a config inside section 'subSection'",
   "my_mod.my_config.subSection.fieldName": "Very Important Setting",
-  "my_mod.my_config.subSection.fieldName.desc": "This very important setting is used in this very important way."
+  "my_mod.my_config.subSection.fieldName.desc": "This very important setting is used in this very important way.",
   "my_mod.my_config.subSection.fieldName.prefix": "Here is some introductory information about this very important setting that you can see in the GUI above the setting itself."
 }
 ```

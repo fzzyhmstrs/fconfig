@@ -30,7 +30,7 @@ plugins {
     id("com.modrinth.minotaur") version "2.+"
     id("org.jetbrains.dokka") version "1.9.20"
     id("com.matthewprenger.cursegradle") version "1.4.0"
-    id("org.moddedmc.wiki.toolkit") version "0.2.5"
+    id("org.moddedmc.wiki.toolkit") version "0.4.+"
     `maven-publish`
 }
 
