@@ -390,14 +390,49 @@ interface Translatable {
     }
 
     @FunctionalInterface
+    /**
+     * Provides a value of type [S] based on input [T], or aborts to the provided fallback value. Must always return a value
+     * @param [T] input value type
+     * @param [S] output value type
+     * @author fzzyhmstrs
+     * @since 0.7.5
+     */
     fun interface Provider<T, S> {
+        /**
+         * Provide an output value [S] based on an input value [T]
+         * @param t Instance of [T]. The input value for the provider; generally a setting value
+         * @param default Instance of [S]. A fallback to use if the provider has nothing to otherwise provide
+         * @return New instance of [S] based on [t], or the [default]. A value must be provided
+         * @author fzzyhmstrs
+         * @since 0.7.5
+         */
         fun provide(t: T, default: S): S
 
         interface Type<S: Any>
 
         companion object {
-            val WIDGET_TITLE = object : Type<Text> {}
+            /**
+             * Apply to a [ValidatedField][me.fzzyhmstrs.fzzy_config.validation.ValidatedField] to provide a dynamic override of the setting button label. Only works for settings that have a label on their button, e.g. "Edit..."
+             *
+             * Provides [Text]
+             * @author fzzyhmstrs
+             * @since 0.7.5
+             */
+            @JvmStatic
+            val WIDGET_TITLE: Type<Text> = object : Type<Text> {}
+            /**
+             * Currently unused
+             * @author fzzyhmstrs
+             * @since 0.7.5
+             */
+            @JvmStatic
             val WIDGET_WIDTH = object : Type<Int> {}
+            /**
+             * Currently unused
+             * @author fzzyhmstrs
+             * @since 0.7.5
+             */
+            @JvmStatic
             val NUMBER_STEP = object : Type<Number> {}
         }
     }

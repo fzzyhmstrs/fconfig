@@ -938,6 +938,7 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
          * @author fzzyhmstrs
          * @since 0.7.5
          */
+        @JvmStatic
         fun <T, F: ValidatedField<T>> F.translationProvider(provider: BiFunction<T, String, MutableText?>): F {
             this.translationProvider = provider
             return this
@@ -954,6 +955,7 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
          * @author fzzyhmstrs
          * @since 0.7.5
          */
+        @JvmStatic
         fun <T, F: ValidatedField<T>> F.descriptionProvider(provider: BiFunction<T, String, MutableText?>): F {
             this.descriptionProvider = provider
             return this
@@ -972,6 +974,7 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
          * @author fzzyhmstrs
          * @since 0.7.5
          */
+        @JvmStatic
         fun <T, S: Any, F: ValidatedField<T>> F.attachProvider(type: Translatable.Provider.Type<S>, provider: Translatable.Provider<T, S>): F {
             this.attachProvider(type, provider)
             return this
