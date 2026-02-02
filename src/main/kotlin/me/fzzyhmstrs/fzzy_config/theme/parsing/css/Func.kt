@@ -18,6 +18,12 @@ import kotlin.collections.HashMap
 interface Func<T: Any> {
     fun apply(args: T, context: SelectorContext): Boolean
     fun prepare(queue: TokenQueue, args: Set<String>, selectorCreator: (Func<T>, T) -> Selector?): Selector?
+    fun specificity(): Specificity {
+        return Specificity.CLASS
+    }
+    fun isUserAction(): Boolean {
+        return false
+    }
 
     companion object {
         private val keyToFunc: HashMap<String, Func<*>> = hashMapOf()

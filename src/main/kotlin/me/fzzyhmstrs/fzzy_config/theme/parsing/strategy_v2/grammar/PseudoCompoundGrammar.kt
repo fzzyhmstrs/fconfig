@@ -10,27 +10,25 @@
 
 package me.fzzyhmstrs.fzzy_config.theme.parsing.strategy_v2.grammar
 
-import me.fzzyhmstrs.fzzy_config.theme.parsing.css.CssType
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.Selector
-import me.fzzyhmstrs.fzzy_config.theme.parsing.parser.Parser
 import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy_v2.TokenConsumer
-import me.fzzyhmstrs.fzzy_config.theme.parsing.token.Token
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenQueue
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
-import java.util.*
+import java.util.Optional
 
 
-object ComplexSelectorUnitGrammar: TokenConsumer<Optional<Selector>> {
+object PseudoCompoundGrammar: TokenConsumer<Optional<Selector>> {
 
     override fun consume(queue: TokenQueue, args: Set<String>): ValidationResult<Optional<Selector>> {
-        if (!queue.canPoll()) return ValidationResult.error(Optional.empty(), "Can't consume a complex selector unit from an empty queue")
-        val compound = CompoundSelectorGrammar.consume(queue, args)
-        if (compound.isError()) return ValidationResult.error(Optional.empty(), "Invalid complex selector")
+        if (!queue.canPoll()) return ValidationResult.error(Optional.empty(), "Can't consume a pseudo-compound from an empty queue")
+        val pseudoElement = PseudoElementSelectorGrammar.consume(queue, args)
+        if (pseudoElement.get().isEmpty || pseudoElement.isError()) return ValidationResult.error(Optional.empty(), "Not a pseudo-compound")
+        val scArgs = args + setOf("--user-actions-only")
         val scs: MutableList<Selector> = mutableListOf()
         while (queue.canPoll()) {
             val sc = queue.attempt { split ->
-                val scInner = PseudoCompoundGrammar.consume(split, args)
-                if (scInner.isError() || scInner.get().isEmpty) return@attempt ValidationResult.error(Optional.empty(), "Not a valid following pseudo-compound")
+                val scInner = PseudoClassSelectorGrammar.consume(split, scArgs)
+                if (scInner.isError() || scInner.get().isEmpty) return@attempt ValidationResult.error(Optional.empty(), "Not a valid following pseudo-class")
                 scInner
             }
             if (sc.isValid() && sc.get().isPresent) {
@@ -40,14 +38,9 @@ object ComplexSelectorUnitGrammar: TokenConsumer<Optional<Selector>> {
             break
         }
         return if (scs.isNotEmpty()) {
-            if (compound.get().isPresent)
-                ValidationResult.success(Optional.of(Selector.All(listOf(compound.get().get()) + scs)))
-            else
-                ValidationResult.success(Optional.of(Selector.All(scs)))
-        } else if (compound.get().isPresent) {
-            compound
+            ValidationResult.success(Optional.of(Selector.All(listOf(pseudoElement.get().get()) + scs)))
         } else {
-            ValidationResult.error(Optional.empty(), "Invalid complex selector")
+            pseudoElement
         }
     }
 }

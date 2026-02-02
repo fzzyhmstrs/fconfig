@@ -13,6 +13,7 @@ package me.fzzyhmstrs.fzzy_config.theme.parsing.strategy_v2.grammar
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.CssType
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.Selector
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.SelectorContext
+import me.fzzyhmstrs.fzzy_config.theme.parsing.css.Specificity
 import me.fzzyhmstrs.fzzy_config.theme.parsing.parser.Parser
 import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy_v2.TokenConsumer
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.Token
@@ -50,6 +51,10 @@ object ClassSelectorGrammar: TokenConsumer<Optional<Selector>> {
 
         override fun selector(): String {
             return ".$clazz"
+        }
+
+        override fun specificity(): Specificity {
+            return Specificity.CLASS
         }
     }
 }

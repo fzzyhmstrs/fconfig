@@ -30,7 +30,9 @@ object PseudoClassSelectorGrammar: TokenConsumer<Optional<Selector>> {
                 if (token2.type == CssType.IDENT) {
                     val key = token2.asString()
                     val pseudo = Pseudo.getPseudo(key) ?: return@attempt ValidationResult.error(Optional.empty(), "Unsupported pseudo-class selector")
-                    ValidationResult.success(Optional.of(PseudoClass(pseudo, key)))
+                    ValidationResult.predicated(Optional.of(PseudoClass(pseudo, key)), !args.contains("--user-actions-only") || pseudo.userAction, "Non-user-action pseudo-class selector")
+                } else if (token2.value == ":") {
+                    ValidationResult.error(Optional.empty(), "Not a pseudo-class selector")
                 } else if (token2.type == CssType.FUNCTION && split.canPoll()) {
                     val key = token2.value as String
                     val func = Func.getFunc(key) ?: return@attempt ValidationResult.error(Optional.empty(), "Invalid pseudo-class selector")
@@ -67,6 +69,10 @@ object PseudoClassSelectorGrammar: TokenConsumer<Optional<Selector>> {
         override fun selector(): String {
             return ":$name"
         }
+
+        override fun specificity(): Specificity {
+            return Specificity.CLASS
+        }
     }
 
     class PseudoFunction<in T: Any>(private val func: Func<T>, private val name: String, private val args: T, private val raw: String): Selector {
@@ -76,7 +82,11 @@ object PseudoClassSelectorGrammar: TokenConsumer<Optional<Selector>> {
         }
 
         override fun selector(): String {
-            return "$name($raw)"
+            return ":$name($raw)"
+        }
+
+        override fun specificity(): Specificity {
+            return func.specificity()
         }
     }
 }

@@ -10,10 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.theme.parsing.strategy_v2.grammar
 
-import me.fzzyhmstrs.fzzy_config.theme.parsing.css.Attr
-import me.fzzyhmstrs.fzzy_config.theme.parsing.css.CssType
-import me.fzzyhmstrs.fzzy_config.theme.parsing.css.Selector
-import me.fzzyhmstrs.fzzy_config.theme.parsing.css.SelectorContext
+import me.fzzyhmstrs.fzzy_config.theme.parsing.css.*
 import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy_v2.TokenConsumer
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.Token
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenQueue
@@ -115,6 +112,10 @@ object AttrSelectorGrammar: TokenConsumer<Optional<Selector>> {
         override fun selector(): String {
             return "[$name]"
         }
+
+        override fun specificity(): Specificity {
+            return Specificity.CLASS
+        }
     }
 
     sealed class AttrWithMatch(protected val attr: Attr, protected val name: String, value: String, mod: String?): Selector {
@@ -126,6 +127,10 @@ object AttrSelectorGrammar: TokenConsumer<Optional<Selector>> {
             val bl = mod == "i" || mod == "I" || !(attr.caseSensitive || mod == "s" || mod == "S")
             this.value = if (bl) value.lowercase() else value
             this.transformer = if(bl) { v -> v.lowercase() } else { v -> v }
+        }
+
+        override fun specificity(): Specificity {
+            return Specificity.CLASS
         }
     }
 

@@ -12,6 +12,7 @@ package me.fzzyhmstrs.fzzy_config.theme.parsing.strategy_v2.grammar
 
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.Selector
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.SelectorContext
+import me.fzzyhmstrs.fzzy_config.theme.parsing.css.Specificity
 import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy_v2.TokenConsumer
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenQueue
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
@@ -32,7 +33,7 @@ object TypeSelectorGrammar: TokenConsumer<Optional<Selector>> {
                         if (ns.isPresent) {
                             ValidationResult.success(Optional.of(ns.get()))
                         } else {
-                            ValidationResult.success(Optional.of(Selector.Any))
+                            ValidationResult.success(Optional.of(Selector.Universal))
                         }
                     } else {
                         ValidationResult.error(Optional.empty(), "Not a type selector")
@@ -54,6 +55,10 @@ object TypeSelectorGrammar: TokenConsumer<Optional<Selector>> {
 
         override fun selector(): String {
             return name
+        }
+
+        override fun specificity(): Specificity {
+            return Specificity.TYPE
         }
     }
 }

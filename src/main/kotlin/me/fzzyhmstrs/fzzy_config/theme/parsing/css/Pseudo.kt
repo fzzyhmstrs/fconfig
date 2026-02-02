@@ -14,7 +14,9 @@ import java.lang.IllegalStateException
 import java.util.*
 import kotlin.collections.HashMap
 
-class Pseudo(val getterGetter: (PseudoGetter) -> Boolean) {
+class Pseudo(val getterGetter: (PseudoGetter) -> Boolean, val userAction: Boolean) {
+
+    constructor(getterGetter: (PseudoGetter) -> Boolean): this(getterGetter, false)
 
     companion object {
         private val keyToPseudo: HashMap<String, Pseudo> = hashMapOf()

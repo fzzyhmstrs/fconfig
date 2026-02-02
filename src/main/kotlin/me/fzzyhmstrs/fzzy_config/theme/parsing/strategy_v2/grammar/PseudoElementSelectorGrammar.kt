@@ -35,7 +35,7 @@ object PseudoElementSelectorGrammar: TokenConsumer<Optional<Selector>> {
                         val key = token3.asString()
                         val pseudo = Pseudo.getPseudo(key) ?: return@attempt ValidationResult.error(Optional.empty(), "Unsupported pseudo-class selector")
                         ValidationResult.success(Optional.of(
-                            PseudoClassSelectorGrammar.PseudoClass(
+                            PseudoElement(
                                 pseudo,
                                 key
                             )
@@ -49,7 +49,7 @@ object PseudoElementSelectorGrammar: TokenConsumer<Optional<Selector>> {
                             if (t.type == CssType.CLOSE_PARENTHESIS) {
                                 val raw = funcVals.fold("") { r, tkn -> r + tkn.asString() }
                                 val selector = func.prepare(TokenQueue.Impl(funcVals), args) { f, a ->
-                                    PseudoClassSelectorGrammar.PseudoFunction(
+                                    PseudoElementFunction(
                                         f as Func<Any>,
                                         key,
                                         a,
@@ -77,25 +77,35 @@ object PseudoElementSelectorGrammar: TokenConsumer<Optional<Selector>> {
         }
     }
 
-    class PseudoClass(private val pseudo: Pseudo, private val name: String): Selector {
+    class PseudoElement(private val pseudo: Pseudo, private val name: String): Selector {
 
         override fun matches(context: SelectorContext): Boolean {
             return pseudo.getterGetter(context.pseudoGetter)
         }
 
         override fun selector(): String {
-            return ":$name"
+            return "::$name"
+        }
+
+
+        override fun specificity(): Specificity {
+            return Specificity.TYPE
         }
     }
 
-    class PseudoFunction<in T: Any>(private val func: Func<T>, private val name: String, private val args: T, private val raw: String): Selector {
+    class PseudoElementFunction<in T: Any>(private val func: Func<T>, private val name: String, private val args: T, private val raw: String): Selector {
 
         override fun matches(context: SelectorContext): Boolean {
             return func.apply(args, context)
         }
 
         override fun selector(): String {
-            return "$name($raw)"
+            return "::$name($raw)"
+        }
+
+
+        override fun specificity(): Specificity {
+            return Specificity.TYPE
         }
     }
 }
