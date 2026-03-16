@@ -12,20 +12,20 @@ package me.fzzyhmstrs.fzzy_config.networking.api
 
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
-import net.minecraft.network.NetworkPhase
-import net.minecraft.network.NetworkSide
-import net.minecraft.network.packet.CustomPayload
+import net.minecraft.network.ConnectionProtocol
+import net.minecraft.network.protocol.PacketFlow
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload
 import net.minecraft.server.MinecraftServer
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.text.Text
-import net.minecraft.util.Identifier
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.network.chat.Component
+import net.minecraft.resources.Identifier
 
 /**
  * A server-side network context, used to handle C2S payloads
  * @author fzzyhmstrs
  * @since 0.4.1
  */
-class ServerPlayNetworkContext(private val context: ServerPlayNetworking.Context) : NetworkContext<ServerPlayerEntity> {
+class ServerPlayNetworkContext(private val context: ServerPlayNetworking.Context) : NetworkContext<ServerPlayer> {
 
     /**
      * Executes a task on the main thread. This should be used for anything interacting with game state outside the network loop
@@ -43,7 +43,7 @@ class ServerPlayNetworkContext(private val context: ServerPlayNetworking.Context
      * @author fzzyhmstrs
      * @since 0.4.1
      */
-    override fun disconnect(reason: Text) {
+    override fun disconnect(reason: Component) {
         context.responseSender().disconnect(reason)
     }
 
@@ -64,7 +64,7 @@ class ServerPlayNetworkContext(private val context: ServerPlayNetworking.Context
      * @author fzzyhmstrs
      * @since 0.4.1
      */
-    override fun reply(payload: CustomPayload) {
+    override fun reply(payload: CustomPacketPayload) {
         context.responseSender().sendPacket(payload)
     }
 
@@ -76,8 +76,8 @@ class ServerPlayNetworkContext(private val context: ServerPlayNetworking.Context
      * @since 0.4.1
      */
     @JvmOverloads
-    fun sendToAllPlayers(payload: CustomPayload, skipCurrentPlayer: Boolean = true) {
-        for (player in context.server().playerManager.playerList) {
+    fun sendToAllPlayers(payload: CustomPacketPayload, skipCurrentPlayer: Boolean = true) {
+        for (player in context.server().playerList.players) {
             if (skipCurrentPlayer && player == player()) continue
             ConfigApi.network().send(payload, player)
         }
@@ -89,7 +89,7 @@ class ServerPlayNetworkContext(private val context: ServerPlayNetworking.Context
      * @author fzzyhmstrs
      * @since 0.4.1
      */
-    override fun player(): ServerPlayerEntity {
+    override fun player(): ServerPlayer {
         return context.player()
     }
 
@@ -98,8 +98,8 @@ class ServerPlayNetworkContext(private val context: ServerPlayNetworking.Context
      * @author fzzyhmstrs
      * @since 0.4.1
      */
-    override fun networkPhase(): NetworkPhase {
-        return NetworkPhase.PLAY
+    override fun networkPhase(): ConnectionProtocol {
+        return ConnectionProtocol.PLAY
     }
 
     /**
@@ -107,7 +107,7 @@ class ServerPlayNetworkContext(private val context: ServerPlayNetworking.Context
      * @author fzzyhmstrs
      * @since 0.4.1
      */
-    override fun networkSide(): NetworkSide {
-        return NetworkSide.CLIENTBOUND
+    override fun networkSide(): PacketFlow {
+        return PacketFlow.CLIENTBOUND
     }
 }

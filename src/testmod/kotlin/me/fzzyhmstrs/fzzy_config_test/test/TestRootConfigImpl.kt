@@ -27,11 +27,11 @@ import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedFloat
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedInt
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber
 import me.fzzyhmstrs.fzzy_config_test.FC
-import net.minecraft.util.Identifier
+import net.minecraft.resources.Identifier
 import java.awt.Color
 
 @RootConfig
-class TestRootConfigImpl: Config(Identifier.of("fzzy_config_test","root_config"), subfolder =  "test") {
+class TestRootConfigImpl: Config(Identifier.fromNamespaceAndPath("fzzy_config_test","root_config"), subfolder =  "test") {
 
     override fun fileType(): FileType {
         return FileType.TOML
@@ -63,7 +63,8 @@ class TestRootConfigImpl: Config(Identifier.of("fzzy_config_test","root_config")
 
     var mathTest = ValidatedExpression("x + 5", setOf('x'))
 
-    var einsteinMap = ValidatedMap.Builder<ValidatedIngredient.IngredientProvider, ValidatedColor.ColorHolder>().keyHandler(ValidatedIngredient(Identifier.of("stick"))).valueHandler(ValidatedColor()).build()
+    var einsteinMap = ValidatedMap.Builder<ValidatedIngredient.IngredientProvider, ValidatedColor.ColorHolder>().keyHandler(ValidatedIngredient(
+        Identifier.parse("stick"))).valueHandler(ValidatedColor()).build()
 
     var group = ConfigGroup("test_group", collapsedByDefault = true)
 

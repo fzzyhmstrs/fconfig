@@ -23,10 +23,10 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomPressableWidget
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.text.MutableText
-import net.minecraft.util.Identifier
+import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.network.chat.MutableComponent
+import net.minecraft.resources.Identifier
 import java.util.function.BiFunction
 import java.util.function.Supplier
 import java.util.function.UnaryOperator
@@ -44,7 +44,7 @@ internal class ChangesWidget(private val scope: String, private val widthSupplie
         this.active = manager.hasChanges() || manager.hasChangeHistory() || manager.hasRestores(scope)
     }
 
-    override fun renderCustom(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun renderCustom(context: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
         this.active = manager.hasChanges() || manager.hasChangeHistory() || manager.hasRestores(scope)
         super.renderCustom(context, x, y, width, height, mouseX, mouseY, delta)
         if (manager.hasChanges()) {
@@ -52,11 +52,11 @@ internal class ChangesWidget(private val scope: String, private val widthSupplie
                 context.drawTex(changesHighlightedTex, x + 68, y - 4, 16, 16)
             else
                 context.drawTex(changesTex, x + 67, y - 4, 16, 16)
-            context.drawCenteredTextWithShadow(MinecraftClient.getInstance().textRenderer, manager.changeCount().toString(), x + 76, y, -1)
+            context.centeredText(Minecraft.getInstance().font, manager.changeCount().toString(), x + 76, y, -1)
         }
     }
 
-    override fun getNarrationMessage(): MutableText {
+    override fun createNarrationMessage(): MutableComponent {
         return if (manager.hasChanges()) "fc.button.changes.message".translate(manager.changeCount()) else "fc.button.changes.message.noChanges".translate()
     }
 
@@ -65,15 +65,15 @@ internal class ChangesWidget(private val scope: String, private val widthSupplie
     }
 
     private fun openChangesPopup() {
-        val client = MinecraftClient.getInstance()
+        val client = Minecraft.getInstance()
         val applyText = "fc.button.apply".translate()
         val revertText = "fc.button.revert".translate()
         val restoreText = "fc.button.restore".translate()
         val changelogText = "fc.button.changelog".translate()
-        val applyWidth = client.textRenderer.getWidth(applyText) + 8
-        val revertWidth = client.textRenderer.getWidth(revertText) + 8
-        val restoreWidth = client.textRenderer.getWidth(restoreText) + 8
-        val changeWidth = client.textRenderer.getWidth(changelogText) + 8
+        val applyWidth = client.font.width(applyText) + 8
+        val revertWidth = client.font.width(revertText) + 8
+        val restoreWidth = client.font.width(restoreText) + 8
+        val changeWidth = client.font.width(changelogText) + 8
         val popup = PopupWidget.Builder("fc.button.changes.title".translate())
             // Apply Changes
             .add("apply",
@@ -107,7 +107,7 @@ internal class ChangesWidget(private val scope: String, private val widthSupplie
     private fun openChangelogPopup() {
         val changes = manager.changeHistory()
         val changeEntries: List<BiFunction<DynamicListWidget, Int, out DynamicListWidget.Entry>> = changes.map { BiFunction { list, index -> ChangelogEntry(list, it, index) } }
-        val changeWidget = DynamicListWidget(MinecraftClient.getInstance(), changeEntries, 0, 0, widthSupplier.get() - 16, 180, DynamicListWidget.ListSpec(leftPadding = 4, rightPadding = 4, verticalPadding = 2, listNarrationKey = "fc.narrator.position.list"))
+        val changeWidget = DynamicListWidget(Minecraft.getInstance(), changeEntries, 0, 0, widthSupplier.get() - 16, 180, DynamicListWidget.ListSpec(leftPadding = 4, rightPadding = 4, verticalPadding = 2, listNarrationKey = "fc.narrator.position.list"))
         val popup = PopupWidget.Builder("fc.button.changelog".translate())
             .add("changelog",
                 changeWidget,

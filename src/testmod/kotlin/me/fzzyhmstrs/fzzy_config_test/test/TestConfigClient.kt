@@ -17,7 +17,7 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.SuppliedTextWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config_test.JavaTestConfig
 import me.fzzyhmstrs.fzzy_config_test.JavaTestConfig2
-import net.minecraft.client.MinecraftClient
+import net.minecraft.client.Minecraft
 
 object TestConfigClient {
 

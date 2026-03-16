@@ -32,15 +32,15 @@ import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedFloat
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedInt
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber
 import me.fzzyhmstrs.fzzy_config_test.FC
-import net.minecraft.registry.tag.ItemTags
-import net.minecraft.text.ClickEvent
-import net.minecraft.util.Identifier
+import net.minecraft.tags.ItemTags
+import net.minecraft.network.chat.ClickEvent
+import net.minecraft.resources.Identifier
 import java.awt.Color
 import java.net.URI
 
 @Version(1)
 @Translation("fzzy_config_test.test_config")
-class TestConfigImpl: Config(Identifier.of("fzzy_config_test","test_config"), subfolder =  "test") {
+class TestConfigImpl: Config(Identifier.fromNamespaceAndPath("fzzy_config_test","test_config"), subfolder =  "test") {
 
     var bl1 = true
     var bl2 = ValidatedBoolean()
@@ -80,7 +80,7 @@ class TestConfigImpl: Config(Identifier.of("fzzy_config_test","test_config"), su
             }
             .build()
 
-        var ingredient1 = ValidatedIngredient(Identifier.of("stick"))
+        var ingredient1 = ValidatedIngredient(Identifier.parse("stick"))
 
         @RequiresRestart
         var tag1 = ValidatedTagKey(ItemTags.PICKAXES)
@@ -124,7 +124,7 @@ class TestConfigImpl: Config(Identifier.of("fzzy_config_test","test_config"), su
     @ConfigGroup.Pop
     var map1 = mapOf(1 to "a", 2 to "c")
 
-    var id1 = ValidatedIdentifier.ofList(Identifier.of("stick"), listOf(Identifier.of("stick"), Identifier.of("blaze_rod"), Identifier.of("coal"), Identifier.of("charcoal")))
+    var id1 = ValidatedIdentifier.ofList(Identifier.parse("stick"), listOf(Identifier.parse("stick"), Identifier.parse("blaze_rod"), Identifier.parse("coal"), Identifier.parse("charcoal")))
 
     var choice1 = ValidatedList.ofInt(1, 2, 5, 10).toChoices()
 

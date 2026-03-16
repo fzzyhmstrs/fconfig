@@ -31,15 +31,15 @@ import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.isEmpty
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.Selectable
-import net.minecraft.client.gui.navigation.GuiNavigation
-import net.minecraft.client.gui.navigation.GuiNavigationPath
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
-import net.minecraft.client.gui.screen.narration.NarrationPart
-import net.minecraft.client.gui.tooltip.Tooltip
-import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.text.Text
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.gui.narration.NarratableEntry
+import net.minecraft.client.gui.navigation.FocusNavigationEvent
+import net.minecraft.client.gui.ComponentPath
+import net.minecraft.client.gui.narration.NarrationElementOutput
+import net.minecraft.client.gui.narration.NarratedElementType
+import net.minecraft.client.gui.components.Tooltip
+import net.minecraft.client.gui.components.AbstractWidget
+import net.minecraft.network.chat.Component
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.*
 import java.util.function.BooleanSupplier
@@ -67,8 +67,8 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
 
     internal var conditions: Vector<Condition> = Vector(2)
 
-    private var singleFailText: Text? = null
-    private var pluralFailText: Text? = null
+    private var singleFailText: Component? = null
+    private var pluralFailText: Component? = null
 
     /**
      * creates a deep copy of this ValidatedCondition
@@ -97,7 +97,7 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
 
     @Internal
     //client
-    override fun widgetEntry(choicePredicate: ChoiceValidator<T>): ClickableWidget {
+    override fun widgetEntry(choicePredicate: ChoiceValidator<T>): AbstractWidget {
         return ConditionalActiveButtonWidget(
             110,
             20,
@@ -194,7 +194,7 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
      * @since 0.5.4
      */
     @JvmOverloads
-    fun withFailTitle(singleFailText: Text, pluralFailText: Text? = null): ValidatedCondition<T> {
+    fun withFailTitle(singleFailText: Component, pluralFailText: Component? = null): ValidatedCondition<T> {
         this.singleFailText = singleFailText
         this.pluralFailText = pluralFailText
         return this
@@ -222,7 +222,7 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
      * @author fzzyhmstrs
      * @since 0.5.4
      */
-    open fun withCondition(condition: Supplier<Boolean>, failMessage: Text): ValidatedCondition<T> {
+    open fun withCondition(condition: Supplier<Boolean>, failMessage: Component): ValidatedCondition<T> {
         conditions.add(ConditionSupplierImpl(condition, failMessage))
         return this
     }
@@ -237,7 +237,7 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
      * @author fzzyhmstrs
      * @since 0.5.4
      */
-    open fun withCondition(failMessage: Text, condition: BooleanSupplier): ValidatedCondition<T> {
+    open fun withCondition(failMessage: Component, condition: BooleanSupplier): ValidatedCondition<T> {
         conditions.add(ConditionBooleanSupplierImpl(condition, failMessage))
         return this
     }
@@ -263,7 +263,7 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
      * @author fzzyhmstrs
      * @since 0.5.4, explicitly uses BooleanSupplier internally 0.6.5
      */
-    open fun withCondition(scope: String, failMessage: Text): ValidatedCondition<T> {
+    open fun withCondition(scope: String, failMessage: Component): ValidatedCondition<T> {
         return withCondition(failMessage) { booleanProvider.getResult(scope) }
     }
 
@@ -287,7 +287,7 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
      * @suppress
      */
     @Deprecated("Will throw an error, this is already a condition")
-    final override fun toCondition(condition: Supplier<Boolean>, failMessage: Text, fallback: Supplier<T>): ValidatedCondition<T> {
+    final override fun toCondition(condition: Supplier<Boolean>, failMessage: Component, fallback: Supplier<T>): ValidatedCondition<T> {
         throw UnsupportedOperationException("Already a ValidatedCondition!")
     }
 
@@ -295,7 +295,7 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
      * @suppress
      */
     @Deprecated("Will throw an error, this is already a condition")
-    final override fun toCondition(scope: String, failMessage: Text, fallback: Supplier<T>): ValidatedCondition<T> {
+    final override fun toCondition(scope: String, failMessage: Component, fallback: Supplier<T>): ValidatedCondition<T> {
         throw UnsupportedOperationException("Already a ValidatedCondition!")
     }
 
@@ -306,8 +306,8 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
         return true
     }
 
-    private fun conditionFailMessages(): List<Text> {
-        val list: MutableList<Text> = mutableListOf()
+    private fun conditionFailMessages(): List<Component> {
+        val list: MutableList<Component> = mutableListOf()
         for (condition in conditions) {
             if (!condition.get()) list.add(condition.failMessage())
         }
@@ -342,7 +342,7 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
             return TextureSet.Single(TextureIds.ENTRY_ERROR)
         }
 
-        override fun renderDecoration(context: DrawContext, x: Int, y: Int, delta: Float, enabled: Boolean, selected: Boolean) {
+        override fun renderDecoration(context: GuiGraphicsExtractor, x: Int, y: Int, delta: Float, enabled: Boolean, selected: Boolean) {
             if (!activeSupplier.get())
                 super.renderDecoration(context, x, y, delta, enabled, selected)
         }
@@ -353,8 +353,9 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
         width: Int,
         height: Int,
         activeSupplier: Supplier<Boolean>,
-        private val conditionMessages: Supplier<List<Text>>,
-        private val delegateWidget: ClickableWidget)
+        private val conditionMessages: Supplier<List<Component>>,
+        private val delegateWidget: AbstractWidget
+    )
         :
         CustomButtonWidget(
             0,
@@ -378,13 +379,13 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
             this.activeSupplier = activeSupplier
         }
 
-        override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+        override fun extractWidgetRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
             this.active = activeSupplier.get()
             if (active) {
-                delegateWidget.render(context, mouseX, mouseY, delta)
+                delegateWidget.extractRenderState(context, mouseX, mouseY, delta)
             } else {
                 super.setTooltip(makeTooltip())
-                super.renderWidget(context, mouseX, mouseY, delta)
+                super.extractWidgetRenderState(context, mouseX, mouseY, delta)
             }
         }
 
@@ -463,18 +464,18 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
                 super.isHovered()
         }
 
-        override fun isSelected(): Boolean {
+        override fun isHoveredOrFocused(): Boolean {
             return if (active)
-                delegateWidget.isSelected
+                delegateWidget.isHoveredOrFocused
             else
-                super.isSelected()
+                super.isHoveredOrFocused
         }
 
-        override fun getType(): Selectable.SelectionType {
+        override fun narrationPriority(): NarratableEntry.NarrationPriority {
             return if (active)
-                delegateWidget.type
+                delegateWidget.narrationPriority()
             else
-                super.getType()
+                super.narrationPriority()
         }
 
      /*   override fun getTooltip(): Tooltip? {
@@ -518,13 +519,13 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
             delegateWidget.height = height
         }
 
-        override fun appendClickableNarrations(builder: NarrationMessageBuilder?) {
+        override fun updateWidgetNarration(builder: NarrationElementOutput) {
             if (active) {
-                delegateWidget.appendNarrations(builder)
+                delegateWidget.updateNarration(builder)
             } else {
-                builder?.put(NarrationPart.TITLE, this.narrationMessage)
+                builder?.add(NarratedElementType.TITLE, this.createNarrationMessage())
                 val messages = conditionMessages.get()
-                builder?.put(NarrationPart.HINT, *messages.toTypedArray())
+                builder?.add(NarratedElementType.HINT, *messages.toTypedArray())
             }
         }
 
@@ -534,7 +535,7 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
             if (messages.isEmpty()) return null
             val text = FcText.toLinebreakText(messages)
             if (text.isEmpty()) return null
-            return Tooltip.of(text)
+            return Tooltip.create(text)
         }
 
         override fun isMouseOver(mouseX: Double, mouseY: Double): Boolean {
@@ -545,15 +546,15 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
                     ) && (mouseY < (this.y + this.height).toDouble()))
         }
 
-        override fun getNavigationPath(navigation: GuiNavigation?): GuiNavigationPath? {
+        override fun nextFocusPath(navigation: FocusNavigationEvent): ComponentPath? {
             return if ((!this.active && this@ValidatedCondition.conditions.isEmpty()) || !this.visible) {
                 null
             } else {
-                if (!this.isFocused) GuiNavigationPath.of(this) else null
+                if (!this.isFocused) ComponentPath.leaf(this) else null
             }
         }
 
-        override fun provideTooltipLines(mouseX: Int, mouseY: Int, parentSelected: Boolean, keyboardFocused: Boolean): List<Text> {
+        override fun provideTooltipLines(mouseX: Int, mouseY: Int, parentSelected: Boolean, keyboardFocused: Boolean): List<Component> {
             return if (active) {
                 delegateWidget.nullCast<TooltipChild>()?.provideTooltipLines(mouseX, mouseY, parentSelected, keyboardFocused) ?: TooltipChild.EMPTY
             } else if (parentSelected) {
@@ -584,29 +585,29 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
          * @author fzzyhmstrs
          * @since 0.5.4
          */
-        fun failMessage(): Text {
+        fun failMessage(): Component {
             return FcText.literal("Condition failed")
         }
     }
 
-    internal class ConditionSupplierImpl(private val condition: Supplier<Boolean>, private val failMessage: Text): Condition {
+    internal class ConditionSupplierImpl(private val condition: Supplier<Boolean>, private val failMessage: Component): Condition {
 
         override fun get(): Boolean {
             return condition.get()
         }
 
-        override fun failMessage(): Text {
+        override fun failMessage(): Component {
             return failMessage
         }
     }
 
-    internal class ConditionBooleanSupplierImpl(private val condition: BooleanSupplier, private val failMessage: Text): Condition {
+    internal class ConditionBooleanSupplierImpl(private val condition: BooleanSupplier, private val failMessage: Component): Condition {
 
         override fun get(): Boolean {
             return condition.asBoolean
         }
 
-        override fun failMessage(): Text {
+        override fun failMessage(): Component {
             return failMessage
         }
     }

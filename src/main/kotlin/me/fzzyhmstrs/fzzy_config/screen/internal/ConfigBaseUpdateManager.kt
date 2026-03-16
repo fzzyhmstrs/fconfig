@@ -6,7 +6,7 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import me.fzzyhmstrs.fzzy_config.updates.BaseUpdateManager
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
-import net.minecraft.client.MinecraftClient
+import net.minecraft.client.Minecraft
 import java.util.function.BiFunction
 
 open class ConfigBaseUpdateManager: BaseUpdateManager() {
@@ -45,7 +45,7 @@ open class ConfigBaseUpdateManager: BaseUpdateManager() {
 
     override fun forwardsHandler() {
         val entries = forwardHandlerEntries()
-        val list = DynamicListWidget(MinecraftClient.getInstance(), entries, 0, 0, 190, 120)
+        val list = DynamicListWidget(Minecraft.getInstance(), entries, 0, 0, 190, 120)
         val popup = PopupWidget.Builder("fc.config.forwarded".translate())
             .add("list", list, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_CENTER)
             .addDoneWidget()

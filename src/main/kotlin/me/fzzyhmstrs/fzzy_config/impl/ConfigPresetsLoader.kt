@@ -12,10 +12,10 @@ package me.fzzyhmstrs.fzzy_config.impl
 
 import me.fzzyhmstrs.fzzy_config.fcId
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener
-import net.minecraft.resource.ResourceManager
-import net.minecraft.resource.SinglePreparationResourceReloader
-import net.minecraft.util.Identifier
-import net.minecraft.util.profiler.Profiler
+import net.minecraft.server.packs.resources.ResourceManager
+import net.minecraft.server.packs.resources.SimplePreparableReloadListener
+import net.minecraft.resources.Identifier
+import net.minecraft.util.profiling.ProfilerFiller
 
 
 /*

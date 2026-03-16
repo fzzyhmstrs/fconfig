@@ -26,16 +26,16 @@ import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.Ref
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.screen.Screen
-import net.minecraft.client.gui.widget.MultilineTextWidget
-import net.minecraft.client.gui.widget.TextWidget
-import net.minecraft.client.network.PlayerListEntry
-import net.minecraft.command.CommandSource
-import net.minecraft.text.ClickEvent
-import net.minecraft.text.HoverEvent
-import net.minecraft.text.Text
-import net.minecraft.util.Formatting
+import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.client.gui.components.MultiLineTextWidget
+import net.minecraft.client.gui.components.StringWidget
+import net.minecraft.client.multiplayer.PlayerInfo
+import net.minecraft.commands.SharedSuggestionProvider
+import net.minecraft.network.chat.ClickEvent
+import net.minecraft.network.chat.HoverEvent
+import net.minecraft.network.chat.Component
+import net.minecraft.ChatFormatting
 import java.net.URI
 import java.util.*
 import java.util.function.BiFunction
@@ -99,19 +99,19 @@ object Popups {
             PopupWidget.push(popup.build())
     }
 
-    internal fun openConfirmPopup(b: Position, desc: Text, restore: Runnable) {
-        val client = MinecraftClient.getInstance()
+    internal fun openConfirmPopup(b: Position, desc: Component, restore: Runnable) {
+        val client = Minecraft.getInstance()
         val confirmText = "fc.button.restore.confirm".translate()
-        val confirmTextWidth = max(50, client.textRenderer.getWidth(confirmText) + 8)
+        val confirmTextWidth = max(50, client.font.width(confirmText) + 8)
         val cancelText = "fc.button.cancel".translate()
-        val cancelTextWidth = max(50, client.textRenderer.getWidth(cancelText) + 8)
+        val cancelTextWidth = max(50, client.font.width(cancelText) + 8)
         val buttonWidth = max(confirmTextWidth, cancelTextWidth)
         val rX = if(b.contextInput == ContextInput.KEYBOARD) b.x else b.mX
         val rY = if(b.contextInput == ContextInput.KEYBOARD) b.y else b.mY
 
         val popup = PopupWidget.Builder("fc.button.restore".translate())
             .addDivider()
-            .add("confirm_text", MultilineTextWidget(desc, MinecraftClient.getInstance().textRenderer).setCentered(true).setMaxWidth(buttonWidth + 4 + buttonWidth), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_CENTER)
+            .add("confirm_text", MultiLineTextWidget(desc, Minecraft.getInstance().font).setCentered(true).setMaxWidth(buttonWidth + 4 + buttonWidth), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_CENTER)
             .add("confirm_button", CustomButtonWidget.builder(confirmText) { restore.run(); PopupWidget.pop() }.size(buttonWidth, 20).build(), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
             .add("cancel_button", CustomButtonWidget.builder(cancelText) { PopupWidget.pop() }.size(buttonWidth, 20).build(), "confirm_text", LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_RIGHT)
             .positionX(PopupWidget.Builder.popupContext { w -> rX + b.width/2 - w/2 })
@@ -122,20 +122,20 @@ object Popups {
     }
 
     internal fun openEntryForwardingPopup(field: ValidatedField<*>) {
-        val client = MinecraftClient.getInstance()
-        val playerEntries = client.player?.networkHandler?.playerList?.associateBy { it.profile.name } ?: return
+        val client = Minecraft.getInstance()
+        val playerEntries = client.player?.connection?.onlinePlayers?.associateBy { it.profile.name } ?: return
         val validator = EntryValidator.Builder<String>().both({ s -> playerEntries.containsKey(s)}).buildValidator()
         var player = ""
         val forwardText = "fc.button.forward.confirm".translate()
-        val forwardTextWidth = max(50, client.textRenderer.getWidth(forwardText) + 8)
+        val forwardTextWidth = max(50, client.font.width(forwardText) + 8)
         val cancelText = "fc.button.cancel".translate()
-        val cancelTextWidth = max(50, client.textRenderer.getWidth(cancelText) + 8)
+        val cancelTextWidth = max(50, client.font.width(cancelText) + 8)
         val buttonWidth = max(forwardTextWidth, cancelTextWidth)
         val popup = PopupWidget.Builder("fc.button.forward".translate())
             .addDivider()
             .add(
                 "desc",
-                MultilineTextWidget("fc.button.forward.active".translate(), MinecraftClient.getInstance().textRenderer).setCentered(true).setMaxWidth(buttonWidth + 4 + buttonWidth),
+                MultiLineTextWidget("fc.button.forward.active".translate(), Minecraft.getInstance().font).setCentered(true).setMaxWidth(buttonWidth + 4 + buttonWidth),
                 LayoutWidget.Position.BELOW,
                 LayoutWidget.Position.ALIGN_CENTER)
             .add(
@@ -147,7 +147,7 @@ object Popups {
                     validator,
                     { s -> player = s},
                     { s, cursor, choiceValidator ->
-                        CommandSource.suggestMatching(playerEntries.keys.filter { choiceValidator.validateEntry(it, EntryValidator.ValidationType.STRONG).isValid() }, s.substring(0, cursor).let{ SuggestionsBuilder(it, it.lowercase(
+                        SharedSuggestionProvider.suggest(playerEntries.keys.filter { choiceValidator.validateEntry(it, EntryValidator.ValidationType.STRONG).isValid() }, s.substring(0, cursor).let{ SuggestionsBuilder(it, it.lowercase(
                             Locale.ROOT), 0) })
                     }),
                 LayoutWidget.Position.BELOW,
@@ -166,7 +166,7 @@ object Popups {
         PopupWidget.push(popup)
     }
 
-    private fun forwardUpdate(field: ValidatedField<*>, playerListEntry: PlayerListEntry?) {
+    private fun forwardUpdate(field: ValidatedField<*>, playerListEntry: PlayerInfo?) {
         if (playerListEntry == null) return
         val update = ConfigApiImpl.serializeEntry(field).log().get()
         val id = playerListEntry.profile.id
@@ -177,7 +177,7 @@ object Popups {
 
     internal fun openGotoPopup(entryBuilders: List<BiFunction<DynamicListWidget, Int, out DynamicListWidget.Entry>>, neededWidth: Int, screenHeight: Int) {
         //height - padding * 2 - text spacing - text - divider spacing - divider
-        val client = MinecraftClient.getInstance()
+        val client = Minecraft.getInstance()
         val anchors = DynamicListWidget(
             client,
             entryBuilders,
@@ -204,7 +204,7 @@ object Popups {
     }
 
     internal fun openInfoPopup(screen: Screen) {
-        val textRenderer = MinecraftClient.getInstance().textRenderer
+        val textRenderer = Minecraft.getInstance().font
         val list: MutableList<BiFunction<DynamicListWidget, Int, out DynamicListWidget.Entry>> = mutableListOf()
         list.add { dlw, i -> InfoKeybindEntry(dlw, i, "page_up", KeybindsConfig.INSTANCE.pageUp) }
         list.add { dlw, i -> InfoKeybindEntry(dlw, i, "page_down", KeybindsConfig.INSTANCE.pageDown) }
@@ -221,18 +221,18 @@ object Popups {
         list.add { dlw, i -> InfoKeybindEntry(dlw, i, "search", KeybindsConfig.INSTANCE.search) }
         list.add { dlw, i -> InfoKeybindEntry(dlw, i, "info", KeybindsConfig.INSTANCE.info) }
         list.add { dlw, i -> InfoKeybindEntry(dlw, i, "full_exit", KeybindsConfig.INSTANCE.fullExit) }
-        val listWidget = DynamicListWidget(MinecraftClient.getInstance(), list, 0, 0, 10000, 0, DynamicListWidget.ListSpec(leftPadding = 10, rightPadding = 4, listNarrationKey = "fc.narrator.position.list"))
+        val listWidget = DynamicListWidget(Minecraft.getInstance(), list, 0, 0, 10000, 0, DynamicListWidget.ListSpec(leftPadding = 10, rightPadding = 4, listNarrationKey = "fc.narrator.position.list"))
         val popup = PopupWidget.Builder("fc.button.info".translate())
             .addDivider()
-            .add("header", ClickableTextWidget(screen, "fc.button.info.fc".translate("Fzzy Config".lit().styled { style ->
-                style.withFormatting(Formatting.AQUA, Formatting.UNDERLINE)
+            .add("header", ClickableTextWidget(screen, "fc.button.info.fc".translate("Fzzy Config".lit().withStyle { style ->
+                style.applyFormats(ChatFormatting.AQUA, ChatFormatting.UNDERLINE)
                     .withClickEvent(ClickEvent.OpenUrl(URI.create("https://moddedmc.wiki/en/project/fzzy-config/docs")))
                     .withHoverEvent(HoverEvent.ShowText("fc.button.info.fc.tip".translate()))
             }), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_CENTER)
             .addDivider()
             .add("keybinds", listWidget, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_JUSTIFY_WEAK)
             .addDivider()
-            .add("alert", TextWidget("fc.button.info.alert".translate(), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_CENTER)
+            .add("alert", StringWidget("fc.button.info.alert".translate(), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_CENTER)
             .addDoneWidget()
             .widthFunction { sw, _ -> (sw * 0.92).toInt() }
             .heightFunction { sh, h ->
@@ -251,7 +251,7 @@ object Popups {
         list.add { dlw, _ -> SearchMenuEntry(dlw, "modifier", SearchConfig.INSTANCE.modifier.widgetEntry()) }
         list.add { dlw, _ -> SearchMenuEntry(dlw, "behavior", SearchConfig.INSTANCE.behavior.widgetEntry()) }
         list.add { dlw, _ -> SearchMenuEntry(dlw, "clearSearch", SearchConfig.INSTANCE.clearSearch.widgetEntry()) }
-        val listWidget = DynamicListWidget(MinecraftClient.getInstance(), list, 0, 0, 10000, 0, DynamicListWidget.ListSpec(leftPadding = 10, rightPadding = 4, listNarrationKey = "fc.narrator.position.list"))
+        val listWidget = DynamicListWidget(Minecraft.getInstance(), list, 0, 0, 10000, 0, DynamicListWidget.ListSpec(leftPadding = 10, rightPadding = 4, listNarrationKey = "fc.narrator.position.list"))
         val popup = PopupWidget.Builder(TextureIds.MENU_LANG)
             .add("search_settings", listWidget, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_JUSTIFY_WEAK)
             .addDoneWidget()

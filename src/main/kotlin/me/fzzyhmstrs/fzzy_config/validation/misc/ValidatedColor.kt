@@ -36,25 +36,25 @@ import me.fzzyhmstrs.fzzy_config.validation.Shorthand.validated
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedColor.ColorHolder
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedColor.Companion.validatedColor
-import net.minecraft.block.MapColor
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.Element
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
-import net.minecraft.client.gui.screen.narration.NarrationPart
-import net.minecraft.client.gui.tooltip.Tooltip
-import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.client.gui.widget.TextFieldWidget
-import net.minecraft.client.gui.widget.TextWidget
-import net.minecraft.client.input.CharInput
-import net.minecraft.client.sound.PositionedSoundInstance
-import net.minecraft.client.sound.SoundManager
-import net.minecraft.sound.SoundEvents
-import net.minecraft.text.MutableText
-import net.minecraft.text.Text
-import net.minecraft.util.DyeColor
-import net.minecraft.util.Formatting
-import net.minecraft.util.math.MathHelper
+import net.minecraft.world.level.material.MapColor
+import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.gui.components.events.GuiEventListener
+import net.minecraft.client.gui.narration.NarrationElementOutput
+import net.minecraft.client.gui.narration.NarratedElementType
+import net.minecraft.client.gui.components.Tooltip
+import net.minecraft.client.gui.components.AbstractWidget
+import net.minecraft.client.gui.components.EditBox
+import net.minecraft.client.gui.components.StringWidget
+import net.minecraft.client.input.CharacterEvent
+import net.minecraft.client.resources.sounds.SimpleSoundInstance
+import net.minecraft.client.sounds.SoundManager
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.network.chat.MutableComponent
+import net.minecraft.network.chat.Component
+import net.minecraft.world.item.DyeColor
+import net.minecraft.ChatFormatting
+import net.minecraft.util.Mth
 import net.peanuuutz.tomlkt.*
 import org.jetbrains.annotations.ApiStatus.Internal
 import org.lwjgl.glfw.GLFW
@@ -154,13 +154,13 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
      */
     fun withDyeColorPresets(): ValidatedColor {
         return withColorPresets(if (get().opaque()) DyeColor.entries.sortedBy {
-            hue(it.entityColor, DyeColor.WHITE.entityColor, DyeColor.LIGHT_GRAY.entityColor, DyeColor.GRAY.entityColor, DyeColor.BLACK.entityColor)
+            hue(it.textureDiffuseColor, DyeColor.WHITE.textureDiffuseColor, DyeColor.LIGHT_GRAY.textureDiffuseColor, DyeColor.GRAY.textureDiffuseColor, DyeColor.BLACK.textureDiffuseColor)
         }.map {
-            ColorPreset(it.entityColor, get().alphaMode, it.name.capital())
+            ColorPreset(it.textureDiffuseColor, get().alphaMode, it.name.capital())
         } else DyeColor.entries.sortedBy {
-            hue(it.entityColor, DyeColor.WHITE.entityColor, DyeColor.LIGHT_GRAY.entityColor, DyeColor.GRAY.entityColor, DyeColor.BLACK.entityColor)
+            hue(it.textureDiffuseColor, DyeColor.WHITE.textureDiffuseColor, DyeColor.LIGHT_GRAY.textureDiffuseColor, DyeColor.GRAY.textureDiffuseColor, DyeColor.BLACK.textureDiffuseColor)
         }.map {
-            ColorPreset(PortingUtils.fullAlpha(it.entityColor), get().alphaMode, it.name.capital())
+            ColorPreset(PortingUtils.fullAlpha(it.textureDiffuseColor), get().alphaMode, it.name.capital())
         })
     }
 
@@ -172,13 +172,13 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
      */
     fun withSignColorPresets(): ValidatedColor {
         return withColorPresets(if (get().opaque()) DyeColor.entries.sortedBy {
-            hue(it.signColor, DyeColor.WHITE.signColor, DyeColor.LIGHT_GRAY.signColor, DyeColor.GRAY.signColor, DyeColor.BLACK.signColor)
+            hue(it.textColor, DyeColor.WHITE.textColor, DyeColor.LIGHT_GRAY.textColor, DyeColor.GRAY.textColor, DyeColor.BLACK.textColor)
         }.map {
-            ColorPreset(it.signColor, get().alphaMode, it.name.capital())
+            ColorPreset(it.textColor, get().alphaMode, it.name.capital())
         } else DyeColor.entries.sortedBy {
-            hue(it.signColor, DyeColor.WHITE.signColor, DyeColor.LIGHT_GRAY.signColor, DyeColor.GRAY.signColor, DyeColor.BLACK.signColor)
+            hue(it.textColor, DyeColor.WHITE.textColor, DyeColor.LIGHT_GRAY.textColor, DyeColor.GRAY.textColor, DyeColor.BLACK.textColor)
         }.map {
-            ColorPreset(PortingUtils.fullAlpha(it.signColor), get().alphaMode, it.name.capital())
+            ColorPreset(PortingUtils.fullAlpha(it.textColor), get().alphaMode, it.name.capital())
         })
     }
 
@@ -208,13 +208,13 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
      */
     fun withMapColorPresets(): ValidatedColor {
         return withColorPresets((0..63).map {
-            MapColor.get(it)
+            MapColor.byId(it)
         }.filter {
-            it != MapColor.CLEAR
+            it != MapColor.NONE
         }.sortedBy {
-            hue(it.color)
+            hue(it.col)
         }.map {
-            ColorPreset(it.getRenderColor(MapColor.Brightness.HIGH), get().alphaMode)
+            ColorPreset(it.calculateARGBColor(MapColor.Brightness.HIGH), get().alphaMode)
         })
     }
 
@@ -225,11 +225,11 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
      * @since 0.7.2
      */
     fun withFormattingColorPresets(): ValidatedColor {
-        val colors = Formatting.entries.mapNotNull { it.takeIf { it.colorValue != null } }
+        val colors = ChatFormatting.entries.mapNotNull { it.takeIf { it.color != null } }
         return withColorPresets(if (get().opaque()) colors.map {
-            ColorPreset(it.colorValue!!, get().alphaMode, it.name.capital())
+            ColorPreset(it.color!!, get().alphaMode, it.name.capital())
         } else colors.map {
-            ColorPreset(PortingUtils.fullAlpha(it.colorValue!!), get().alphaMode, it.name.capital())
+            ColorPreset(PortingUtils.fullAlpha(it.color!!), get().alphaMode, it.name.capital())
         })
     }
 
@@ -369,7 +369,7 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
 
     @Internal
     //client
-    override fun widgetEntry(choicePredicate: ChoiceValidator<ColorHolder>): ClickableWidget {
+    override fun widgetEntry(choicePredicate: ChoiceValidator<ColorHolder>): AbstractWidget {
         return CustomButtonWidget.builder { openColorEditPopup() }.size(110, 20).messageSupplier { this.toHexString().lit() }.build()
     }
 
@@ -398,19 +398,19 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
 
     //client
     private fun openColorEditPopup() {
-        val textRenderer = MinecraftClient.getInstance().textRenderer
+        val textRenderer = Minecraft.getInstance().font
         val mutableColor = this.get().mutable(validatedString(toHexString(), get().opaque()))
         val popup = PopupWidget.Builder(translation())
-            .add("r_name", TextWidget(12, 20, "fc.validated_field.color.r".translate(), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
-            .add("g_name", TextWidget(12, 20, "fc.validated_field.color.g".translate(), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
-            .add("b_name", TextWidget(12, 20, "fc.validated_field.color.b".translate(), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
+            .add("r_name", StringWidget(12, 20, "fc.validated_field.color.r".translate(), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
+            .add("g_name", StringWidget(12, 20, "fc.validated_field.color.g".translate(), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
+            .add("b_name", StringWidget(12, 20, "fc.validated_field.color.b".translate(), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
             if (this.storedValue.alphaMode)
-                popup.add("a_name", TextWidget(12, 20, "fc.validated_field.color.a".translate(), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
+                popup.add("a_name", StringWidget(12, 20, "fc.validated_field.color.a".translate(), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
             popup.add("r_box", ValidationBackedNumberFieldWidget(45, 20, { mutableColor.r }, ChoiceValidator.any(), { d -> mutableColor.validate(d.toInt()) }, { r -> mutableColor.updateRGB(r, mutableColor.g, mutableColor.b) }), "r_name", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
             .add("g_box", ValidationBackedNumberFieldWidget(45, 20, { mutableColor.g }, ChoiceValidator.any(), { d -> mutableColor.validate(d.toInt()) }, { g -> mutableColor.updateRGB(mutableColor.r, g, mutableColor.b) }), "g_name", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
             .add("b_box", ValidationBackedNumberFieldWidget(45, 20, { mutableColor.b }, ChoiceValidator.any(), { d -> mutableColor.validate(d.toInt()) }, { b -> mutableColor.updateRGB(mutableColor.r, mutableColor.g, b) }), "b_name", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
             if (this.storedValue.alphaMode)
-                popup.add("a_box", if(get().transparent()) ValidationBackedNumberFieldWidget(45, 20, { mutableColor.a }, ChoiceValidator.any(), {d -> mutableColor.validate(d.toInt())}, { a -> mutableColor.updateA(a)}) else TextFieldWidget(textRenderer, 45, 20, "255".lit()).also { it.setEditable(false) }, "a_name", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+                popup.add("a_box", if(get().transparent()) ValidationBackedNumberFieldWidget(45, 20, { mutableColor.a }, ChoiceValidator.any(), {d -> mutableColor.validate(d.toInt())}, { a -> mutableColor.updateA(a)}) else EditBox(textRenderer, 45, 20, "255".lit()).also { it.setEditable(false) }, "a_name", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
             popup.add("hl_map", HLMapWidget(mutableColor), "r_box", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
             .add("s_slider", VerticalSliderWidget({ mutableColor.s.toDouble() }, 0, 0, 20, 68, FcText.EMPTY, { d -> mutableColor.updateHSL(mutableColor.h, d.toFloat(), mutableColor.l) }), "hl_map", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
             if (this.storedValue.alphaMode) {
@@ -744,10 +744,10 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
         override fun correctEntry(input: ColorHolder, type: EntryValidator.ValidationType): ValidationResult<ColorHolder> {
             return validateEntry(input, type).bimap { v ->
                 if (v.isError()) {
-                    val newR = MathHelper.clamp(v.get().r, 0, 255)
-                    val newG = MathHelper.clamp(v.get().g, 0, 255)
-                    val newB = MathHelper.clamp(v.get().b, 0, 255)
-                    val newA = if (v.get().alphaMode) MathHelper.clamp(input.a, 0, 255) else 255
+                    val newR = Mth.clamp(v.get().r, 0, 255)
+                    val newG = Mth.clamp(v.get().g, 0, 255)
+                    val newB = Mth.clamp(v.get().b, 0, 255)
+                    val newA = if (v.get().alphaMode) Mth.clamp(input.a, 0, 255) else 255
                     val newColorHolder = ColorHolder(newR, newG, newB, newA, v.get().alphaMode)
                     @Suppress("DEPRECATION")
                     ValidationResult.error(newColorHolder, v.getErrorEntry())
@@ -960,7 +960,7 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
     //client
     private class ColorDecoration(private val colorSupplier: Supplier<Int>): Decorated {
 
-        override fun renderDecoration(context: DrawContext, x: Int, y: Int, delta: Float, enabled: Boolean, selected: Boolean) {
+        override fun renderDecoration(context: GuiGraphicsExtractor, x: Int, y: Int, delta: Float, enabled: Boolean, selected: Boolean) {
             TextureDeco.DECO_FRAME.renderDecoration(context, x, y, delta, enabled, selected)
             context.fill(x+2, y+2, x+14, y+14, colorSupplier.get())
         }
@@ -975,14 +975,14 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
      * @since 0.7.2
      */
     //client
-    class ColorPreset(val color: Int, alphaMode: Boolean, val tooltip: Text = toHexString(color, alphaMode).lit())
+    class ColorPreset(val color: Int, alphaMode: Boolean, val tooltip: Component = toHexString(color, alphaMode).lit())
 
 
     //client
     private class PresetWidget(private val preset: ColorPreset, private val onPress: Runnable) : CustomPressableWidget(0, 0, 12, 12, FcText.EMPTY) {
 
         init {
-            this.setTooltip(Tooltip.of(preset.tooltip))
+            this.setTooltip(Tooltip.create(preset.tooltip))
         }
 
         override val textures: TextureProvider = TextureSet.Dual("widget/preset_frame".fcId(), "widget/preset_frame_hovered".fcId())
@@ -991,12 +991,12 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
             onPress.run()
         }
 
-        override fun renderCustom(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
+        override fun renderCustom(context: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
         }
 
-        override fun renderBackground(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
+        override fun renderBackground(context: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
             context.fill(x + 1, y + 1, x + 11, y + 11, preset.color)
-            context.drawTex(textures.get(true, this.isSelected), x, y, 16, 16, this.alpha)
+            context.drawTex(textures.get(true, this.isHoveredOrFocused), x, y, 16, 16, this.alpha)
         }
     }
 
@@ -1016,20 +1016,20 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
 
         private var mouseHasBeenClicked = false
 
-        override fun getNarrationMessage(): MutableText {
+        override fun createNarrationMessage(): MutableComponent {
             return message.copy()
         }
 
-        override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-            context.drawTex(if (isSelected) BORDER_HIGHLIGHTED else BORDER, x, y, getWidth(), getHeight())
+        override fun extractWidgetRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
+            context.drawTex(if (isHoveredOrFocused) BORDER_HIGHLIGHTED else BORDER, x, y, getWidth(), getHeight())
             if (mutableColor.s == 1f) {
                 context.drawTex(CENTER, x+4, y+4, 52, 60, (mutableColor.a / 255f))
             } else {
                 context.drawTex(CENTER_DESAT, x+4, y+4, 52, 60, (mutableColor.a / 255f))
                 context.drawTex(CENTER, x+4, y+4, 52, 60, (mutableColor.a / 255f)*(mutableColor.s / 1f))
             }
-            val cX = x + 4 + MathHelper.clampedMap(mutableColor.l, 0f, 1f, 0f, 52f).toInt() - 2
-            val cY = y + 4 + MathHelper.clampedMap(mutableColor.h, 0f, 1f, 0f, 60f).toInt() - 2
+            val cX = x + 4 + Mth.clampedMap(mutableColor.l, 0f, 1f, 0f, 52f).toInt() - 2
+            val cY = y + 4 + Mth.clampedMap(mutableColor.h, 0f, 1f, 0f, 60f).toInt() - 2
             context.drawTex(CROSSHAIR, cX, cY, 5, 5)
         }
 
@@ -1046,13 +1046,13 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
 
         override fun onMouseRelease(event: CustomWidget.MouseEvent): Boolean {
             if (mouseHasBeenClicked)
-                MinecraftClient.getInstance().soundManager.play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.0f))
+                Minecraft.getInstance().soundManager.play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0f))
             return true
         }
 
         private fun updateHL(mouseX: Double, mouseY: Double) {
-            val light = MathHelper.clamp((mouseX - (this.x + 4).toDouble())/52.0, 0.0, 1.0).toFloat()
-            val hue = MathHelper.clamp((mouseY - (this.y + 4).toDouble())/60.0, 0.0, 1.0).toFloat()
+            val light = Mth.clamp((mouseX - (this.x + 4).toDouble())/52.0, 0.0, 1.0).toFloat()
+            val hue = Mth.clamp((mouseY - (this.y + 4).toDouble())/60.0, 0.0, 1.0).toFloat()
             mutableColor.updateHSL(hue, mutableColor.s, light)
         }
 
@@ -1079,12 +1079,12 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
         }
 
         private fun incrementH(amount: Float) {
-            val hue = MathHelper.clamp(mutableColor.h+amount, 0f, 1f)
+            val hue = Mth.clamp(mutableColor.h+amount, 0f, 1f)
             mutableColor.updateHSL(hue, mutableColor.s, mutableColor.l)
         }
 
         private fun incrementL(amount: Float) {
-            val light = MathHelper.clamp(mutableColor.l+amount, 0f, 1f)
+            val light = Mth.clamp(mutableColor.l+amount, 0f, 1f)
             mutableColor.updateHSL(mutableColor.h, mutableColor.s, light)
         }
 
@@ -1092,20 +1092,20 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
             //soundManager.play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.0f))
         }
 
-        override fun appendClickableNarrations(builder: NarrationMessageBuilder?) {
-            builder?.put(NarrationPart.TITLE, this.narrationMessage)
+        override fun updateWidgetNarration(builder: NarrationElementOutput) {
+            builder?.add(NarratedElementType.TITLE, this.createNarrationMessage())
             if (active) {
                 if (this.isFocused) {
-                    builder?.put(NarrationPart.USAGE, "fc.validated_field.color.hl.usage.keyboard".translate())
+                    builder?.add(NarratedElementType.USAGE, "fc.validated_field.color.hl.usage.keyboard".translate())
                 } else {
-                    builder?.put(NarrationPart.USAGE, "fc.validated_field.color.hl.usage.mouse".translate())
+                    builder?.add(NarratedElementType.USAGE, "fc.validated_field.color.hl.usage.mouse".translate())
                 }
             }
         }
     }
 
-    private class ClickToSubmitTextFieldWidget(width: Int, height: Int, private val input: Entry<String, *>, var submitButton: ClickableWidget? = null):
-        TextFieldWidget(MinecraftClient.getInstance().textRenderer, 0, 0, width, height, FcText.EMPTY), Consumer<Element?>
+    private class ClickToSubmitTextFieldWidget(width: Int, height: Int, private val input: Entry<String, *>, var submitButton: AbstractWidget? = null):
+        EditBox(Minecraft.getInstance().font, 0, 0, width, height, FcText.EMPTY), Consumer<GuiEventListener?>
     {
 
         private var cachedValue: String = input.get()
@@ -1118,13 +1118,13 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
                 cachedValue = e.get()
                 if (!dirty) {
                     storedValue = e.get()
-                    text = e.get()
-                    isValidTest(text)
+                    setValue(e.get())
+                    isValidTest(value)
                 }
             }
             setMaxLength(8)
-            text = input.get()
-            setChangedListener { s ->
+            setValue(input.get())
+            setResponder { s ->
                 isValid = isValidTest(s)
             }
         }
@@ -1143,18 +1143,18 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
         fun isValidTest(s: String): Boolean {
             val result = input.validateEntry(s, EntryValidator.ValidationType.STRONG)
             return if(result.isError()) {
-                this.setTooltip(Tooltip.of(result.getError().lit()))
-                setEditableColor(-43691)
+                this.setTooltip(Tooltip.create(result.getError().lit()))
+                setTextColor(-43691)
                 false
             } else {
                 this.setTooltip(null)
                 this.storedValue = result.get()
-                setEditableColor(-1)
+                setTextColor(-1)
                 true
             }
         }
 
-        override fun charTyped(input: CharInput): Boolean {
+        override fun charTyped(input: CharacterEvent): Boolean {
             dirty = true
             return super.charTyped(input)
         }
@@ -1162,22 +1162,22 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
         /**
          * @suppress
          */
-        override fun getNarrationMessage(): MutableText {
+        override fun createNarrationMessage(): MutableComponent {
             return "gui.narrate.editBox".translate("", "")
         }
 
-        override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
-            builder.put(NarrationPart.TITLE, this.narrationMessage)
-            builder.nextMessage().put(NarrationPart.TITLE, "${this.text}. ")
+        override fun updateWidgetNarration(builder: NarrationElementOutput) {
+            builder.add(NarratedElementType.TITLE, this.createNarrationMessage())
+            builder.nest().add(NarratedElementType.TITLE, "${this.value}. ")
             //builder.nextMessage().put(NarrationPart.USAGE, "fc.validated_field.number.editBox.usage".translate())
         }
 
-        override fun accept(t: Element?) {
+        override fun accept(t: GuiEventListener?) {
             if (t != this && t != submitButton && isSubmittable()) {
                 storedValue = input.get()
                 cachedValue = input.get()
-                text = input.get()
-                isValidTest(text)
+                setValue(input.get())
+                isValidTest(value)
                 dirty = false
             }
         }

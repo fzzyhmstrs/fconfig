@@ -30,20 +30,23 @@ import me.fzzyhmstrs.fzzy_config.util.pos.ImmutableSuppliedPos
 import me.fzzyhmstrs.fzzy_config.util.pos.Pos
 import me.fzzyhmstrs.fzzy_config.util.pos.ReferencePos
 import me.fzzyhmstrs.fzzy_config.util.pos.SuppliedPos
-import net.minecraft.client.MinecraftClient
+import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.*
-import net.minecraft.client.gui.ParentElement
-import net.minecraft.client.gui.navigation.GuiNavigation
-import net.minecraft.client.gui.navigation.GuiNavigation.Arrow
-import net.minecraft.client.gui.navigation.GuiNavigation.Tab
-import net.minecraft.client.gui.navigation.GuiNavigationPath
-import net.minecraft.client.gui.navigation.NavigationDirection
-import net.minecraft.client.gui.screen.Screen
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
-import net.minecraft.client.gui.screen.narration.NarrationPart
-import net.minecraft.text.Text
-import net.minecraft.util.Formatting
-import net.minecraft.util.math.MathHelper
+import net.minecraft.client.gui.components.events.ContainerEventHandler
+import net.minecraft.client.gui.navigation.FocusNavigationEvent
+import net.minecraft.client.gui.navigation.FocusNavigationEvent.ArrowNavigation
+import net.minecraft.client.gui.navigation.FocusNavigationEvent.TabNavigation
+import net.minecraft.client.gui.ComponentPath
+import net.minecraft.client.gui.navigation.ScreenDirection
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.client.gui.narration.NarrationElementOutput
+import net.minecraft.client.gui.narration.NarratedElementType
+import net.minecraft.network.chat.Component
+import net.minecraft.ChatFormatting
+import net.minecraft.client.gui.components.events.GuiEventListener
+import net.minecraft.client.gui.narration.NarratableEntry
+import net.minecraft.client.gui.navigation.ScreenRectangle
+import net.minecraft.util.Mth
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.*
 import java.util.function.*
@@ -69,7 +72,7 @@ import kotlin.math.min
  * @since 0.6.0
  */
 class DynamicListWidget(
-    client: MinecraftClient,
+    client: Minecraft,
     entryBuilders: List<BiFunction<DynamicListWidget, Int, out Entry>>,
     x: Int,
     y: Int,
@@ -271,7 +274,7 @@ class DynamicListWidget(
         }
     }
 
-    override var lastSelected: Element? = null
+    override var lastSelected: GuiEventListener? = null
 
     override fun pushLast() {
         focused?.nullCast<LastSelectable>()?.pushLast()
@@ -291,37 +294,37 @@ class DynamicListWidget(
             null
     }
 
-    override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-        super.renderWidget(context, mouseX, mouseY, delta)
-        context.enableScissor(0, this.top, MinecraftClient.getInstance().currentScreen?.width ?: 320, this.bottom)
+    override fun extractWidgetRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
+        super.extractWidgetRenderState(context, mouseX, mouseY, delta)
+        context.enableScissor(0, this.top, Minecraft.getInstance().screen?.width ?: 320, this.bottom)
         for (entry in inFrameEntries()) {
             entry.renderExtras(context, mouseX, mouseY, delta)
         }
         context.disableScissor()
     }
 
-    override val neighbor: EnumMap<NavigationDirection, Neighbor> = EnumMap(NavigationDirection::class.java)
+    override val neighbor: EnumMap<ScreenDirection, Neighbor> = EnumMap(ScreenDirection::class.java)
 
-    override fun getNavigationPath(navigation: GuiNavigation?): GuiNavigationPath? {
+    override fun nextFocusPath(navigation: FocusNavigationEvent): ComponentPath? {
         if (this.entries.isEmpty()) {
             return null
-        } else if (navigation !is Arrow) {
-            return super<CustomListWidget>.getNavigationPath(navigation)
+        } else if (navigation !is ArrowNavigation) {
+            return super<CustomListWidget>.nextFocusPath(navigation)
         } else {
             val entry: Entry? = this.focusedElement
             if (entry != null) {
                 //this needs to return null if the keyboard action should "escape" the content
-                val entryNavigationPath = entry.getNavigationPath(navigation)
+                val entryNavigationPath = entry.nextFocusPath(navigation)
                 if (entryNavigationPath != null) {
-                    return GuiNavigationPath.of(this, entryNavigationPath)
+                    return ComponentPath.path(this, entryNavigationPath)
                 } else {
                     val neighbor = getNeighbor(navigation.direction())
-                    val neighborNavigationPath = neighbor?.getNavigationPath(navigation)
+                    val neighborNavigationPath = neighbor?.nextFocusPath(navigation)
                     if (neighborNavigationPath != null) {
                         return neighborNavigationPath
                     }
                     var entry2: Entry? = entry
-                    var guiNavigationPath: GuiNavigationPath?
+                    var guiNavigationPath: ComponentPath?
 
                     var c = 0
 
@@ -330,24 +333,24 @@ class DynamicListWidget(
                         if (entry2 == null) {
                             return null
                         }
-                        guiNavigationPath = entry2.getNavigationPath(navigation)
+                        guiNavigationPath = entry2.nextFocusPath(navigation)
                         c++
                     } while (guiNavigationPath == null && c < 25)
-                    return GuiNavigationPath.of(this, guiNavigationPath)
+                    return ComponentPath.path(this, guiNavigationPath)
                 }
             } else {
                 var entry2: Entry? = null
 
-                var guiNavigationPath: GuiNavigationPath?
+                var guiNavigationPath: ComponentPath?
                 do {
                     entry2 = this.entries.getNextEntry(navigation.direction(), entry2)
                     if (entry2 == null) {
                         return null
                     }
-                    guiNavigationPath = entry2.getNavigationPath(navigation)
+                    guiNavigationPath = entry2.nextFocusPath(navigation)
                 } while (guiNavigationPath == null)
 
-                return GuiNavigationPath.of(this, guiNavigationPath)
+                return ComponentPath.path(this, guiNavigationPath)
             }
         }
     }
@@ -372,9 +375,9 @@ class DynamicListWidget(
         return event.keyWidgetOrNull(suggestionWindowElement) ?: false
     }
 
-    private var suggestionWindowElement: Element? = null
+    private var suggestionWindowElement: GuiEventListener? = null
 
-    override fun setSuggestionWindowElement(element: Element?) {
+    override fun setSuggestionWindowElement(element: GuiEventListener?) {
         this.suggestionWindowElement = element
     }
 
@@ -407,7 +410,7 @@ class DynamicListWidget(
     }
 
     override fun provideContext(builder: ContextResultBuilder) {
-        if (MinecraftClient.getInstance().navigationType.isKeyboard)
+        if (Minecraft.getInstance().lastInputType.isKeyboard)
             focusedElement?.provideContext(builder) ?: resetHover(builder.position().mX.toDouble(), builder.position().mY.toDouble()).also { hoveredElement?.provideContext(builder) }
         else {
             resetHover(builder.position().mX.toDouble(), builder.position().mY.toDouble()).let { hoveredElement?.provideContext(builder) } ?: focusedElement?.provideContext(builder)
@@ -540,7 +543,7 @@ class DynamicListWidget(
             dirty = true
             var childrenMatches = 0
             val foundEntries = if (searchInput.isEmpty()) delegate else searcher.search(searchInput)
-            val gPrefixes: MutableMap<String, MutableList<Text>> = hashMapOf()
+            val gPrefixes: MutableMap<String, MutableList<Component>> = hashMapOf()
             if (searchInput.isNotEmpty()) {
                 for (e in delegate) {
                     if (e.getVisibility().skip) continue
@@ -553,7 +556,7 @@ class DynamicListWidget(
                                 hidden = true
                                 gp.groupEntry.applyVisibility(Visibility::searched)
                                 gPrefixes.computeIfAbsent(g) { mutableListOf() }.addAll(eResults.map {
-                                    FcText.translatable("fc.search.child", e.texts.name, it.name).formatted(Formatting.GRAY)
+                                    FcText.translatable("fc.search.child", e.texts.name, it.name).withStyle(ChatFormatting.GRAY)
                                 })
                             }
                         }
@@ -561,7 +564,7 @@ class DynamicListWidget(
                         e.applyVisibility(Visibility::searched)
                         if (hidden)
                             e.applyVisibility(Visibility::hideSearched)
-                        e.applyTooltipPrefix(SearchConfig.INSTANCE.prefixText(eResults.map { it.name.copy().formatted(Formatting.GRAY) }))
+                        e.applyTooltipPrefix(SearchConfig.INSTANCE.prefixText(eResults.map { it.name.copy().withStyle(ChatFormatting.GRAY) }))
                     } else {
                         e.applyTooltipPrefix(Entry.EMPTY_PREFIX)
                         e.applyVisibility(Visibility::unsearched)
@@ -575,14 +578,14 @@ class DynamicListWidget(
                 }
             }
 
-            val g2Prefixes: MutableMap<String, MutableList<Text>> = mutableMapOf()
+            val g2Prefixes: MutableMap<String, MutableList<Component>> = mutableMapOf()
             for (e in foundEntries) {
                 if (searchInput.isNotEmpty()) {
                     for (g in e.scope.inGroups) {
                         val gp = groupsMap[g] ?: continue
                         if (!gp.unfolded) {
                             gp.groupEntry.applyVisibility(Visibility::searched)
-                            g2Prefixes.computeIfAbsent(g) { mutableListOf() }.add(e.texts.name.copy().formatted(Formatting.GRAY))
+                            g2Prefixes.computeIfAbsent(g) { mutableListOf() }.add(e.texts.name.copy().withStyle(ChatFormatting.GRAY))
                         }
                     }
                 }
@@ -783,13 +786,13 @@ class DynamicListWidget(
             return null
         }
 
-        fun getNextEntry(direction: NavigationDirection, entry: Entry?): Entry? {
+        fun getNextEntry(direction: ScreenDirection, entry: Entry?): Entry? {
             return if (entry == null) {
                 when (direction) {
-                    NavigationDirection.UP -> lastSelectable()
-                    NavigationDirection.DOWN -> firstSelectable()
-                    NavigationDirection.LEFT -> firstSelectable()
-                    NavigationDirection.RIGHT -> lastSelectable()
+                    ScreenDirection.UP -> lastSelectable()
+                    ScreenDirection.DOWN -> firstSelectable()
+                    ScreenDirection.LEFT -> firstSelectable()
+                    ScreenDirection.RIGHT -> lastSelectable()
                 }
             } else {
                 entry.getNeighbor(!direction.isPositive)
@@ -811,7 +814,7 @@ class DynamicListWidget(
     abstract class Entry(parentElement: DynamicListWidget, override val content: Translatable.Result, val scope: Scope, visibility: Visibility = Visibility.VISIBLE)
         :
         CustomListWidget.Entry<DynamicListWidget>(parentElement),
-        ParentElement,
+        ContainerEventHandler,
         Searcher.SearchContent,
         ContextHandler,
         ContextProvider,
@@ -822,7 +825,7 @@ class DynamicListWidget(
             @JvmField
             val EMPTY_RESULTS: Function<String, List<Translatable.Result>> = ConstFunction(listOf())
             @JvmField
-            val EMPTY_PREFIX: Supplier<List<Text>> = ConstSupplier(listOf())
+            val EMPTY_PREFIX: Supplier<List<Component>> = ConstSupplier(listOf())
         }
 
         val texts: Translatable.Result
@@ -866,14 +869,14 @@ class DynamicListWidget(
             return mouseY >= top.get() && mouseY < bottom.get()
         }
 
-        override var lastSelected: Element? = null
-        private var focusedSelectable: Selectable? = null
-        private var focusedElement: Element? = null
+        override var lastSelected: GuiEventListener? = null
+        private var focusedSelectable: NarratableEntry? = null
+        private var focusedElement: GuiEventListener? = null
         private var dragging = false
-        protected var tooltipPrefix: Supplier<List<Text>> = EMPTY_PREFIX
+        protected var tooltipPrefix: Supplier<List<Component>> = EMPTY_PREFIX
 
         @Internal
-        fun applyTooltipPrefix(prefix: Supplier<List<Text>>) {
+        fun applyTooltipPrefix(prefix: Supplier<List<Component>>) {
             this.tooltipPrefix = prefix
         }
 
@@ -979,11 +982,11 @@ class DynamicListWidget(
             }
         }
 
-        override fun getFocused(): Element? {
+        override fun getFocused(): GuiEventListener? {
             return focusedElement
         }
 
-        override fun setFocused(focused: Element?) {
+        override fun setFocused(focused: GuiEventListener?) {
             if (focusedElement === focused) return
             this.focusedElement?.isFocused = false
             focused?.isFocused = true
@@ -1017,7 +1020,7 @@ class DynamicListWidget(
          */
         @Internal
         @Deprecated("Use renderEntry/renderBorder/renderHighlight for rendering instead")
-        override fun render (context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+        override fun render (context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
             if (!getVisibility().visible) return
             val xx = x.get()
             val tt = top.get()
@@ -1044,7 +1047,7 @@ class DynamicListWidget(
          * @author fzzyhmstrs
          * @since 0.6.0
          */
-        abstract fun renderEntry(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float)
+        abstract fun renderEntry(context: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float)
 
         /**
          * Render call for drawing a border on the entry, as applicable. This happens before, therefor "under" the main entry render calls.
@@ -1061,7 +1064,7 @@ class DynamicListWidget(
          * @author fzzyhmstrs
          * @since 0.6.0
          */
-        open fun renderBorder(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {}
+        open fun renderBorder(context: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {}
         /**
          * Render call for drawing an entry background highlight. This happens before, therefor "under" both the entry and border render calls
          * @param context [DrawContext]
@@ -1077,9 +1080,9 @@ class DynamicListWidget(
          * @author fzzyhmstrs
          * @since 0.6.0
          */
-        open fun renderHighlight(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {}
+        open fun renderHighlight(context: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {}
 
-        fun renderExtras(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+        fun renderExtras(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
             renderExtras(context, x.get(), top.get(), w.get(), h, mouseX, mouseY, this.isMouseOver(mouseX.toDouble(), mouseY.toDouble()), isFocused, delta)
         }
 
@@ -1098,41 +1101,41 @@ class DynamicListWidget(
          * @author fzzyhmstrs
          * @since 0.6.0
          */
-        open fun renderExtras(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {}
+        open fun renderExtras(context: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {}
 
-        override fun getFocusedPath(): GuiNavigationPath? {
-            return super<ParentElement>.getFocusedPath()
+        override fun getCurrentFocusPath(): ComponentPath? {
+            return super<ContainerEventHandler>.currentFocusPath
         }
 
-        override fun getNavigationPath(navigation: GuiNavigation): GuiNavigationPath? {
+        override fun nextFocusPath(navigation: FocusNavigationEvent): ComponentPath? {
             if (selectableChildren().isEmpty()) return null
-            if (navigation is Arrow) {
+            if (navigation is ArrowNavigation) {
                 val i = if(navigation.direction().isPositive) 1 else -1
 
-                val j = MathHelper.clamp(i + selectableChildren().indexOf(this.focused), 0, selectableChildren().size - 1)
+                val j = Mth.clamp(i + selectableChildren().indexOf(this.focused), 0, selectableChildren().size - 1)
 
                 var k = j
                 while (k >= 0 && k < selectableChildren().size) {
-                    val element = selectableChildren()[k] as Element
-                    val guiNavigationPath = element.getNavigationPath(navigation)
+                    val element = selectableChildren()[k] as GuiEventListener
+                    val guiNavigationPath = element.nextFocusPath(navigation)
                     if (guiNavigationPath != null) {
-                        return GuiNavigationPath.of(this, guiNavigationPath)
+                        return ComponentPath.path(this, guiNavigationPath)
                     }
                     k += i
                 }
-            } else if (navigation is Tab) {
+            } else if (navigation is TabNavigation) {
                 return computeNavigationPath(navigation)
             }
             return null
         }
 
-        private fun computeNavigationPath(navigation: Tab): GuiNavigationPath? {
+        private fun computeNavigationPath(navigation: TabNavigation): ComponentPath? {
             val bl = navigation.forward()
             val element = this.focused
-            val focusedPath = element?.getNavigationPath(navigation)
-            if (focusedPath != null) return GuiNavigationPath.of(this, focusedPath)
-            val list: List<Element?> = ArrayList(this.selectableChildren())
-            Collections.sort(list, Comparator.comparingInt { e: Element -> e.navigationOrder })
+            val focusedPath = element?.nextFocusPath(navigation)
+            if (focusedPath != null) return ComponentPath.path(this, focusedPath)
+            val list: List<GuiEventListener?> = ArrayList(this.selectableChildren())
+            Collections.sort(list, Comparator.comparingInt { e: GuiEventListener -> e.tabOrderGroup })
             val i = list.indexOf(element)
             val j = if (element != null && i >= 0) {
                 i + (if (bl) 1 else 0)
@@ -1147,43 +1150,43 @@ class DynamicListWidget(
             val supplier = if (bl) listIterator::next else listIterator::previous
 
             while (booleanSupplier()) {
-                val guiNavigationPath = supplier()?.getNavigationPath(navigation)
+                val guiNavigationPath = supplier()?.nextFocusPath(navigation)
                 if (guiNavigationPath != null) {
-                    return GuiNavigationPath.of(this, guiNavigationPath)
+                    return ComponentPath.path(this, guiNavigationPath)
                 }
             }
             return null
         }
 
-        override fun getNavigationFocus(): ScreenRect {
-            return ScreenRect(x.get(), top.get(), w.get(), h)
+        override fun getRectangle(): ScreenRectangle {
+            return ScreenRectangle(x.get(), top.get(), w.get(), h)
         }
 
-        override fun appendNarrations(builder: NarrationMessageBuilder) {
+        override fun appendNarrations(builder: NarrationElementOutput) {
             appendTitleNarrations(builder)
-            val list: List<Selectable?> = this.selectableChildren()
-            val selectedElementNarrationData = Screen.findSelectedElementData(list, this.focusedSelectable)
+            val list: List<NarratableEntry> = this.selectableChildren()
+            val selectedElementNarrationData = Screen.findNarratableWidget(list, this.focusedSelectable)
             if (selectedElementNarrationData != null) {
-                if (selectedElementNarrationData.selectType.isFocused) {
-                    this.focusedSelectable = selectedElementNarrationData.selectable
+                if (selectedElementNarrationData.priority.isTerminal) {
+                    this.focusedSelectable = selectedElementNarrationData.entry
                 }
 
                 if (list.size > 1) {
-                    builder.put(
-                        NarrationPart.POSITION,
+                    builder.add(
+                        NarratedElementType.POSITION,
                         FcText.translatable("fc.narrator.position.entry", selectedElementNarrationData.index + 1, list.size)
                     )
-                    if (selectedElementNarrationData.selectType == Selectable.SelectionType.FOCUSED) {
-                        builder.put(NarrationPart.USAGE, FcText.translatable("narration.component_list.usage"))
+                    if (selectedElementNarrationData.priority == NarratableEntry.NarrationPriority.FOCUSED) {
+                        builder.add(NarratedElementType.USAGE, FcText.translatable("narration.component_list.usage"))
                     }
                 }
 
-                selectedElementNarrationData.selectable.appendNarrations(builder.nextMessage())
+                selectedElementNarrationData.entry.updateNarration(builder.nest())
             }
         }
 
-        open fun appendTitleNarrations(builder: NarrationMessageBuilder) {
-            builder.put(NarrationPart.TITLE, texts.name)
+        open fun appendTitleNarrations(builder: NarrationElementOutput) {
+            builder.add(NarratedElementType.TITLE, texts.name)
         }
 
         override fun toString(): String {
@@ -1195,7 +1198,7 @@ class DynamicListWidget(
          * @author fzzyhmstrs
          * @since 0.6.0
          */
-        interface SelectableElement: Selectable, Element
+        interface SelectableElement: NarratableEntry, GuiEventListener
 
         internal interface EntryPos: Pos {
             val previous: EntryPos?
@@ -1441,7 +1444,7 @@ class DynamicListWidget(
             }
 
             @JvmField
-            internal val GROUP_PREFIX: List<Text> = listOf(FcText.translatable("fc.search.indirect.group"))
+            internal val GROUP_PREFIX: List<Component> = listOf(FcText.translatable("fc.search.indirect.group"))
         }
     }
 

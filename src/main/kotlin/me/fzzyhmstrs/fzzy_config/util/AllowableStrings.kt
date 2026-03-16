@@ -18,7 +18,7 @@ import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.util.function.ConstPredicate
 import me.fzzyhmstrs.fzzy_config.util.function.ConstSupplier
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
-import net.minecraft.command.CommandSource
+import net.minecraft.commands.SharedSuggestionProvider
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.function.Predicate
@@ -66,7 +66,7 @@ class AllowableStrings(private val predicate: Predicate<String>, private val sup
     override fun getSuggestions(input: String, cursor: Int, choiceValidator: ChoiceValidator<String>): CompletableFuture<Suggestions> {
         val truncatedInput: String = input.substring(0, cursor)
         val builder = SuggestionsBuilder(truncatedInput, truncatedInput.lowercase(Locale.ROOT), 0)
-        return CommandSource.suggestMatching(get().filter { choiceValidator.validateEntry(it, EntryValidator.ValidationType.STRONG).isValid() }, builder)
+        return SharedSuggestionProvider.suggest(get().filter { choiceValidator.validateEntry(it, EntryValidator.ValidationType.STRONG).isValid() }, builder)
     }
 
     /**

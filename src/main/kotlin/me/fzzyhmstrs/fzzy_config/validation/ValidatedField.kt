@@ -47,9 +47,9 @@ import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedCondition
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedCondition.*
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedMapped
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedPair
-import net.minecraft.network.PacketByteBuf
-import net.minecraft.text.MutableText
-import net.minecraft.text.Text
+import net.minecraft.network.FriendlyByteBuf
+import net.minecraft.network.chat.MutableComponent
+import net.minecraft.network.chat.Component
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlNull
 import org.jetbrains.annotations.ApiStatus.Internal
@@ -88,8 +88,8 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
     private var updateManager: UpdateManager? = null
     private var listener: Consumer<Entry<T, *>>? = null
     protected var flags: Byte = 0
-    internal var translationProvider: BiFunction<T, String, MutableText?>? = null
-    internal var descriptionProvider: BiFunction<T, String, MutableText?>? = null
+    internal var translationProvider: BiFunction<T, String, MutableComponent?>? = null
+    internal var descriptionProvider: BiFunction<T, String, MutableComponent?>? = null
     private val attachments: MutableMap<Translatable.Provider.Type<*>, Translatable.Provider<*, *>> = hashMapOf()
 
     /**
@@ -514,7 +514,7 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
         setAndUpdate(defaultValue)
     }
 
-    protected open fun updateMessage(old: T, new: T): Text {
+    protected open fun updateMessage(old: T, new: T): Component {
         return FcText.translatable("fc.validated_field.update", translation(), old.toString(), new.toString())
     }
 
@@ -524,7 +524,7 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
 
     @Internal
     @Deprecated("Will be marked final in 0.8.0. override provideTranslation instead")
-    override fun translation(fallback: String?): MutableText {
+    override fun translation(fallback: String?): MutableComponent {
         return translationProvider?.apply(storedValue, translationKey()) ?: provideTranslation(fallback)
     }
 
@@ -535,13 +535,13 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
      * @author fzzyhmstrs
      * @since 0.7.5
      */
-    open fun provideTranslation(fallback: String?): MutableText {
+    open fun provideTranslation(fallback: String?): MutableComponent {
         return Translatable.getScopedResult(this.getEntryKey())?.name?.nullCast() ?: FcText.translatableWithFallback(translationKey(), fallback ?: this.translationKey().substringAfterLast('.').split(FcText.regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })
     }
 
     @Internal
     @Deprecated("Will be marked final in 0.8.0. override provideDescription instead")
-    override fun description(fallback: String?): MutableText {
+    override fun description(fallback: String?): MutableComponent {
         return descriptionProvider?.apply(storedValue, descriptionKey()) ?: provideDescription(fallback)
     }
 
@@ -552,13 +552,13 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
      * @author fzzyhmstrs
      * @since 0.7.5
      */
-    open fun provideDescription(fallback: String?): MutableText {
+    open fun provideDescription(fallback: String?): MutableComponent {
         return super.description(fallback)
     }
 
     @Internal
     @Deprecated("Will be marked final in 0.8.0. override providePrefix instead")
-    override fun prefix(fallback: String?): MutableText {
+    override fun prefix(fallback: String?): MutableComponent {
         return providePrefix(fallback)
     }
 
@@ -569,7 +569,7 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
      * @author fzzyhmstrs
      * @since 0.7.5
      */
-    open fun providePrefix(fallback: String?): MutableText {
+    open fun providePrefix(fallback: String?): MutableComponent {
         return super.prefix(fallback)
     }
 
@@ -846,7 +846,7 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
      * @author fzzyhmstrs
      * @since 0.5.4
      */
-    open fun toCondition(condition: Supplier<Boolean>, failMessage: Text, fallback: Supplier<T>): ValidatedCondition<T> {
+    open fun toCondition(condition: Supplier<Boolean>, failMessage: Component, fallback: Supplier<T>): ValidatedCondition<T> {
         val newField = ValidatedCondition(this, fallback)
         newField.withCondition(ConditionSupplierImpl(condition, failMessage))
         return newField
@@ -864,7 +864,7 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
      * @author fzzyhmstrs
      * @since 0.6.5
      */
-    open fun toCondition(condition: BooleanSupplier, fallback: Supplier<T>, failMessage: Text): ValidatedCondition<T> {
+    open fun toCondition(condition: BooleanSupplier, fallback: Supplier<T>, failMessage: Component): ValidatedCondition<T> {
         val newField = ValidatedCondition(this, fallback)
         newField.withCondition(ConditionBooleanSupplierImpl(condition, failMessage))
         return newField
@@ -892,7 +892,7 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
      * @author fzzyhmstrs
      * @since 0.5.4
      */
-    open fun toCondition(scope: String, failMessage: Text, fallback: Supplier<T>): ValidatedCondition<T> {
+    open fun toCondition(scope: String, failMessage: Component, fallback: Supplier<T>): ValidatedCondition<T> {
         val newField = ValidatedCondition(this, fallback)
         return newField.withCondition(scope, failMessage)
     }
@@ -939,7 +939,7 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
          * @since 0.7.5
          */
         @JvmStatic
-        fun <T, F: ValidatedField<T>> F.translationProvider(provider: BiFunction<T, String, MutableText?>): F {
+        fun <T, F: ValidatedField<T>> F.translationProvider(provider: BiFunction<T, String, MutableComponent?>): F {
             this.translationProvider = provider
             return this
         }
@@ -956,7 +956,7 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
          * @since 0.7.5
          */
         @JvmStatic
-        fun <T, F: ValidatedField<T>> F.descriptionProvider(provider: BiFunction<T, String, MutableText?>): F {
+        fun <T, F: ValidatedField<T>> F.descriptionProvider(provider: BiFunction<T, String, MutableComponent?>): F {
             this.descriptionProvider = provider
             return this
         }

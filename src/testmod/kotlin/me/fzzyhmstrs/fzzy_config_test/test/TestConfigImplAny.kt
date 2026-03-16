@@ -28,13 +28,13 @@ import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedRegistryType
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedAny
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedCondition
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedEnum
-import net.minecraft.item.Items
-import net.minecraft.registry.Registries
-import net.minecraft.util.Identifier
+import net.minecraft.world.item.Items
+import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.resources.Identifier
 import net.peanuuutz.tomlkt.TomlComment
 
 @Translatable.Name("Test Any Config")
-class TestConfigImplAny: Config(Identifier.of("fzzy_config_test","test_config_any")) {
+class TestConfigImplAny: Config(Identifier.fromNamespaceAndPath("fzzy_config_test","test_config_any")) {
 
     override fun saveType(): SaveType {
         return SaveType.SEPARATE
@@ -96,7 +96,7 @@ class TestConfigImplAny: Config(Identifier.of("fzzy_config_test","test_config_an
         var test: Int = 5
 
         @Translatable.Name("Mapped List Test")
-        var test2 = ValidatedList(listOf(Items.ACACIA_BOAT, Items.DIAMOND), ValidatedRegistryType.of(Registries.ITEM))
+        var test2 = ValidatedList(listOf(Items.ACACIA_BOAT, Items.DIAMOND), ValidatedRegistryType.of(BuiltInRegistries.ITEM))
     }
 
     enum class LongBoi {

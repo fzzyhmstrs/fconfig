@@ -12,39 +12,39 @@ package me.fzzyhmstrs.fzzy_config.networking
 
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
-import net.minecraft.network.PacketByteBuf
-import net.minecraft.network.codec.PacketCodec
-import net.minecraft.network.packet.CustomPayload
-import net.minecraft.network.packet.CustomPayload.Id
+import net.minecraft.network.FriendlyByteBuf
+import net.minecraft.network.codec.StreamCodec
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload.Type
 
-internal class ConfigUpdateS2CCustomPayload(val updates: Map<String, String>): CustomPayload {
+internal class ConfigUpdateS2CCustomPayload(val updates: Map<String, String>): CustomPacketPayload {
 
-    constructor(buf: PacketByteBuf): this(readMap(buf))
+    constructor(buf: FriendlyByteBuf): this(readMap(buf))
 
-    fun write(buf: PacketByteBuf) {
+    fun write(buf: FriendlyByteBuf) {
         writeMap(buf)
     }
-    private fun writeMap(buf: PacketByteBuf) {
+    private fun writeMap(buf: FriendlyByteBuf) {
         buf.writeVarInt(updates.size)
         for ((id, serializedConfig) in updates) {
-            buf.writeString(id)
-            buf.writeString(serializedConfig, ConfigApiImpl.MAX_CONFIG_SERIALIZATION_LENGTH)
+            buf.writeUtf(id)
+            buf.writeUtf(serializedConfig, ConfigApiImpl.MAX_CONFIG_SERIALIZATION_LENGTH)
         }
     }
 
-    override fun getId(): Id<out CustomPayload> {
+    override fun type(): Type<out CustomPacketPayload> {
         return type
     }
 
     companion object {
-        val type: Id<ConfigUpdateS2CCustomPayload> = Id("config_update_s2c".fcId())
-        val codec: PacketCodec<PacketByteBuf, ConfigUpdateS2CCustomPayload> = CustomPayload.codecOf({ c, b -> c.write(b) }, { b -> ConfigUpdateS2CCustomPayload(b)})
+        val type: Type<ConfigUpdateS2CCustomPayload> = Type("config_update_s2c".fcId())
+        val codec: StreamCodec<FriendlyByteBuf, ConfigUpdateS2CCustomPayload> = CustomPacketPayload.codec({ c, b -> c.write(b) }, { b -> ConfigUpdateS2CCustomPayload(b)})
 
-        private fun readMap(buf: PacketByteBuf): Map<String, String> {
+        private fun readMap(buf: FriendlyByteBuf): Map<String, String> {
             val size = buf.readVarInt()
             val map: MutableMap<String, String> = hashMapOf()
             for (i in 1..size) {
-                map[buf.readString()] = buf.readString()
+                map[buf.readUtf()] = buf.readUtf()
             }
             return map
         }

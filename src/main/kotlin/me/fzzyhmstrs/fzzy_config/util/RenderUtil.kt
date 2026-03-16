@@ -10,11 +10,11 @@
 
 package me.fzzyhmstrs.fzzy_config.util
 
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gl.RenderPipelines
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.render.RenderLayer
-import net.minecraft.util.Identifier
+import net.minecraft.client.Minecraft
+import net.minecraft.client.renderer.RenderPipelines
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.renderer.rendertype.RenderType
+import net.minecraft.resources.Identifier
 
 /**
  * Render utils for DrawContext to provide functionality similar to 1.20.2+ sprite rendering
@@ -33,8 +33,8 @@ object RenderUtil {
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun DrawContext.drawTex(id: Identifier, x: Int, y: Int, width: Int, height: Int) {
-        this.drawGuiTexture(RenderPipelines.GUI_TEXTURED, id, x, y, width, height)
+    fun GuiGraphicsExtractor.drawTex(id: Identifier, x: Int, y: Int, width: Int, height: Int) {
+        this.blitSprite(RenderPipelines.GUI_TEXTURED, id, x, y, width, height)
     }
 
     /**
@@ -47,8 +47,8 @@ object RenderUtil {
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun DrawContext.drawTexOverlay(id: Identifier, x: Int, y: Int, width: Int, height: Int) {
-        this.drawGuiTexture(RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA, id, x, y, width, height)
+    fun GuiGraphicsExtractor.drawTexOverlay(id: Identifier, x: Int, y: Int, width: Int, height: Int) {
+        this.blitSprite(RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA, id, x, y, width, height)
     }
 
     /**
@@ -62,8 +62,8 @@ object RenderUtil {
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun DrawContext.drawTex(id: Identifier, x: Int, y: Int, width: Int, height: Int, color: Int) {
-        this.drawGuiTexture(RenderPipelines.GUI_TEXTURED, id, x, y, width, height, color)
+    fun GuiGraphicsExtractor.drawTex(id: Identifier, x: Int, y: Int, width: Int, height: Int, color: Int) {
+        this.blitSprite(RenderPipelines.GUI_TEXTURED, id, x, y, width, height, color)
     }
 
     /**
@@ -77,8 +77,8 @@ object RenderUtil {
      * @author fzzyhmstrs
      * @since 0.6.8
      */
-    fun DrawContext.drawTexOverlay(id: Identifier, x: Int, y: Int, width: Int, height: Int, color: Int) {
-        this.drawGuiTexture(RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA, id, x, y, width, height, color)
+    fun GuiGraphicsExtractor.drawTexOverlay(id: Identifier, x: Int, y: Int, width: Int, height: Int, color: Int) {
+        this.blitSprite(RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA, id, x, y, width, height, color)
     }
 
     /**
@@ -92,8 +92,8 @@ object RenderUtil {
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun DrawContext.drawTex(id: Identifier, x: Int, y: Int, width: Int, height: Int, alpha: Float) {
-        this.drawGuiTexture(RenderPipelines.GUI_TEXTURED, id, x, y, width, height, PortingUtils.getWhite(alpha))
+    fun GuiGraphicsExtractor.drawTex(id: Identifier, x: Int, y: Int, width: Int, height: Int, alpha: Float) {
+        this.blitSprite(RenderPipelines.GUI_TEXTURED, id, x, y, width, height, PortingUtils.getWhite(alpha))
     }
 
     /**
@@ -107,8 +107,8 @@ object RenderUtil {
      * @author fzzyhmstrs
      * @since 0.6.8
      */
-    fun DrawContext.drawTexOverlay(id: Identifier, x: Int, y: Int, width: Int, height: Int, alpha: Float) {
-        this.drawGuiTexture(RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA, id, x, y, width, height, PortingUtils.getWhite(alpha))
+    fun GuiGraphicsExtractor.drawTexOverlay(id: Identifier, x: Int, y: Int, width: Int, height: Int, alpha: Float) {
+        this.blitSprite(RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA, id, x, y, width, height, PortingUtils.getWhite(alpha))
     }
 
     /**
@@ -123,7 +123,7 @@ object RenderUtil {
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun DrawContext.drawNineSlice(id: Identifier, x: Int, y: Int, width: Int, height: Int) {
+    fun GuiGraphicsExtractor.drawNineSlice(id: Identifier, x: Int, y: Int, width: Int, height: Int) {
         this.drawTex(id, x, y, width, height)
     }
 
@@ -139,7 +139,7 @@ object RenderUtil {
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun DrawContext.drawNineSliceOverlay(id: Identifier, x: Int, y: Int, width: Int, height: Int) {
+    fun GuiGraphicsExtractor.drawNineSliceOverlay(id: Identifier, x: Int, y: Int, width: Int, height: Int) {
         this.drawTexOverlay(id, x, y, width, height)
     }
 
@@ -156,7 +156,7 @@ object RenderUtil {
      * @author fzzyhmstrs
      * @since 0.6.1
      */
-    fun DrawContext.drawNineSlice(id: Identifier, x: Int, y: Int, width: Int, height: Int, color: Int) {
+    fun GuiGraphicsExtractor.drawNineSlice(id: Identifier, x: Int, y: Int, width: Int, height: Int, color: Int) {
         this.drawTex(id, x, y, width, height, color)
     }
 
@@ -173,7 +173,7 @@ object RenderUtil {
      * @author fzzyhmstrs
      * @since 0.6.1
      */
-    fun DrawContext.drawNineSlice(id: Identifier, x: Int, y: Int, width: Int, height: Int, alpha: Float) {
+    fun GuiGraphicsExtractor.drawNineSlice(id: Identifier, x: Int, y: Int, width: Int, height: Int, alpha: Float) {
         this.drawTex(id, x, y, width, height, alpha)
     }
 
@@ -191,8 +191,8 @@ object RenderUtil {
      * @author fzzyhmstrs
      * @since 0.6.0
      */
-    fun DrawContext.drawTex(id: Identifier, x: Int, y: Int, u: Float, v: Float, width: Int, height: Int, texWidth: Int, texHeight: Int) {
-        this.drawTexture(RenderPipelines.GUI_TEXTURED, id, x, y, u, v, width, height, texWidth, texHeight)
+    fun GuiGraphicsExtractor.drawTex(id: Identifier, x: Int, y: Int, u: Float, v: Float, width: Int, height: Int, texWidth: Int, texHeight: Int) {
+        this.blit(RenderPipelines.GUI_TEXTURED, id, x, y, u, v, width, height, texWidth, texHeight)
     }
 
     /**
@@ -206,7 +206,7 @@ object RenderUtil {
      * @author fzzyhmstrs
      * @since 0.6.1
      */
-    fun renderBlur(context: DrawContext, x: Float, y: Float, delta: Float) {
+    fun renderBlur(context: GuiGraphicsExtractor, x: Float, y: Float, delta: Float) {
         //in 1.21.6+, this does nothing, as they changed how blurring works, therefor the impl in PopupController is different
         //method maintained for ABI
     }
@@ -223,7 +223,7 @@ object RenderUtil {
      * @author theendercore
      * @since 0.7.3?
      */
-    fun DrawContext.drawOutline(x: Int, y: Int, width: Int, height: Int, color: Int) {
+    fun GuiGraphicsExtractor.drawOutline(x: Int, y: Int, width: Int, height: Int, color: Int) {
         this.fill(x, y, x + width, y + 1, color)
         this.fill(x, y + height - 1, x + width, y + height, color)
         this.fill(x, y + 1, x + 1, y + height - 1, color)

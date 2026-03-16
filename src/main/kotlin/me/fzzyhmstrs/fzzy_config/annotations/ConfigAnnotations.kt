@@ -19,9 +19,9 @@ import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.tooltip
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.FcText.underline
-import net.minecraft.text.Text
-import net.minecraft.util.Formatting
-import net.minecraft.util.Identifier
+import net.minecraft.network.chat.Component
+import net.minecraft.ChatFormatting
+import net.minecraft.resources.Identifier
 
 /**
  * A config marked with this annotation will attempt to ignore field visibility when de/serialization
@@ -214,7 +214,7 @@ annotation class RequiresAction(val action: Action)
  * @author fzzyhmstrs
  * @since 0.4.0
  */
-enum class Action(val restartPrompt: Boolean, val sprite: Identifier, val clientPrompt: Text, val clientUpdateMessage: Text, val serverUpdateMessage: Text, val settingTooltip: Text, val sectionTooltip: Text, val configTooltip: Text) {
+enum class Action(val restartPrompt: Boolean, val sprite: Identifier, val clientPrompt: Component, val clientUpdateMessage: Component, val serverUpdateMessage: Component, val settingTooltip: Component, val sectionTooltip: Component, val configTooltip: Component) {
 
     /**
      * Marks that a config or setting change will require a full restart if changed.
@@ -227,11 +227,12 @@ enum class Action(val restartPrompt: Boolean, val sprite: Identifier, val client
         true,
         "widget/action_restart".fcId(),
         "fc.config.restart.update".translate(),
-        "fc.config.restart.update.client".translate().append(" ".lit()).append("fc.config.restart.update.client.prompt".translate().command("/fzzy_config_restart").tooltip("fc.config.prompt.hover".translate()).underline().formatted(Formatting.GOLD)),
+        "fc.config.restart.update.client".translate().append(" ".lit()).append("fc.config.restart.update.client.prompt".translate().command("/fzzy_config_restart").tooltip("fc.config.prompt.hover".translate()).underline().withStyle(
+            ChatFormatting.GOLD)),
         "fc.config.restart.update.server".translate(),
-        "fc.config.restart.warning".translate().formatted(Formatting.RED),
-        "fc.config.restart.warning.section".translate().formatted(Formatting.RED),
-        "fc.config.restart.warning.config".translate().formatted(Formatting.RED)),
+        "fc.config.restart.warning".translate().withStyle(ChatFormatting.RED),
+        "fc.config.restart.warning.section".translate().withStyle(ChatFormatting.RED),
+        "fc.config.restart.warning.config".translate().withStyle(ChatFormatting.RED)),
 
     /**
      * Marks that a config or setting change will require a user relog (disconnect -> reconnect from a server, leave -> reload single player world)
@@ -242,11 +243,12 @@ enum class Action(val restartPrompt: Boolean, val sprite: Identifier, val client
         false,
         "widget/action_relog".fcId(),
         "fc.config.relog.update".translate(),
-        "fc.config.relog.update.client".translate().append(" ".lit()).append("fc.config.relog.update.client.prompt".translate().tooltip("fc.config.prompt.hover".translate()).command("/fzzy_config_leave_game").underline().formatted(Formatting.GOLD)),
+        "fc.config.relog.update.client".translate().append(" ".lit()).append("fc.config.relog.update.client.prompt".translate().tooltip("fc.config.prompt.hover".translate()).command("/fzzy_config_leave_game").underline().withStyle(
+            ChatFormatting.GOLD)),
         "fc.config.relog.update.server".translate(),
-        "fc.config.relog.warning".translate().formatted(Formatting.RED),
-        "fc.config.relog.warning.section".translate().formatted(Formatting.RED),
-        "fc.config.relog.warning.config".translate().formatted(Formatting.RED)),
+        "fc.config.relog.warning".translate().withStyle(ChatFormatting.RED),
+        "fc.config.relog.warning.section".translate().withStyle(ChatFormatting.RED),
+        "fc.config.relog.warning.config".translate().withStyle(ChatFormatting.RED)),
 
     /**
      * Marks that a config or setting change will need a data pack and resource pack reload to take effect (/reload and F3 + T)
@@ -257,11 +259,14 @@ enum class Action(val restartPrompt: Boolean, val sprite: Identifier, val client
         false,
         "widget/action_reload_both".fcId(),
         "fc.config.reload_both.update".translate(),
-        "fc.config.reload_both.update.client".translate().append(" ".lit()).append("fc.config.reload_data.update.prompt".translate().command( "/reload").tooltip("fc.config.prompt.hover".translate()).underline().formatted(Formatting.GOLD)).append(" ".lit()).append("fc.config.reload_resources.update.client.prompt".translate().command("/fzzy_config_reload_resources").tooltip("fc.config.prompt.hover".translate()).underline().formatted(Formatting.GOLD)),
-        "fc.config.reload_both.update.server".translate().append(" ".lit()).append("fc.config.reload_data.update.prompt".translate().command( "/reload").tooltip("fc.config.prompt.hover".translate()).underline().formatted(Formatting.GOLD)),
-        "fc.config.reload_both.warning".translate().formatted(Formatting.GOLD),
-        "fc.config.reload_both.warning.section".translate().formatted(Formatting.GOLD),
-        "fc.config.reload_both.warning.config".translate().formatted(Formatting.GOLD)),
+        "fc.config.reload_both.update.client".translate().append(" ".lit()).append("fc.config.reload_data.update.prompt".translate().command( "/reload").tooltip("fc.config.prompt.hover".translate()).underline().withStyle(
+            ChatFormatting.GOLD)).append(" ".lit()).append("fc.config.reload_resources.update.client.prompt".translate().command("/fzzy_config_reload_resources").tooltip("fc.config.prompt.hover".translate()).underline().withStyle(
+            ChatFormatting.GOLD)),
+        "fc.config.reload_both.update.server".translate().append(" ".lit()).append("fc.config.reload_data.update.prompt".translate().command( "/reload").tooltip("fc.config.prompt.hover".translate()).underline().withStyle(
+            ChatFormatting.GOLD)),
+        "fc.config.reload_both.warning".translate().withStyle(ChatFormatting.GOLD),
+        "fc.config.reload_both.warning.section".translate().withStyle(ChatFormatting.GOLD),
+        "fc.config.reload_both.warning.config".translate().withStyle(ChatFormatting.GOLD)),
 
     /**
      * Marks that a config or setting change will need a data pack reload to take effect (/reload)
@@ -272,11 +277,13 @@ enum class Action(val restartPrompt: Boolean, val sprite: Identifier, val client
         false,
         "widget/action_reload_data".fcId(),
         "fc.config.reload_data.update".translate(),
-        "fc.config.reload_data.update.client".translate().append(" ".lit()).append("fc.config.reload_data.update.prompt".translate().command("/reload").tooltip("fc.config.prompt.hover".translate()).underline().formatted(Formatting.GOLD)),
-        "fc.config.reload_data.update.server".translate().append(" ".lit()).append("fc.config.reload_data.update.prompt".translate().command("/reload").tooltip("fc.config.prompt.hover".translate()).underline().formatted(Formatting.GOLD)),
-        "fc.config.reload_data.warning".translate().formatted(Formatting.GOLD),
-        "fc.config.reload_data.warning.section".translate().formatted(Formatting.GOLD),
-        "fc.config.reload_data.warning.config".translate().formatted(Formatting.GOLD)),
+        "fc.config.reload_data.update.client".translate().append(" ".lit()).append("fc.config.reload_data.update.prompt".translate().command("/reload").tooltip("fc.config.prompt.hover".translate()).underline().withStyle(
+            ChatFormatting.GOLD)),
+        "fc.config.reload_data.update.server".translate().append(" ".lit()).append("fc.config.reload_data.update.prompt".translate().command("/reload").tooltip("fc.config.prompt.hover".translate()).underline().withStyle(
+            ChatFormatting.GOLD)),
+        "fc.config.reload_data.warning".translate().withStyle(ChatFormatting.GOLD),
+        "fc.config.reload_data.warning.section".translate().withStyle(ChatFormatting.GOLD),
+        "fc.config.reload_data.warning.config".translate().withStyle(ChatFormatting.GOLD)),
 
     /**
      * Marks that a config or setting change will need a resource pack reload to take effect (F3 + T)
@@ -287,11 +294,12 @@ enum class Action(val restartPrompt: Boolean, val sprite: Identifier, val client
         false,
         "widget/action_reload_resources".fcId(),
         "fc.config.reload_resources.update".translate(),
-        "fc.config.reload_resources.update.client".translate().append(" ".lit()).append("fc.config.reload_resources.update.client.prompt".translate().command("/fzzy_config_reload_resources").tooltip("fc.config.prompt.hover".translate()).underline().formatted(Formatting.GOLD)),
+        "fc.config.reload_resources.update.client".translate().append(" ".lit()).append("fc.config.reload_resources.update.client.prompt".translate().command("/fzzy_config_reload_resources").tooltip("fc.config.prompt.hover".translate()).underline().withStyle(
+            ChatFormatting.GOLD)),
         "fc.config.reload_resources.update.server".translate(),
-        "fc.config.reload_resources.warning".translate().formatted(Formatting.GOLD),
-        "fc.config.reload_resources.warning.section".translate().formatted(Formatting.GOLD),
-        "fc.config.reload_resources.warning.config".translate().formatted(Formatting.GOLD));
+        "fc.config.reload_resources.warning".translate().withStyle(ChatFormatting.GOLD),
+        "fc.config.reload_resources.warning.section".translate().withStyle(ChatFormatting.GOLD),
+        "fc.config.reload_resources.warning.config".translate().withStyle(ChatFormatting.GOLD));
 
 
     private fun priorityOf(other: Action): Action {

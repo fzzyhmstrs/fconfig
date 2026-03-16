@@ -12,118 +12,118 @@ package me.fzzyhmstrs.fzzy_config.util
 
 import io.netty.buffer.ByteBuf
 import me.fzzyhmstrs.fzzy_config.cast
-import net.minecraft.client.MinecraftClient
-import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.item.Item
-import net.minecraft.item.ItemConvertible
-import net.minecraft.network.codec.PacketCodec
-import net.minecraft.network.encoding.StringEncoding
-import net.minecraft.network.encoding.VarInts
-import net.minecraft.recipe.Ingredient
-import net.minecraft.registry.Registries
-import net.minecraft.registry.Registry
-import net.minecraft.registry.RegistryKey
-import net.minecraft.registry.RegistryWrapper
-import net.minecraft.registry.entry.RegistryEntryList
-import net.minecraft.registry.tag.TagKey
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.text.Text
-import net.minecraft.util.Identifier
-import net.minecraft.util.math.ColorHelper
+import net.minecraft.client.Minecraft
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.item.Item
+import net.minecraft.world.level.ItemLike
+import net.minecraft.network.codec.StreamCodec
+import net.minecraft.network.Utf8String
+import net.minecraft.network.VarInt
+import net.minecraft.world.item.crafting.Ingredient
+import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.core.Registry
+import net.minecraft.resources.ResourceKey
+import net.minecraft.core.HolderLookup
+import net.minecraft.core.HolderSet
+import net.minecraft.tags.TagKey
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.network.chat.Component
+import net.minecraft.resources.Identifier
+import net.minecraft.util.ARGB
 import java.util.*
 import java.util.function.Predicate
 
 object PortingUtils {
 
     fun getWhite(alpha: Float): Int {
-        return ColorHelper.getWhite(alpha)
+        return ARGB.white(alpha)
     }
 
     fun fullAlpha(color: Int): Int {
-        return ColorHelper.fullAlpha(color)
+        return ARGB.opaque(color)
     }
 
-    fun PlayerEntity.sendChat(message: Text) {
-        this.sendMessage(message, false)
+    fun Player.sendChat(message: Component) {
+        this.sendSystemMessage(message)
     }
 
-    fun getDynamicManager(player: ServerPlayerEntity): RegistryWrapper.WrapperLookup {
-        return player.entityWorld.server.reloadableRegistries.createRegistryLookup().cast()
+    fun getDynamicManager(player: ServerPlayer): HolderLookup.Provider {
+        return player.level().server.reloadableRegistries().lookup().cast()
     }
 
-    fun <T> Registry<T>.optional(id: Identifier): Optional<T> {
-        return this.getOptionalValue(id)
+    fun <T: Any> Registry<T>.optional(id: Identifier): Optional<T> {
+        return this.getOptional(id)
     }
 
-    fun RegistryWrapper.WrapperLookup.anyOptional(key: RegistryKey<out Registry<*>>):  Optional<out RegistryWrapper.Impl<*>> {
-        return this.getOptional(key)
+    fun HolderLookup.Provider.anyOptional(key: ResourceKey<out Registry<*>>):  Optional<out HolderLookup.RegistryLookup<*>> {
+        return this.lookup(key)
     }
 
-    fun <T> RegistryWrapper.WrapperLookup.optional(key: RegistryKey<out Registry<T>>):  Optional<out RegistryWrapper.Impl<T>> {
-        return this.getOptional(key)
+    fun <T: Any> HolderLookup.Provider.optional(key: ResourceKey<out Registry<T>>):  Optional<out HolderLookup.RegistryLookup<T>> {
+        return this.lookup(key)
     }
 
-    fun <T> Registry<T>.tagIdList(): List<Identifier> {
-        return this.tags.map { it.tag.id }.toList()
+    fun <T: Any> Registry<T>.tagIdList(): List<Identifier> {
+        return this.listTags().map { it.key().location }.toList()
     }
 
-    fun <T> Registry<T>.tagIdList(predicate: Predicate<Identifier>? = null): List<Identifier> {
+    fun <T: Any> Registry<T>.tagIdList(predicate: Predicate<Identifier>? = null): List<Identifier> {
         return if(predicate == null)
-            this.tags.map { it.tag.id }.toList()
+            this.listTags().map { it.key().location }.toList()
         else
-            this.tags.map { it.tag.id }.filter(predicate).toList()
+            this.listTags().map { it.key().location }.filter(predicate).toList()
     }
 
-    fun <T> RegistryWrapper.Impl<T>.tagIdList(predicate: Predicate<Identifier>? = null): List<Identifier> {
+    fun <T: Any> HolderLookup.RegistryLookup<T>.tagIdList(predicate: Predicate<Identifier>? = null): List<Identifier> {
         return if(predicate == null)
-            this.tags.map { it.tag.id }.toList()
+            this.listTags().map { it.key().location }.toList()
         else
-            this.tags.map { it.tag.id }.filter(predicate).toList()
+            this.listTags().map { it.key().location }.filter(predicate).toList()
     }
 
-    fun <T> Registry<T>.namedEntryList(tagKey: TagKey<T>): Optional<RegistryEntryList.Named<T>> {
-        return this.getOptional(tagKey)
+    fun <T: Any> Registry<T>.namedEntryList(tagKey: TagKey<T>): Optional<HolderSet.Named<T>> {
+        return this.get(tagKey)
     }
 
-    fun <T> TagKey<T>.regRef(): RegistryKey<out Registry<T>> {
-        return this.registryRef
+    fun <T: Any> TagKey<T>.regRef(): ResourceKey<out Registry<T>> {
+        return this.registry
     }
 
     fun TagKey<*>.regRefId(): Identifier {
-        return this.registryRef.value
+        return this.registry.identifier()
     }
 
     fun emptyIngredient(id: String = ""): Ingredient {
         throw UnsupportedOperationException("Ingredients can't be empty; item ID [$id] not found in the Items Registry.")
     }
 
-    fun itemIngredient(item: ItemConvertible): Ingredient {
-        return Ingredient.ofItem(item)
+    fun itemIngredient(item: ItemLike): Ingredient {
+        return Ingredient.of(item)
     }
 
-    fun listIngredient(stacks: List<ItemConvertible>): Ingredient {
-        return Ingredient.ofItems(stacks.stream())
+    fun listIngredient(stacks: List<ItemLike>): Ingredient {
+        return Ingredient.of(stacks.stream())
     }
 
     fun tagIngredient(tag: TagKey<Item>): Ingredient {
-        return Ingredient.ofTag(Registries.ITEM.namedEntryList(tag).orElseThrow { UnsupportedOperationException("Ingredients can't be empty; tag [$tag] wasn't found in the Items registry") })
+        return Ingredient.of(BuiltInRegistries.ITEM.namedEntryList(tag).orElseThrow { UnsupportedOperationException("Ingredients can't be empty; tag [$tag] wasn't found in the Items registry") })
     }
 
     fun isAltDown(): Boolean {
-        return MinecraftClient.getInstance().isAltPressed()
+        return Minecraft.getInstance().hasAltDown()
     }
 
     fun isShiftDown(): Boolean {
-        return MinecraftClient.getInstance().isShiftPressed()
+        return Minecraft.getInstance().hasShiftDown()
     }
 
     fun isControlDown(): Boolean {
-        return MinecraftClient.getInstance().isCtrlPressed()
+        return Minecraft.getInstance().hasControlDown()
     }
 
     object Codecs {
 
-        val BOOL: PacketCodec<ByteBuf, Boolean> = object : PacketCodec<ByteBuf, Boolean> {
+        val BOOL: StreamCodec<ByteBuf, Boolean> = object : StreamCodec<ByteBuf, Boolean> {
             override fun decode(byteBuf: ByteBuf): Boolean {
                 return byteBuf.readBoolean()
             }
@@ -133,7 +133,7 @@ object PortingUtils {
             }
         }
 
-        val BYTE: PacketCodec<ByteBuf, Byte> = object : PacketCodec<ByteBuf, Byte> {
+        val BYTE: StreamCodec<ByteBuf, Byte> = object : StreamCodec<ByteBuf, Byte> {
             override fun decode(byteBuf: ByteBuf): Byte {
                 return byteBuf.readByte()
             }
@@ -143,7 +143,7 @@ object PortingUtils {
             }
         }
 
-        val SHORT: PacketCodec<ByteBuf, Short> = object : PacketCodec<ByteBuf, Short> {
+        val SHORT: StreamCodec<ByteBuf, Short> = object : StreamCodec<ByteBuf, Short> {
             override fun decode(byteBuf: ByteBuf): Short {
                 return byteBuf.readShort()
             }
@@ -153,7 +153,7 @@ object PortingUtils {
             }
         }
 
-        val INT: PacketCodec<ByteBuf, Int> = object : PacketCodec<ByteBuf, Int> {
+        val INT: StreamCodec<ByteBuf, Int> = object : StreamCodec<ByteBuf, Int> {
             override fun decode(byteBuf: ByteBuf): Int {
                 return byteBuf.readInt()
             }
@@ -163,17 +163,17 @@ object PortingUtils {
             }
         }
 
-        val VAR_INT: PacketCodec<ByteBuf, Int> = object : PacketCodec<ByteBuf, Int> {
+        val VAR_INT: StreamCodec<ByteBuf, Int> = object : StreamCodec<ByteBuf, Int> {
             override fun decode(byteBuf: ByteBuf): Int {
-                return VarInts.read(byteBuf)
+                return VarInt.read(byteBuf)
             }
 
             override fun encode(byteBuf: ByteBuf, i: Int) {
-                VarInts.write(byteBuf, i)
+                VarInt.write(byteBuf, i)
             }
         }
 
-        val LONG: PacketCodec<ByteBuf, Long> = object : PacketCodec<ByteBuf, Long> {
+        val LONG: StreamCodec<ByteBuf, Long> = object : StreamCodec<ByteBuf, Long> {
             override fun decode(byteBuf: ByteBuf): Long {
                 return byteBuf.readLong()
             }
@@ -183,7 +183,7 @@ object PortingUtils {
             }
         }
 
-        val FLOAT: PacketCodec<ByteBuf, Float> = object : PacketCodec<ByteBuf, Float> {
+        val FLOAT: StreamCodec<ByteBuf, Float> = object : StreamCodec<ByteBuf, Float> {
             override fun decode(byteBuf: ByteBuf): Float {
                 return byteBuf.readFloat()
             }
@@ -193,7 +193,7 @@ object PortingUtils {
             }
         }
 
-        val DOUBLE: PacketCodec<ByteBuf, Double> = object : PacketCodec<ByteBuf, Double> {
+        val DOUBLE: StreamCodec<ByteBuf, Double> = object : StreamCodec<ByteBuf, Double> {
             override fun decode(byteBuf: ByteBuf): Double {
                 return byteBuf.readDouble()
             }
@@ -203,13 +203,13 @@ object PortingUtils {
             }
         }
 
-        val STRING: PacketCodec<ByteBuf, String> = object : PacketCodec<ByteBuf, String> {
+        val STRING: StreamCodec<ByteBuf, String> = object : StreamCodec<ByteBuf, String> {
             override fun decode(byteBuf: ByteBuf): String {
-                return StringEncoding.decode(byteBuf, 32767)
+                return Utf8String.read(byteBuf, 32767)
             }
 
             override fun encode(byteBuf: ByteBuf, s: String) {
-                StringEncoding.encode(byteBuf, s, 32767)
+                Utf8String.write(byteBuf, s, 32767)
             }
         }
     }

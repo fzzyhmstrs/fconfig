@@ -11,17 +11,23 @@
 package me.fzzyhmstrs.fzzy_config.util
 
 import com.mojang.brigadier.Message
-import net.minecraft.client.font.TextRenderer
-import net.minecraft.client.resource.language.I18n
-import net.minecraft.screen.ScreenTexts
-import net.minecraft.text.*
-import net.minecraft.util.Formatting
-import net.minecraft.util.Identifier
-import net.minecraft.util.Language
-import net.minecraft.util.math.ChunkPos
+import net.minecraft.client.gui.Font
+import net.minecraft.client.resources.language.I18n
+import net.minecraft.network.chat.CommonComponents
+import net.minecraft.ChatFormatting
+import net.minecraft.resources.Identifier
+import net.minecraft.locale.Language
+import net.minecraft.network.chat.ClickEvent
+import net.minecraft.network.chat.Component
+import net.minecraft.network.chat.FormattedText
+import net.minecraft.network.chat.HoverEvent
+import net.minecraft.network.chat.MutableComponent
+import net.minecraft.util.FormattedCharSequence
+import net.minecraft.world.level.ChunkPos
 import java.lang.StringBuilder
 import java.util.*
 import java.util.function.Supplier
+import kotlin.collections.lastIndex
 
 /**
  * Various text utilities and wrappers for making kotlin minecraft modding more text-expressive
@@ -33,54 +39,54 @@ import java.util.function.Supplier
 object FcText {
 
     internal val regex = Regex("(?=\\p{Lu}\\p{Ll})")
-    internal val EMPTY: Text = empty()
+    internal val EMPTY: Component = empty()
 
     /**
      * Wrapper method around Text.translatable. A backwards compatibility holdover from porting older versions
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun translatable(key: String, vararg args: Any): MutableText {
-        return Text.translatable(key, *args)
+    fun translatable(key: String, vararg args: Any): MutableComponent {
+        return Component.translatable(key, *args)
     }
     /**
      * Wrapper method around Text.translatableWithFallback. A backwards compatibility holdover from porting older versions
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun translatableWithFallback(key: String, fallback: String?, vararg args: Any): MutableText {
-        return Text.translatableWithFallback(key, fallback, *args)
+    fun translatableWithFallback(key: String, fallback: String?, vararg args: Any): MutableComponent {
+        return Component.translatableWithFallback(key, fallback, *args)
     }
     /**
      * Wrapper method around Text.stringified. A backwards compatibility holdover from porting older versions
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun stringified(key: String, vararg args: Any): MutableText {
-        return Text.stringifiedTranslatable(key, *args)
+    fun stringified(key: String, vararg args: Any): MutableComponent {
+        return Component.translatableEscape(key, *args)
     }
     /**
      * Wrapper method around Text.literal. A backwards compatibility holdover from porting older versions
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun literal(text: String): MutableText {
-        return Text.literal(text)
+    fun literal(text: String): MutableComponent {
+        return Component.literal(text)
     }
     /**
      * Wrapper method around Text.empty. A backwards compatibility holdover from porting older versions
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun empty(): MutableText {
-        return Text.empty()
+    fun empty(): MutableComponent {
+        return Component.empty()
     }
     /**
      * Appends multiple texts to a base text
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun appended(baseText: MutableText, vararg appended: Text): MutableText {
+    fun appended(baseText: MutableComponent, vararg appended: Component): MutableComponent {
         appended.forEach {
             baseText.append(it)
         }
@@ -93,8 +99,8 @@ object FcText {
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun Identifier.text(): Text {
-        return Text.of(this)
+    fun Identifier.text(): Component {
+        return Component.translationArg(this)
     }
     /**
      * Extension function for converting UUIDs into Texts in a kotlin style
@@ -102,8 +108,8 @@ object FcText {
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun UUID.text(): Text {
-        return Text.of(this)
+    fun UUID.text(): Component {
+        return Component.translationArg(this)
     }
     /**
      * Extension function for converting Dates into Texts in a kotlin style
@@ -111,8 +117,8 @@ object FcText {
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun Date.text(): Text {
-        return Text.of(this)
+    fun Date.text(): Component {
+        return Component.translationArg(this)
     }
     /**
      * Extension function for converting Messages into Texts in a kotlin style
@@ -120,8 +126,8 @@ object FcText {
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun Message.text(): Text {
-        return Text.of(this)
+    fun Message.text(): Component {
+        return Component.translationArg(this)
     }
     /**
      * Extension function for converting ChunkPos into Texts in a kotlin style
@@ -129,8 +135,8 @@ object FcText {
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun ChunkPos.text(): Text {
-        return Text.of(this)
+    fun ChunkPos.text(): Component {
+        return Component.translationArg(this)
     }
 
     /**
@@ -139,7 +145,7 @@ object FcText {
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun String.lit(): MutableText {
+    fun String.lit(): MutableComponent {
         return literal(this)
     }
     /**
@@ -149,7 +155,7 @@ object FcText {
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun String.translate(vararg args: Any): MutableText {
+    fun String.translate(vararg args: Any): MutableComponent {
         return translatable(this, *args)
     }
 
@@ -161,15 +167,15 @@ object FcText {
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun Any?.translation(fallback: String): MutableText {
+    fun Any?.translation(fallback: String): MutableComponent {
         return if(this is Translatable)
             if (this.hasTranslation()) {
                 this.translation()
             } else {
-                translatable(fallback).formatted(Formatting.ITALIC)
+                translatable(fallback).withStyle(ChatFormatting.ITALIC)
             }
         else
-            translatable(fallback).formatted(Formatting.ITALIC)
+            translatable(fallback).withStyle(ChatFormatting.ITALIC)
     }
     /**
      * Translates anything. If the thing is [Translatable], it will use the built-in translation, otherwise it will use the fallback literally
@@ -179,15 +185,15 @@ object FcText {
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun Any?.transLit(literalFallback: String = ""): MutableText {
+    fun Any?.transLit(literalFallback: String = ""): MutableComponent {
         return if(this is Translatable)
             if (this.hasTranslation()) {
                 this.translation()
             } else {
-                literal(literalFallback).formatted(Formatting.ITALIC)
+                literal(literalFallback).withStyle(ChatFormatting.ITALIC)
             }
         else if (literalFallback != "")
-            literal(literalFallback).formatted(Formatting.ITALIC)
+            literal(literalFallback).withStyle(ChatFormatting.ITALIC)
         else
             literal(this.toString())
     }
@@ -199,17 +205,17 @@ object FcText {
      * @author fzzyhmstrs
      * @since 0.4.2
      */
-    fun Any?.transSupplied(fallbackSupplier: Supplier<String>): MutableText {
+    fun Any?.transSupplied(fallbackSupplier: Supplier<String>): MutableComponent {
         return if(this is Translatable) {
             if (this.hasTranslation()) {
                 this.translation()
             } else {
-                literal(fallbackSupplier.get()).formatted(Formatting.ITALIC)
+                literal(fallbackSupplier.get()).withStyle(ChatFormatting.ITALIC)
             }
         } else {
             val fallback = fallbackSupplier.get()
             if (fallback != "")
-                literal(fallback).formatted(Formatting.ITALIC)
+                literal(fallback).withStyle(ChatFormatting.ITALIC)
             else
                 empty()
         }
@@ -222,15 +228,15 @@ object FcText {
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun Any?.description(fallback: String): Text {
+    fun Any?.description(fallback: String): Component {
         return if(this is Translatable)
             if (this.hasDescription()) {
                 this.description()
             } else {
-                translatable(fallback).formatted(Formatting.ITALIC)
+                translatable(fallback).withStyle(ChatFormatting.ITALIC)
             }
         else
-            translatable(fallback).formatted(Formatting.ITALIC)
+            translatable(fallback).withStyle(ChatFormatting.ITALIC)
     }
     /**
      * Describes anything (In enchantment description style, or for tooltips, for example). If the thing is [Translatable], it will use the built-in description, otherwise it will use the fallback literally
@@ -240,15 +246,15 @@ object FcText {
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun Any?.descLit(literalFallback: String = ""): Text {
+    fun Any?.descLit(literalFallback: String = ""): Component {
         return if(this is Translatable) {
             if (this.hasDescription()) {
                 this.description()
             } else {
-                literal(literalFallback).formatted(Formatting.ITALIC)
+                literal(literalFallback).withStyle(ChatFormatting.ITALIC)
             }
         } else if(literalFallback != "")
-            literal(literalFallback).formatted(Formatting.ITALIC)
+            literal(literalFallback).withStyle(ChatFormatting.ITALIC)
         else
             empty()
     }
@@ -260,45 +266,45 @@ object FcText {
      * @author fzzyhmstrs
      * @since 0.4.2
      */
-    fun Any?.descSupplied(fallbackSupplier: Supplier<String>): MutableText {
+    fun Any?.descSupplied(fallbackSupplier: Supplier<String>): MutableComponent {
         return if(this is Translatable) {
             if (this.hasDescription()) {
                 this.description()
             } else {
-                literal(fallbackSupplier.get()).formatted(Formatting.ITALIC)
+                literal(fallbackSupplier.get()).withStyle(ChatFormatting.ITALIC)
             }
         } else {
             val fallback = fallbackSupplier.get()
             if (fallback != "")
-                literal(fallback).formatted(Formatting.ITALIC)
+                literal(fallback).withStyle(ChatFormatting.ITALIC)
             else
                 empty()
         }
     }
 
-    internal fun Any?.prefix(fallback: String): Text? {
+    internal fun Any?.prefix(fallback: String): Component? {
         if(this is Translatable) {
             if (this.hasPrefix()) {
                 return this.prefix()
             }
         }
-        return if (I18n.hasTranslation(fallback))
-            translatable(fallback).formatted(Formatting.ITALIC)
+        return if (I18n.exists(fallback))
+            translatable(fallback).withStyle(ChatFormatting.ITALIC)
         else
             null
     }
-    internal fun Any?.prefixLit(literalFallback: String = ""): Text? {
+    internal fun Any?.prefixLit(literalFallback: String = ""): Component? {
         if(this is Translatable) {
             if (this.hasPrefix()) {
                 return this.prefix(literalFallback)
             }
         }
         return if(literalFallback != "")
-            literal(literalFallback).formatted(Formatting.ITALIC)
+            literal(literalFallback).withStyle(ChatFormatting.ITALIC)
         else
             null
     }
-    internal fun Any?.prefixSupplied(fallbackSupplier: Supplier<String>): MutableText? {
+    internal fun Any?.prefixSupplied(fallbackSupplier: Supplier<String>): MutableComponent? {
         if(this is Translatable) {
             if (this.hasPrefix()) {
                 return this.prefix(fallbackSupplier.get())
@@ -306,7 +312,7 @@ object FcText {
         }
         val fallback = fallbackSupplier.get()
         return if (fallback != "")
-            literal(fallback).formatted(Formatting.ITALIC)
+            literal(fallback).withStyle(ChatFormatting.ITALIC)
         else
             null
     }
@@ -318,8 +324,8 @@ object FcText {
      * @author fzzyhmstrs
      * @since 0.4.2
      */
-    fun MutableText.command(command: String): MutableText {
-        return this.styled { s -> s.withClickEvent(ClickEvent.RunCommand(command)) }
+    fun MutableComponent.command(command: String): MutableComponent {
+        return this.withStyle { s -> s.withClickEvent(ClickEvent.RunCommand(command)) }
     }
 
     /**
@@ -329,8 +335,8 @@ object FcText {
      * @author fzzyhmstrs
      * @since 0.4.2
      */
-    fun MutableText.tooltip(tooltip: Text): MutableText {
-        return this.styled { s -> s.withHoverEvent(HoverEvent.ShowText(tooltip)) }
+    fun MutableComponent.tooltip(tooltip: Component): MutableComponent {
+        return this.withStyle { s -> s.withHoverEvent(HoverEvent.ShowText(tooltip)) }
     }
 
     /**
@@ -339,8 +345,8 @@ object FcText {
      * @author fzzyhmstrs
      * @since 0.4.2
      */
-    fun MutableText.underline(): MutableText {
-        return this.formatted(Formatting.UNDERLINE)
+    fun MutableComponent.underline(): MutableComponent {
+        return this.withStyle(ChatFormatting.UNDERLINE)
     }
     /**
      * Bolds the receiver text
@@ -348,8 +354,8 @@ object FcText {
      * @author fzzyhmstrs
      * @since 0.4.2
      */
-    fun MutableText.bold(): MutableText {
-        return this.formatted(Formatting.BOLD)
+    fun MutableComponent.bold(): MutableComponent {
+        return this.withStyle(ChatFormatting.BOLD)
     }
     /**
      * Italicizes the receiver text
@@ -357,8 +363,8 @@ object FcText {
      * @author fzzyhmstrs
      * @since 0.4.2
      */
-    fun MutableText.italic(): MutableText {
-        return this.formatted(Formatting.ITALIC)
+    fun MutableComponent.italic(): MutableComponent {
+        return this.withStyle(ChatFormatting.ITALIC)
     }
     /**
      * Strikes through the receiver text
@@ -366,8 +372,8 @@ object FcText {
      * @author fzzyhmstrs
      * @since 0.4.2
      */
-    fun MutableText.strikethrough(): MutableText {
-        return this.formatted(Formatting.STRIKETHROUGH)
+    fun MutableComponent.strikethrough(): MutableComponent {
+        return this.withStyle(ChatFormatting.STRIKETHROUGH)
     }
     /**
      * Applies an RGB color to the receiver text
@@ -375,8 +381,8 @@ object FcText {
      * @author fzzyhmstrs
      * @since 0.4.2
      */
-    fun MutableText.colored(color: Int): MutableText {
-        return this.styled { s -> s.withColor(color) }
+    fun MutableComponent.colored(color: Int): MutableComponent {
+        return this.withStyle { s -> s.withColor(color) }
     }
 
     /**
@@ -385,7 +391,7 @@ object FcText {
      * @author fzzyhmstrs
      * @since 0.?.?
      */
-    fun Text.isEmpty(): Boolean {
+    fun Component.isEmpty(): Boolean {
         return this.string.isEmpty()
     }
 
@@ -395,7 +401,7 @@ object FcText {
      * @author fzzyhmstrs
      * @since 0.?.?
      */
-    fun Text.isNotEmpty(): Boolean {
+    fun Component.isNotEmpty(): Boolean {
         return this.string.isNotEmpty()
     }
 
@@ -406,9 +412,9 @@ object FcText {
      * @author fzzyhmstrs
      * @since 0.7.5
      */
-    fun toLinebreakText(texts: List<Text>): MutableText {
+    fun toLinebreakText(texts: List<Component>): MutableComponent {
         if (texts.isEmpty()) return empty()
-        var text: MutableText? = null
+        var text: MutableComponent? = null
         for (message in texts) {
             if (text == null) {
                 text = message.copy()
@@ -428,9 +434,9 @@ object FcText {
      * @author fzzyhmstrs
      * @since 0.7.5
      */
-    fun trim(text: Text, width: Int, textRenderer: TextRenderer): OrderedText {
-        val stringVisitable = textRenderer.trimToWidth(text, width - textRenderer.getWidth(ScreenTexts.ELLIPSIS))
-        return Language.getInstance().reorder(StringVisitable.concat(stringVisitable, ScreenTexts.ELLIPSIS))
+    fun trim(text: Component, width: Int, textRenderer: Font): FormattedCharSequence {
+        val stringVisitable = textRenderer.substrByWidth(text, width - textRenderer.width(CommonComponents.ELLIPSIS))
+        return Language.getInstance().getVisualOrder(FormattedText.composite(stringVisitable, CommonComponents.ELLIPSIS))
     }
 
     fun concat(str: String, str2: String): String {
@@ -461,7 +467,7 @@ object FcText {
      * @author fzzyhmstrs
      * @since 0.7.5
      */
-    fun String.capital(): Text {
+    fun String.capital(): Component {
         return this.lowercase().replace('_', ' ').split(' ').joinToString(" ") { it.lowercase(); it.replaceFirstChar { c -> c.uppercase() } }.lit()
     }
 
@@ -473,7 +479,7 @@ object FcText {
      * @author fzzyhmstrs
      * @since 0.7.5
      */
-    fun joinToText(texts: List<Text>, separator: Text): Text {
+    fun joinToText(texts: List<Component>, separator: Component): Component {
         if (texts.isEmpty()) return empty()
         if (texts.size == 1) return texts[0]
         var t = texts[0].copy()
@@ -491,12 +497,12 @@ object FcText {
      * @author fzzyhmstrs
      * @since 0.7.5
      */
-    fun orList(list: List<Text>): Text {
+    fun orList(list: List<Component>): Component {
         return orList(list, 0)
     }
 
 
-    private fun orList(list: List<Text>, currentIndex: Int): Text {
+    private fun orList(list: List<Component>, currentIndex: Int): Component {
         if (list.isEmpty()) return empty()
         return when (currentIndex) {
             (list.size - 1) -> {
@@ -518,12 +524,12 @@ object FcText {
      * @author fzzyhmstrs
      * @since 0.7.5
      */
-    fun andList(list: List<Text>): Text {
+    fun andList(list: List<Component>): Component {
         return andList(list, 0)
     }
 
 
-    private fun andList(list: List<Text>, currentIndex: Int): Text {
+    private fun andList(list: List<Component>, currentIndex: Int): Component {
         if (list.isEmpty()) return empty()
         return when (currentIndex) {
             (list.size - 1) -> {
@@ -545,7 +551,7 @@ object FcText {
      * @author fzzyhmstrs
      * @since 0.7.5
      */
-    fun createTooltipString(tt: List<OrderedText>): String {
+    fun createTooltipString(tt: List<FormattedCharSequence>): String {
         val builder = StringBuilder()
         for (tip in tt) {
             tip.accept { _, _, codepoint ->

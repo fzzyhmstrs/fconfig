@@ -13,9 +13,9 @@ package me.fzzyhmstrs.fzzy_config.examples
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigSection
-import net.minecraft.util.Identifier
+import net.minecraft.resources.Identifier
 
-class ItemsConfig: Config(Identifier.of(FC.MOD_ID, "items_config")) {
+class ItemsConfig: Config(Identifier.fromNamespaceAndPath(FC.MOD_ID, "items_config")) {
 
     //settings that apply to all items can go in the parent class
 

@@ -13,15 +13,20 @@ package me.fzzyhmstrs.fzzy_config.screen.widget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.pos.ReferencePos
 import net.minecraft.client.gui.*
-import net.minecraft.client.gui.navigation.GuiNavigation
-import net.minecraft.client.gui.navigation.GuiNavigationPath
-import net.minecraft.client.gui.screen.Screen
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
-import net.minecraft.client.gui.screen.narration.NarrationPart
-import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.client.input.CharInput
-import net.minecraft.client.input.KeyInput
-import net.minecraft.text.Text
+import net.minecraft.client.gui.navigation.FocusNavigationEvent
+import net.minecraft.client.gui.ComponentPath
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.client.gui.narration.NarrationElementOutput
+import net.minecraft.client.gui.narration.NarratedElementType
+import net.minecraft.client.gui.components.AbstractWidget
+import net.minecraft.client.gui.components.Renderable
+import net.minecraft.client.gui.components.events.ContainerEventHandler
+import net.minecraft.client.gui.components.events.GuiEventListener
+import net.minecraft.client.gui.narration.NarratableEntry
+import net.minecraft.client.input.CharacterEvent
+import net.minecraft.client.input.KeyEvent
+import net.minecraft.client.input.MouseButtonEvent
+import net.minecraft.network.chat.Component
 import java.util.function.Consumer
 
 /**
@@ -35,16 +40,16 @@ import java.util.function.Consumer
  * @since 0.6.0
  */
 class LayoutClickableWidget(x: Int, y: Int, width: Int, height: Int, private val layout: LayoutWidget)
-    : ClickableWidget(x, y, width, height, FcText.empty()), ParentElement, TooltipChild {
+    : AbstractWidget(x, y, width, height, FcText.empty()), ContainerEventHandler, TooltipChild {
 
-    private var children: MutableList<Element> = mutableListOf()
-    private var drawables: List<Drawable> = emptyList()
-    private var selectables: List<Selectable> = emptyList()
+    private var children: MutableList<GuiEventListener> = mutableListOf()
+    private var drawables: List<Renderable> = emptyList()
+    private var selectables: List<NarratableEntry> = emptyList()
     private var tooltipProviders: List<TooltipChild> = emptyList()
-    private var focusedSelectable: Selectable? = null
-    private var focusedElement: Element? = null
+    private var focusedSelectable: NarratableEntry? = null
+    private var focusedElement: GuiEventListener? = null
     private var dragging: Boolean = false
-    private var narrationAppender: Consumer<NarrationMessageBuilder> = Consumer { _-> }
+    private var narrationAppender: Consumer<NarrationElementOutput> = Consumer { _-> }
 
     /**
      * Applies custom narration to this layout widget. This consumer will be applied on every call to narration building, using the same message level as the default narration of the widget. In particular, element POSITION and USAGE information is typically applied already. The current hovered and/or focused child widget uses the next message layer. If you have to dodge one of both of these existing additions, you will have to add one or two more layers to the builder before using it.
@@ -53,7 +58,7 @@ class LayoutClickableWidget(x: Int, y: Int, width: Int, height: Int, private val
      * @author fzzyhmstrs
      * @since 0.6.5
      */
-    fun withNarrationAppender(narrationAppender: Consumer<NarrationMessageBuilder>): LayoutClickableWidget {
+    fun withNarrationAppender(narrationAppender: Consumer<NarrationElementOutput>): LayoutClickableWidget {
         this.narrationAppender = narrationAppender
         return this
     }
@@ -61,9 +66,9 @@ class LayoutClickableWidget(x: Int, y: Int, width: Int, height: Int, private val
     init {
         layout.setPos(ReferencePos { this.x }, ReferencePos { this.y })
         layout.setDimensions(width, height)
-        val c: MutableList<Element> = mutableListOf()
-        val d: MutableList<Drawable> = mutableListOf()
-        val s: MutableList<Selectable> = mutableListOf()
+        val c: MutableList<GuiEventListener> = mutableListOf()
+        val d: MutableList<Renderable> = mutableListOf()
+        val s: MutableList<NarratableEntry> = mutableListOf()
         val t: MutableList<TooltipChild> = mutableListOf()
         layout.categorize(c, d, s) { w ->
             if (w is TooltipChild)
@@ -101,13 +106,13 @@ class LayoutClickableWidget(x: Int, y: Int, width: Int, height: Int, private val
         layout.height = height
     }
 
-    override fun setDimensions(width: Int, height: Int) {
+    override fun setSize(width: Int, height: Int) {
         super.setWidth(width)
         super.setHeight(height)
         layout.setDimensions(width, height)
     }
 
-    override fun setDimensionsAndPosition(width: Int, height: Int, x: Int, y: Int) {
+    override fun setRectangle(width: Int, height: Int, x: Int, y: Int) {
         super.setWidth(width)
         super.setHeight(height)
         super.setX(x)
@@ -116,7 +121,7 @@ class LayoutClickableWidget(x: Int, y: Int, width: Int, height: Int, private val
         layout.update()
     }
 
-    override fun children(): MutableList<out Element> {
+    override fun children(): MutableList<out GuiEventListener> {
         return children
     }
 
@@ -129,42 +134,42 @@ class LayoutClickableWidget(x: Int, y: Int, width: Int, height: Int, private val
     }
 
 
-    override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun extractWidgetRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
         for (d in drawables) {
-            d.render(context, mouseX, mouseY, delta)
+            d.extractRenderState(context, mouseX, mouseY, delta)
         }
         //renderCustom(context, mouseX, mouseY, delta)
     }
 
-    override fun onClick(click: Click, doubled: Boolean) {
+    override fun onClick(click: MouseButtonEvent, doubled: Boolean) {
     }
 
-    override fun mouseClicked(click: Click, doubled: Boolean): Boolean {
-        return super<ParentElement>.mouseClicked(click, doubled)
+    override fun mouseClicked(click: MouseButtonEvent, doubled: Boolean): Boolean {
+        return super<ContainerEventHandler>.mouseClicked(click, doubled)
     }
 
-    override fun mouseReleased(click: Click): Boolean {
-        return super<ParentElement>.mouseReleased(click)
+    override fun mouseReleased(click: MouseButtonEvent): Boolean {
+        return super<ContainerEventHandler>.mouseReleased(click)
     }
 
     override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
-        return super<ParentElement>.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
+        return super<ContainerEventHandler>.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
     }
 
-    override fun mouseDragged(click: Click, offsetX: Double, offsetY: Double): Boolean {
-        return super<ParentElement>.mouseDragged(click, offsetX, offsetY)
+    override fun mouseDragged(click: MouseButtonEvent, offsetX: Double, offsetY: Double): Boolean {
+        return super<ContainerEventHandler>.mouseDragged(click, offsetX, offsetY)
     }
 
-    override fun charTyped(input: CharInput): Boolean {
-        return super<ParentElement>.charTyped(input)
+    override fun charTyped(input: CharacterEvent): Boolean {
+        return super<ContainerEventHandler>.charTyped(input)
     }
 
-    override fun getFocusedPath(): GuiNavigationPath? {
-        return super<ParentElement>.getFocusedPath()
+    override fun getCurrentFocusPath(): ComponentPath? {
+        return super<ContainerEventHandler>.currentFocusPath
     }
 
-    override fun getNavigationPath(navigation: GuiNavigation?): GuiNavigationPath? {
-        val nav = super<ParentElement>.getNavigationPath(navigation)
+    override fun nextFocusPath(navigation: FocusNavigationEvent): ComponentPath? {
+        val nav = super<ContainerEventHandler>.nextFocusPath(navigation)
         return nav
     }
 
@@ -175,11 +180,11 @@ class LayoutClickableWidget(x: Int, y: Int, width: Int, height: Int, private val
         }
     }
 
-    override fun getFocused(): Element? {
+    override fun getFocused(): GuiEventListener? {
         return focusedElement
     }
 
-    override fun setFocused(focused: Element?) {
+    override fun setFocused(focused: GuiEventListener?) {
         if (focusedElement === focused) return
         this.focusedElement?.isFocused = false
         focused?.isFocused = true
@@ -190,37 +195,37 @@ class LayoutClickableWidget(x: Int, y: Int, width: Int, height: Int, private val
         return focusedElement != null
     }
 
-    override fun keyPressed(input: KeyInput): Boolean {
-        return super<ParentElement>.keyPressed(input)
+    override fun keyPressed(input: KeyEvent): Boolean {
+        return super<ContainerEventHandler>.keyPressed(input)
     }
 
-    override fun keyReleased(input: KeyInput): Boolean {
-        return super<ParentElement>.keyReleased(input)
+    override fun keyReleased(input: KeyEvent): Boolean {
+        return super<ContainerEventHandler>.keyReleased(input)
     }
 
-    override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
+    override fun updateWidgetNarration(builder: NarrationElementOutput) {
         narrationAppender.accept(builder)
-        val list: List<Selectable> = this.selectables.filter { it.isInteractable }
-        val selectedElementNarrationData = Screen.findSelectedElementData(list, focusedSelectable)
+        val list: List<NarratableEntry> = this.selectables.filter { it.isActive }
+        val selectedElementNarrationData = Screen.findNarratableWidget(list, focusedSelectable)
         if (selectedElementNarrationData != null) {
-            if (selectedElementNarrationData.selectType.isFocused) {
-                focusedSelectable = selectedElementNarrationData.selectable
+            if (selectedElementNarrationData.priority.isTerminal) {
+                focusedSelectable = selectedElementNarrationData.entry
             }
             if (list.size > 1) {
-                builder.put(NarrationPart.POSITION, Text.translatable("fc.narrator.position.child", selectedElementNarrationData.index + 1, list.size))
-                if (selectedElementNarrationData.selectType.isFocused) {
-                    builder.put(NarrationPart.USAGE, Text.translatable("narration.component_list.usage"))
+                builder.add(NarratedElementType.POSITION, Component.translatable("fc.narrator.position.child", selectedElementNarrationData.index + 1, list.size))
+                if (selectedElementNarrationData.priority.isTerminal) {
+                    builder.add(NarratedElementType.USAGE, Component.translatable("narration.component_list.usage"))
                 }
             }
-            selectedElementNarrationData.selectable.appendNarrations(builder.nextMessage())
+            selectedElementNarrationData.entry.updateNarration(builder.nest())
         }
     }
 
-    override fun provideTooltipLines(mouseX: Int, mouseY: Int, parentSelected: Boolean, keyboardFocused: Boolean): List<Text> {
+    override fun provideTooltipLines(mouseX: Int, mouseY: Int, parentSelected: Boolean, keyboardFocused: Boolean): List<Component> {
         return tooltipProviders.flatMap { it.provideTooltipLines(mouseX, mouseY, parentSelected, keyboardFocused) }
     }
 
-    override fun provideNarrationLines(): List<Text> {
+    override fun provideNarrationLines(): List<Component> {
         return tooltipProviders.flatMap { it.provideNarrationLines() }
     }
 }

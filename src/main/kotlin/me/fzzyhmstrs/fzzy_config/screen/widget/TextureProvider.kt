@@ -10,7 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
-import net.minecraft.util.Identifier
+import net.minecraft.resources.Identifier
 
 fun interface TextureProvider {
     fun get(enabled: Boolean, focused: Boolean): Identifier

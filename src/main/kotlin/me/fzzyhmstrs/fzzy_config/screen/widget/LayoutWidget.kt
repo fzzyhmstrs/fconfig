@@ -14,12 +14,12 @@ import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.util.function.ConstSupplier
 import me.fzzyhmstrs.fzzy_config.util.function.SuppliedFunctionSupplier
 import me.fzzyhmstrs.fzzy_config.util.pos.*
-import net.minecraft.client.gui.Drawable
-import net.minecraft.client.gui.Element
-import net.minecraft.client.gui.Selectable
-import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.client.gui.widget.EntryListWidget
-import net.minecraft.client.gui.widget.Widget
+import net.minecraft.client.gui.components.Renderable
+import net.minecraft.client.gui.components.events.GuiEventListener
+import net.minecraft.client.gui.narration.NarratableEntry
+import net.minecraft.client.gui.components.AbstractWidget
+import net.minecraft.client.gui.components.AbstractSelectionList
+import net.minecraft.client.gui.layouts.LayoutElement
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.*
 import java.util.function.Consumer
@@ -42,7 +42,7 @@ import kotlin.math.min
 class LayoutWidget @JvmOverloads @Deprecated("Use the builder pattern. Constructor removed by 0.8.0") constructor(
     private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0),
     private val paddingW: Int = 8, private val paddingH: Int = paddingW,
-    spacingW: Int = 4, spacingH: Int = spacingW): Widget, Scalable {
+    spacingW: Int = 4, spacingH: Int = spacingW): LayoutElement, Scalable {
 
     private var width: Int = 0
     private var height: Int = 0
@@ -541,9 +541,9 @@ class LayoutWidget @JvmOverloads @Deprecated("Use the builder pattern. Construct
     }
 
     @Internal
-    override fun forEachChild(consumer: Consumer<ClickableWidget>?) {
+    override fun visitWidgets(consumer: Consumer<AbstractWidget>) {
         for ((_, e) in elements) {
-            e.element.forEachChild(consumer)
+            e.element.visitWidgets(consumer)
         }
     }
 
@@ -560,24 +560,24 @@ class LayoutWidget @JvmOverloads @Deprecated("Use the builder pattern. Construct
      * @author fzzyhmstrs
      * @since 0.6.0
      */
-    fun categorize(children: MutableList<Element>, drawables: MutableList<Drawable>, selectables: MutableList<Selectable>, other: Consumer<Widget> = Consumer { _-> }) {
+    fun categorize(children: MutableList<GuiEventListener>, drawables: MutableList<Renderable>, selectables: MutableList<NarratableEntry>, other: Consumer<net.minecraft.client.gui.layouts.LayoutElement> = Consumer { _-> }) {
         for ((_, posEl) in elements) {
             if (posEl.element is LayoutWidget) { //child layouts ship their children flat, since layouts just position things, they don't actually manage them like parent elements
                 posEl.element.categorize(children, drawables, selectables, other)
                 other.accept(posEl.element)
                 continue
             }
-            if(posEl.element is Element)
+            if(posEl.element is GuiEventListener)
                 children.add(posEl.element)
-            if(posEl.element is Drawable)
+            if(posEl.element is Renderable)
                 drawables.add(posEl.element)
-            if(posEl.element is Selectable)
+            if(posEl.element is NarratableEntry)
                 selectables.add(posEl.element)
             other.accept(posEl.element)
         }
     }
 
-    private fun <E> createPositionedElement(set: PosSet, el: E, parent: String, positions: Array<out Position>): PositionedElement<E> where E: Widget {
+    private fun <E> createPositionedElement(set: PosSet, el: E, parent: String, positions: Array<out Position>): PositionedElement<E> where E: net.minecraft.client.gui.layouts.LayoutElement {
 
         val parentEl = elements[parent]
         if (parentEl == null) { //initial element
@@ -664,7 +664,7 @@ class LayoutWidget @JvmOverloads @Deprecated("Use the builder pattern. Construct
      * @author fzzyhmstrs
      * @since 0.6.0
      */
-    fun <E: Widget> add(id: String, element: E, parent: String, vararg positions: Position): LayoutWidget {
+    fun <E: net.minecraft.client.gui.layouts.LayoutElement> add(id: String, element: E, parent: String, vararg positions: Position): LayoutWidget {
         val posEl = createPositionedElement(sets.peek(), element, parent, positions)
         elements[id] = posEl
         lastEl = id
@@ -680,7 +680,7 @@ class LayoutWidget @JvmOverloads @Deprecated("Use the builder pattern. Construct
      * @author fzzyhmstrs
      * @since 0.6.0
      */
-    fun <E: Widget> add(id: String, element: E, vararg positions: Position): LayoutWidget {
+    fun <E: net.minecraft.client.gui.layouts.LayoutElement> add(id: String, element: E, vararg positions: Position): LayoutWidget {
         return add(id, element, lastEl, *positions)
     }
 
@@ -746,7 +746,7 @@ class LayoutWidget @JvmOverloads @Deprecated("Use the builder pattern. Construct
         do {
             for (posEl in elements.values) {
                 if (posEl.alignment == Position.ALIGN_JUSTIFY || posEl.alignment == Position.ALIGN_JUSTIFY_WEAK) {
-                    if (posEl.element is ClickableWidget) {
+                    if (posEl.element is AbstractWidget) {
                         posEl.element.width = width - (2 * paddingW)
                     } else if (posEl.element is Scalable) {
                         posEl.element.setWidth(width - (2 * paddingW))
@@ -764,13 +764,13 @@ class LayoutWidget @JvmOverloads @Deprecated("Use the builder pattern. Construct
                         }
                     }
                     if (closestRightEl != null) {
-                        if (posEl.element is ClickableWidget) {
+                        if (posEl.element is AbstractWidget) {
                             posEl.element.width = closestRightEl.getLeft() - posEl.getLeft() - posEl.set.spacingW
                         } else if (posEl.element is Scalable) {
                             posEl.element.setWidth(closestRightEl.getLeft() - posEl.getLeft() - posEl.set.spacingW)
                         }
                     } else {
-                        if (posEl.element is ClickableWidget) {
+                        if (posEl.element is AbstractWidget) {
                             posEl.element.width = posEl.set.wPos.get() - posEl.getLeft()
                         } else if (posEl.element is Scalable) {
                             posEl.element.setWidth(posEl.set.wPos.get() - posEl.getLeft())
@@ -792,7 +792,7 @@ class LayoutWidget @JvmOverloads @Deprecated("Use the builder pattern. Construct
                     }
                     //if (debug) FC.DEVLOG.info("Closest Right Element: $closestLeftEl")
                     if (closestLeftEl != null) {
-                        if (posEl.element is ClickableWidget) {
+                        if (posEl.element is AbstractWidget) {
                             posEl.getX().dec(posEl.getLeft() - closestLeftEl.getRight())
                             posEl.getX().inc(posEl.set.spacingW)
                             posEl.element.width = posEl.getRight() - closestLeftEl.getRight() - posEl.set.spacingW
@@ -803,7 +803,7 @@ class LayoutWidget @JvmOverloads @Deprecated("Use the builder pattern. Construct
                             posEl.element.setWidth(prevRight - posEl.getLeft())
                         }
                     } else {
-                        if (posEl.element is ClickableWidget) {
+                        if (posEl.element is AbstractWidget) {
                             val dec = posEl.getLeft() - posEl.set.xPos.get()
                             posEl.getX().dec(dec)
                             posEl.element.width += dec
@@ -830,13 +830,13 @@ class LayoutWidget @JvmOverloads @Deprecated("Use the builder pattern. Construct
                         }
                     }
                     if (closestDownEl != null) {
-                        if (posEl.element is ClickableWidget) {
+                        if (posEl.element is AbstractWidget) {
                             posEl.element.height = closestDownEl.getTop() - posEl.getTop() - posEl.set.spacingH
                         } else if (posEl.element is Scalable) {
                             posEl.element.setHeight(closestDownEl.getTop() - posEl.getTop() - posEl.set.spacingH)
                         }
                     } else {
-                        if (posEl.element is ClickableWidget) {
+                        if (posEl.element is AbstractWidget) {
                             posEl.element.height = posEl.set.hPos.get() - posEl.getTop()
                         } else if (posEl.element is Scalable) {
                             posEl.element.setHeight(posEl.set.hPos.get() - posEl.getTop())
@@ -866,7 +866,7 @@ class LayoutWidget @JvmOverloads @Deprecated("Use the builder pattern. Construct
      */
     //client
     sealed interface Position {
-        fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos>
+        fun position(parent: LayoutElement, el: net.minecraft.client.gui.layouts.LayoutElement, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos>
 
         /**
          * Collection of all implemented [Position]. Preferred practice is to use this collection rather than referring directly to the underlying Enums
@@ -1052,7 +1052,7 @@ class LayoutWidget @JvmOverloads @Deprecated("Use the builder pattern. Construct
     internal enum class PositionRelativePos: Position {
         @Deprecated("Use Positions Impl values")
         BELOW {
-            override fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
+            override fun position(parent: LayoutElement, el: net.minecraft.client.gui.layouts.LayoutElement, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
                 return Pair(prevX, ImmutableOffsetSuppliedPos.optimized(parent.getY(), globalSet.spacingH) { parent.elHeight() })
             }
 
@@ -1070,7 +1070,7 @@ class LayoutWidget @JvmOverloads @Deprecated("Use the builder pattern. Construct
         },
         @Deprecated("Use Positions Impl values")
         LEFT {
-            override fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
+            override fun position(parent: LayoutElement, el: net.minecraft.client.gui.layouts.LayoutElement, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
                 return Pair(ImmutableOffsetSuppliedPos.optimized(parent.getX(), -globalSet.spacingW) { -el.width }, prevY)
             }
 
@@ -1088,7 +1088,7 @@ class LayoutWidget @JvmOverloads @Deprecated("Use the builder pattern. Construct
         },
         @Deprecated("Use Positions Impl values")
         RIGHT {
-            override fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
+            override fun position(parent: LayoutElement, el: net.minecraft.client.gui.layouts.LayoutElement, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
                 return Pair(ImmutableOffsetSuppliedPos.optimized(parent.getX(), globalSet.spacingW) { parent.elWidth() }, prevY)
             }
 
@@ -1114,37 +1114,37 @@ class LayoutWidget @JvmOverloads @Deprecated("Use the builder pattern. Construct
     internal enum class PositionRelativeAlignment: Position {
         @Deprecated("Use Positions Impl values")
         HORIZONTAL_TO_TOP_EDGE {
-            override fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
+            override fun position(parent: LayoutElement, el: net.minecraft.client.gui.layouts.LayoutElement, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
                 return Pair(prevX, RelPos.optimized(parent.getY()))
             }
         },
         @Deprecated("Use Positions Impl values")
         HORIZONTAL_TO_BOTTOM_EDGE {
-            override fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
+            override fun position(parent: LayoutElement, el: net.minecraft.client.gui.layouts.LayoutElement, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
                 return Pair(prevX, RelPos.optimized(parent.getX(), parent.elHeight() - el.height))
             }
         },
         @Deprecated("Use Positions Impl values")
         VERTICAL_TO_LEFT_EDGE {
-            override fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
+            override fun position(parent: LayoutElement, el: net.minecraft.client.gui.layouts.LayoutElement, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
                 return Pair(RelPos.optimized(parent.getX()), prevY)
             }
         },
         @Deprecated("Use Positions Impl values")
         VERTICAL_TO_RIGHT_EDGE {
-            override fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
+            override fun position(parent: LayoutElement, el: net.minecraft.client.gui.layouts.LayoutElement, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
                 return Pair(SuppliedPos(parent.getX(), 0){ parent.elWidth() - el.width }, prevY)
             }
         },
         @Deprecated("Use Positions Impl values")
         CENTERED_HORIZONTALLY {
-            override fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
+            override fun position(parent: LayoutElement, el: net.minecraft.client.gui.layouts.LayoutElement, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
                 return Pair(SuppliedPos(parent.getX(), 0) { parent.elWidth() / 2 - el.width / 2 }, prevY)
             }
         },
         @Deprecated("Use Positions Impl values")
         CENTERED_VERTICALLY {
-            override fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
+            override fun position(parent: LayoutElement, el: net.minecraft.client.gui.layouts.LayoutElement, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
                 return Pair(prevX, RelPos.optimized(parent.getY(), parent.elHeight()/2 - el.height/2))
             }
         }
@@ -1152,138 +1152,138 @@ class LayoutWidget @JvmOverloads @Deprecated("Use the builder pattern. Construct
 
     //client
     sealed interface PositionAlignment: Position {
-        fun positionInitial(el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos>
+        fun positionInitial(el: net.minecraft.client.gui.layouts.LayoutElement, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos>
     }
 
     //client
     internal enum class PositionGlobalAlignment: PositionAlignment {
         @Deprecated("Use Positions Impl values")
         ALIGN_LEFT {
-            override fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
+            override fun position(parent: LayoutElement, el: net.minecraft.client.gui.layouts.LayoutElement, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
                 return Pair(RelPos.optimized(globalSet.xPos), prevY)
             }
 
-            override fun positionInitial(el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
+            override fun positionInitial(el: net.minecraft.client.gui.layouts.LayoutElement, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
                 return Pair(RelPos.optimized(globalSet.xPos), prevY)
             }
         },
         @Deprecated("Use Positions Impl values")
         ALIGN_LEFT_OF {
-            override fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
+            override fun position(parent: LayoutElement, el: net.minecraft.client.gui.layouts.LayoutElement, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
                 return Pair(SuppliedPos(parent.getX(), globalSet.spacingW) { parent.elWidth() }, prevY)
             }
 
-            override fun positionInitial(el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
+            override fun positionInitial(el: net.minecraft.client.gui.layouts.LayoutElement, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
                 return Pair(RelPos(globalSet.xPos), prevY)
             }
         },
         @Deprecated("Use Positions Impl values")
         ALIGN_RIGHT {
-            override fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
+            override fun position(parent: LayoutElement, el: net.minecraft.client.gui.layouts.LayoutElement, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
                 return Pair(SuppliedPos(globalSet.wPos, 0) { -el.width }, prevY)
             }
 
-            override fun positionInitial(el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
+            override fun positionInitial(el: net.minecraft.client.gui.layouts.LayoutElement, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
                 return Pair(SuppliedPos(globalSet.wPos, 0) { -el.width }, prevY)
             }
         },
         @Deprecated("Use Positions Impl values")
         ALIGN_CENTER {
-            override fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
+            override fun position(parent: LayoutElement, el: net.minecraft.client.gui.layouts.LayoutElement, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
                 return Pair(SuppliedPos(globalSet.xPos, 0) { (globalSet.wPos.get() - globalSet.xPos.get()) / 2 - el.width / 2 }, prevY)
             }
 
-            override fun positionInitial(el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
+            override fun positionInitial(el: net.minecraft.client.gui.layouts.LayoutElement, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
                 return Pair(SuppliedPos(globalSet.xPos, 0) { (globalSet.wPos.get() - globalSet.xPos.get()) / 2 - el.width / 2 }, prevY)
             }
         },
         @Deprecated("Use Positions Impl values")
         ALIGN_JUSTIFY {
-            override fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
+            override fun position(parent: LayoutElement, el: net.minecraft.client.gui.layouts.LayoutElement, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
                 return Pair(SuppliedPos(globalSet.xPos, 0) { (globalSet.wPos.get() - globalSet.xPos.get()) / 2 - el.width / 2 }, prevY)
             }
 
-            override fun positionInitial(el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
+            override fun positionInitial(el: net.minecraft.client.gui.layouts.LayoutElement, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
                 return Pair(SuppliedPos(globalSet.xPos, 0) { (globalSet.wPos.get() - globalSet.xPos.get()) / 2 - el.width / 2 }, prevY)
             }
         },
         @Deprecated("Use Positions Impl values")
         ALIGN_JUSTIFY_WEAK {
-            override fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
+            override fun position(parent: LayoutElement, el: net.minecraft.client.gui.layouts.LayoutElement, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
                 return Pair(SuppliedPos(globalSet.xPos, 0) { (globalSet.wPos.get() - globalSet.xPos.get()) / 2 - el.width / 2 }, prevY)
             }
 
-            override fun positionInitial(el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
+            override fun positionInitial(el: net.minecraft.client.gui.layouts.LayoutElement, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
                 return Pair(SuppliedPos(globalSet.xPos, 0) { (globalSet.wPos.get() - globalSet.xPos.get()) / 2 - el.width / 2 }, prevY)
             }
         },
         @Deprecated("Use Positions Impl values")
         ALIGN_LEFT_AND_JUSTIFY {
-            override fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
+            override fun position(parent: LayoutElement, el: net.minecraft.client.gui.layouts.LayoutElement, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
                 return Pair(RelPos.optimized(globalSet.xPos), prevY)
             }
 
-            override fun positionInitial(el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
+            override fun positionInitial(el: net.minecraft.client.gui.layouts.LayoutElement, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
                 return Pair(RelPos.optimized(globalSet.xPos), prevY)
             }
         },
         @Deprecated("Use Positions Impl values")
         POSITION_RIGHT_OF_AND_JUSTIFY {
-            override fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
+            override fun position(parent: LayoutElement, el: net.minecraft.client.gui.layouts.LayoutElement, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
                 return Pair(SuppliedPos(parent.getX(), globalSet.spacingW) { parent.elWidth() }, prevY)
             }
 
-            override fun positionInitial(el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
+            override fun positionInitial(el: net.minecraft.client.gui.layouts.LayoutElement, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
                 return Pair(RelPos.optimized(globalSet.xPos), prevY)
             }
         },
         @Deprecated("Use Positions Impl values")
         ALIGN_RIGHT_AND_JUSTIFY {
-            override fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
+            override fun position(parent: LayoutElement, el: net.minecraft.client.gui.layouts.LayoutElement, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
                 return Pair(SuppliedPos(globalSet.wPos, 0) {-el.width}, prevY)
             }
 
-            override fun positionInitial(el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
+            override fun positionInitial(el: net.minecraft.client.gui.layouts.LayoutElement, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
                 return Pair(SuppliedPos(globalSet.wPos, 0) {-el.width}, prevY)
             }
         },
         @Deprecated("Use Positions Impl values")
         POSITION_LEFT_OF_AND_JUSTIFY {
-            override fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
+            override fun position(parent: LayoutElement, el: net.minecraft.client.gui.layouts.LayoutElement, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
                 return Pair(ImmutableOffsetSuppliedPos.optimized(parent.getX(), -globalSet.spacingW) { -el.width }, prevY)
             }
 
-            override fun positionInitial(el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
+            override fun positionInitial(el: net.minecraft.client.gui.layouts.LayoutElement, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
                 return Pair(SuppliedPos(globalSet.wPos, 0) {-el.width}, prevY)
             }
         },
         @Deprecated("Use Positions Impl values")
         ALIGN_LEFT_AND_STRETCH {
-            override fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
+            override fun position(parent: LayoutElement, el: net.minecraft.client.gui.layouts.LayoutElement, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
                 return Pair(RelPos.optimized(globalSet.xPos), prevY)
             }
 
-            override fun positionInitial(el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
+            override fun positionInitial(el: net.minecraft.client.gui.layouts.LayoutElement, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
                 return Pair(RelPos.optimized(globalSet.xPos), prevY)
             }
         },
         @Deprecated("Use Positions Impl values")
         ALIGN_LEFT_OF_AND_STRETCH {
-            override fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
+            override fun position(parent: LayoutElement, el: net.minecraft.client.gui.layouts.LayoutElement, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
                 return Pair(SuppliedPos(parent.getX(), globalSet.spacingW) { parent.elWidth() }, prevY)
             }
 
-            override fun positionInitial(el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
+            override fun positionInitial(el: net.minecraft.client.gui.layouts.LayoutElement, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
                 return Pair(RelPos(globalSet.xPos), prevY)
             }
         },
         @Deprecated("Use Positions Impl values")
         ALIGN_RIGHT_AND_STRETCH {
-            override fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
+            override fun position(parent: LayoutElement, el: net.minecraft.client.gui.layouts.LayoutElement, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
                 return Pair(SuppliedPos(globalSet.wPos, 0) {-el.width}, prevY)
             }
 
-            override fun positionInitial(el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
+            override fun positionInitial(el: net.minecraft.client.gui.layouts.LayoutElement, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
                 return Pair(SuppliedPos(globalSet.wPos, 0) {-el.width}, prevY)
             }
         }
@@ -1292,7 +1292,7 @@ class LayoutWidget @JvmOverloads @Deprecated("Use the builder pattern. Construct
     @Internal
     @Suppress("UNUSED")
     //client
-    internal class PositionedElement<T: Widget>(val element: T, val set: PosSet, private var x: Pos, private var y: Pos, val alignment: PositionGlobalAlignment): LayoutElement {
+    internal class PositionedElement<T: net.minecraft.client.gui.layouts.LayoutElement>(val element: T, val set: PosSet, private var x: Pos, private var y: Pos, val alignment: PositionGlobalAlignment): LayoutElement {
         private fun upDown(): IntRange {
             return IntRange(getTop(), getBottom())
         }
@@ -1327,7 +1327,7 @@ class LayoutWidget @JvmOverloads @Deprecated("Use the builder pattern. Construct
         }
         fun resetWidth() {
             if (elWidth() < 0) {
-                if (element is ClickableWidget) {
+                if (element is AbstractWidget) {
                     element.width = 0
                 } else if (element is Scalable) {
                     element.setWidth(0)
@@ -1336,8 +1336,8 @@ class LayoutWidget @JvmOverloads @Deprecated("Use the builder pattern. Construct
         }
 
         fun update() {
-            if (element is EntryListWidget<*>) {
-                element.position(element.width, element.height, x.get(), y.get())
+            if (element is AbstractSelectionList<*>) {
+                element.updateSizeAndPosition(element.width, element.height, x.get(), y.get())
             } else {
                 element.x = x.get()
                 element.y = y.get()
@@ -1349,7 +1349,7 @@ class LayoutWidget @JvmOverloads @Deprecated("Use the builder pattern. Construct
                 || alignment == Position.POSITION_RIGHT_OF_AND_JUSTIFY
                 || alignment == Position.ALIGN_RIGHT_AND_JUSTIFY)
             {
-                if (element is ClickableWidget) {
+                if (element is AbstractWidget) {
                     element.width += delta
                 } else if (element is Scalable) {
                     element.setWidth(elWidth() + delta)

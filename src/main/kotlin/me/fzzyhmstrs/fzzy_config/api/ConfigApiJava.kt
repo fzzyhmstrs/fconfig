@@ -14,9 +14,6 @@ package me.fzzyhmstrs.fzzy_config.api
 
 import me.fzzyhmstrs.fzzy_config.annotations.Comment
 import me.fzzyhmstrs.fzzy_config.annotations.Version
-import me.fzzyhmstrs.fzzy_config.api.ConfigApi.readOrCreateAndValidate
-import me.fzzyhmstrs.fzzy_config.api.ConfigApi.registerAndLoadConfig
-import me.fzzyhmstrs.fzzy_config.api.ConfigApi.registerConfig
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.event.api.EventApi
 import me.fzzyhmstrs.fzzy_config.event.impl.EventApiImpl
@@ -29,7 +26,7 @@ import me.fzzyhmstrs.fzzy_config.screen.ConfigScreenProvider
 import me.fzzyhmstrs.fzzy_config.util.PlatformApi
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.platform.impl.PlatformApiImpl
-import net.minecraft.util.Identifier
+import net.minecraft.resources.Identifier
 import net.peanuuutz.tomlkt.TomlComment
 import java.util.function.BiConsumer
 import java.util.function.Supplier

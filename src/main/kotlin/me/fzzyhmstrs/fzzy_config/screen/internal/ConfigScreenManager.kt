@@ -37,10 +37,10 @@ import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.platform.impl.PlatformUtils
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedAny
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.screen.Screen
-import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.text.Text
+import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.client.gui.components.AbstractWidget
+import net.minecraft.network.chat.Component
 import java.lang.ref.SoftReference
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
@@ -161,7 +161,7 @@ internal class ConfigScreenManager(private val scope: String, private val subSco
     }
 
     internal fun isScreenOpen(scope: String): Boolean {
-        return MinecraftClient.getInstance().currentScreen?.nullCast<ConfigScreen>()?.scope?.let {
+        return Minecraft.getInstance().screen?.nullCast<ConfigScreen>()?.scope?.let {
             //perfect scope match or the root config is open and the scope alias lines up
             it == scope || (it == rootScope && scope == this.scope || scope == this.rootScope)
         } == true
@@ -189,7 +189,7 @@ internal class ConfigScreenManager(private val scope: String, private val subSco
             cachedPermKey.incrementAndGet()
         }
         //don't open the screen that's already open
-        if (MinecraftClient.getInstance().currentScreen?.nullCast<ConfigScreen>()?.scope?.let {
+        if (Minecraft.getInstance().screen?.nullCast<ConfigScreen>()?.scope?.let {
             //perfect scope match or the root config is open and the scope alias lines up
             it == scope || (it == rootScope && scope == this.scope || scope == this.rootScope)
         } == true) {
@@ -204,7 +204,7 @@ internal class ConfigScreenManager(private val scope: String, private val subSco
         try {
             val screenArgPair = provideScopedScreen(scope)
             val screen = screenArgPair.first ?: return
-            MinecraftClient.getInstance().setScreen(screenArgPair.first)
+            Minecraft.getInstance().setScreen(screenArgPair.first)
             val rawEntryString = screenArgPair.second
             if (rawEntryString != null && rawEntryString != "") {
                 screen.scrollToEntry(scope)
@@ -223,13 +223,13 @@ internal class ConfigScreenManager(private val scope: String, private val subSco
     }
 
     private fun outOfGame(): Boolean {
-        val client = MinecraftClient.getInstance()
-        return (client.world == null || client.networkHandler == null || !client.isInSingleplayer)
+        val client = Minecraft.getInstance()
+        return (client.level == null || client.connection == null || !client.isLocalServer)
     }
 
     ////////////////////////////////////////////////
 
-    private fun rootConfigName(): Text {
+    private fun rootConfigName(): Component {
         if (rootScope != null) {
             val result = configs[rootScope]?.active?.let { config ->
                 ConfigApiImplClient.getText(config, rootScope, "", config::class.annotations, emptyList(), config::class.java.simpleName)
@@ -242,7 +242,7 @@ internal class ConfigScreenManager(private val scope: String, private val subSco
 
     private fun prepareConfigScreenCache(configSet: ConfigSet, playerPerms: Int, customPermsKey: Int, outOfGame: Boolean, previous: ConfigScreenCache? = null): ConfigScreenCache {
         val functionMap: MutableMap<String, MutableList<EntryCreator.Creator>> = mutableMapOf()
-        val nameMap: MutableMap<String, Text> = hashMapOf()
+        val nameMap: MutableMap<String, Component> = hashMapOf()
         val anchorPredicate: Predicate<AnchorResult> =
             Predicate { result ->
                 if (result.thing !is EntryAnchor) return@Predicate false
@@ -293,7 +293,7 @@ internal class ConfigScreenManager(private val scope: String, private val subSco
             if (s == this.rootScope) continue
             screenCaches[s]?.let { manager.addChild(it.manager) }
             val config: Config = set.active
-            val prefix = config.getId().toTranslationKey()
+            val prefix = config.getId().toLanguageKey()
             val configTexts = ConfigApiImplClient.getText(config, prefix, "", config::class.annotations, emptyList(), config::class.java.simpleName)
 
             contentBuffer.set(config)
@@ -318,7 +318,7 @@ internal class ConfigScreenManager(private val scope: String, private val subSco
         val rootConfig = configs[rootScope]
         if (rootConfig != null && this.rootScope != null) {
             val functionMap: MutableMap<String, MutableList<EntryCreator.Creator>> = mutableMapOf()
-            val nameMap: MutableMap<String, Text> = mutableMapOf(this.rootScope to name)
+            val nameMap: MutableMap<String, Component> = mutableMapOf(this.rootScope to name)
             val anchorPredicate: Predicate<AnchorResult> =
                 Predicate { result ->
                     if (result.thing !is EntryAnchor) return@Predicate false
@@ -388,7 +388,7 @@ internal class ConfigScreenManager(private val scope: String, private val subSco
 
         for (configSet in configs.values) {
             val config = configSet.active
-            val prefix = config.getId().toTranslationKey()
+            val prefix = config.getId().toLanguageKey()
             val configTexts = ConfigApiImplClient.getText(config, prefix, "", config::class.annotations, emptyList(), config::class.java.simpleName)
             anchorConsumer.accept(AnchorResult(prefix, config, configTexts))
 
@@ -418,7 +418,7 @@ internal class ConfigScreenManager(private val scope: String, private val subSco
     {
         val config: Config = set.active
         val baseConfig: Config = set.base
-        val prefix = config.getId().toTranslationKey()
+        val prefix = config.getId().toLanguageKey()
         val configTexts = ConfigApiImplClient.getText(config, prefix, "", config::class.annotations, emptyList(), config::class.java.simpleName)
         val groups: LinkedList<String> = LinkedList()
 
@@ -526,35 +526,35 @@ internal class ConfigScreenManager(private val scope: String, private val subSco
 
     private class AnchorResult(val scope: String, val thing: Any?, val texts: Translatable.Result)
 
-    private fun buildScopeButtons(nameMap: Map<String, Text>): Map<String, Supplier<ClickableWidget>> {
-        val textRenderer = MinecraftClient.getInstance().textRenderer
+    private fun buildScopeButtons(nameMap: Map<String, Component>): Map<String, Supplier<AbstractWidget>> {
+        val textRenderer = Minecraft.getInstance().font
         return nameMap.mapValues { (name, translation) ->
                 Supplier {
                     CustomButtonWidget.builder(translation) { openScopedScreen(name) }
-                        .dimensions(0, 0, min(100, textRenderer.getWidth(translation) + 8), 20)
+                        .dimensions(0, 0, min(100, textRenderer.width(translation) + 8), 20)
                         .narrationSupplier { _, _ -> FcText.translatable("fc.button.navigate", translation) }
                         .build()
                 }
             }
     }
 
-    private fun buildBuilder(name: Text,
+    private fun buildBuilder(name: Component,
                              scope: String,
                              scopes: List<String>,
-                             scopeButtonFunctions: Map<String, Supplier<ClickableWidget>>,
+                             scopeButtonFunctions: Map<String, Supplier<AbstractWidget>>,
                              entries: List<EntryCreator.Creator>,
                              manager: UpdateManager): ConfigScreenBuilder {
         return ConfigScreenBuilder {
             val scopeSplit = scope.split(".")
             val parentScopes = scopes.filter { scopeSplit.containsAll(it.split(".")) && it != scope }.sortedBy { it.length }
-            val suppliers: List<Supplier<ClickableWidget>> = parentScopes.mapNotNull { scopeButtonFunctions[it] }
-            val list = DynamicListWidget(MinecraftClient.getInstance(), entries.map { it.entry }, 0, 0, 290, 290, DynamicListWidget.ListSpec(verticalPadding = 4))
+            val suppliers: List<Supplier<AbstractWidget>> = parentScopes.mapNotNull { scopeButtonFunctions[it] }
+            val list = DynamicListWidget(Minecraft.getInstance(), entries.map { it.entry }, 0, 0, 290, 290, DynamicListWidget.ListSpec(verticalPadding = 4))
             ConfigScreen(name, scope, manager, list, suppliers, this.sidebar) {
                 for ((_, cache) in screenCaches) {
                     if (cache.manager.hasChanges()) cache.manager.apply(true)
                     cache.manager.invalidatePush()
                 }
-            }.setParent(MinecraftClient.getInstance().currentScreen)
+            }.setParent(Minecraft.getInstance().screen)
         }
     }
 
@@ -592,7 +592,7 @@ internal class ConfigScreenManager(private val scope: String, private val subSco
 
         fun receiveForwardedUpdate(config: Config, update: String, player: UUID, scope: String, summary: String) {
             var entry: Entry<*, *>? = null
-            ConfigApiImpl.walk(config, config.getId().toTranslationKey(), 1) { _, _, new, thing, _, _, _, callback ->
+            ConfigApiImpl.walk(config, config.getId().toLanguageKey(), 1) { _, _, new, thing, _, _, _, callback ->
                 if (new == scope) {
                     if(thing is Entry<*, *>) {
                         entry = thing

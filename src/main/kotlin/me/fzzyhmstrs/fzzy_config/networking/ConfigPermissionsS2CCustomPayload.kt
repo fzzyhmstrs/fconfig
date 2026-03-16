@@ -13,23 +13,23 @@ package me.fzzyhmstrs.fzzy_config.networking
 import io.netty.buffer.ByteBuf
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.util.PortingUtils
-import net.minecraft.network.codec.PacketCodec
-import net.minecraft.network.codec.PacketCodecs
-import net.minecraft.network.packet.CustomPayload
-import net.minecraft.network.packet.CustomPayload.Id
+import net.minecraft.network.codec.StreamCodec
+import net.minecraft.network.codec.ByteBufCodecs
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload.Type
 
-class ConfigPermissionsS2CCustomPayload(val id: String, val permissions: MutableMap<String, Boolean>): CustomPayload {
+class ConfigPermissionsS2CCustomPayload(val id: String, val permissions: MutableMap<String, Boolean>): CustomPacketPayload {
 
-    override fun getId(): Id<out CustomPayload> {
+    override fun type(): Type<out CustomPacketPayload> {
         return type
     }
 
     companion object {
-        val type: Id<ConfigPermissionsS2CCustomPayload> = Id("config_perms_s2c".fcId())
-        val codec: PacketCodec<ByteBuf, ConfigPermissionsS2CCustomPayload> = PacketCodec.tuple(
+        val type: Type<ConfigPermissionsS2CCustomPayload> = Type("config_perms_s2c".fcId())
+        val codec: StreamCodec<ByteBuf, ConfigPermissionsS2CCustomPayload> = StreamCodec.composite(
             PortingUtils.Codecs.STRING,
             ConfigPermissionsS2CCustomPayload::id,
-            PacketCodecs.map({ hashMapOf() }, PortingUtils.Codecs.STRING, PortingUtils.Codecs.BOOL),
+            ByteBufCodecs.map({ hashMapOf() }, PortingUtils.Codecs.STRING, PortingUtils.Codecs.BOOL),
             ConfigPermissionsS2CCustomPayload::permissions,
             ::ConfigPermissionsS2CCustomPayload
         )

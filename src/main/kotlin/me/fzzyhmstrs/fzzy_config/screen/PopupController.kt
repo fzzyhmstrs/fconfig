@@ -13,8 +13,8 @@ package me.fzzyhmstrs.fzzy_config.screen
 import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindow
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.DrawContext
+import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.GuiGraphicsExtractor
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.*
 
@@ -28,7 +28,6 @@ import java.util.*
  * @since 0.6.7, moved from PopupParentElement originally 0.2.0
  */
 //client
-@JvmDefaultWithCompatibility
 interface PopupController: LastSelectable {
     /**
      * A stack for holding popupwidgets while allowing for easy list iteration as needed. For rendering this stack should be traversed in reverse order, which LinkedList makes easy with `descendingIterator`
@@ -132,8 +131,8 @@ interface PopupController: LastSelectable {
      * @author fzzyhmstrs
      * @since 0.6.7
      */
-    fun preRender(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-        context.matrices.pushMatrix()
+    fun preRender(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
+        context.pose().pushMatrix()
         if (popupWidgets.none { it.blurs() }) {
             blurBackground(context)
         }
@@ -151,30 +150,30 @@ interface PopupController: LastSelectable {
      * @author fzzyhmstrs
      * @since 0.6.7
      */
-    fun postRender(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    fun postRender(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
         if (popupWidgets.isNotEmpty()) {
             val highestBlurred = popupWidgets.lastOrNull { it.blurs() }
             for ((index, popup) in popupWidgets.descendingIterator().withIndex()) {
-                context.createNewRootLayer()
+                context.nextStratum()
                 if (popup == highestBlurred) {
                     blurBackground(context)
                 }
                 if (index == popupWidgets.lastIndex)
-                    popup.render(context, mouseX, mouseY, delta)
+                    popup.extractRenderState(context, mouseX, mouseY, delta)
                 else
-                    popup.render(context, 0, 0, delta)
+                    popup.extractRenderState(context, 0, 0, delta)
             }
         }
         suggestionWindow?.render(context, mouseX, mouseY, delta)
         suggestionWindow = null
-        context.matrices.popMatrix()
+        context.pose().popMatrix()
     }
 
     /**
      * Shouldn't be overridden, added to account for blurring changes in 1.21.6+, will not be present pre-1.21.6, override with caution (don't at all)
      */
-    fun blurBackground(context: DrawContext) {
-        context.applyBlur()
+    fun blurBackground(context: GuiGraphicsExtractor) {
+        context.blurBeforeThisStratum()
     }
 
     data class PopupEntry(val parent: PopupController, val widget: PopupWidget?, val mouseX: Double? = null, val mouseY: Double? = null, val popAction: Runnable = Runnable { })
@@ -187,12 +186,12 @@ interface PopupController: LastSelectable {
         }
 
         internal fun pop() {
-            val popupParentElement = MinecraftClient.getInstance().currentScreen?.nullCast<PopupController>() ?: return
+            val popupParentElement = Minecraft.getInstance().screen?.nullCast<PopupController>() ?: return
             popupParentElement.setPopupInternal(null, null, null)
         }
 
         internal fun popAll() {
-            MinecraftClient.getInstance().execute {
+            Minecraft.getInstance().execute {
                 while (popupStack.isNotEmpty()) {
                     val e = popupStack.pop()
                     e.parent.setPopupInternal(e.widget, e.mouseX, e.mouseY)

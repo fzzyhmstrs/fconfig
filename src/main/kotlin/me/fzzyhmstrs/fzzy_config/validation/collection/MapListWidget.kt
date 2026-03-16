@@ -17,14 +17,14 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.Click
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.Element
-import net.minecraft.client.gui.Selectable
-import net.minecraft.client.gui.widget.ElementListWidget
-import net.minecraft.client.input.KeyInput
-import net.minecraft.util.Colors
+import net.minecraft.client.Minecraft
+import net.minecraft.client.input.MouseButtonEvent
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.gui.components.events.GuiEventListener
+import net.minecraft.client.gui.narration.NarratableEntry
+import net.minecraft.client.gui.components.ContainerObjectSelectionList
+import net.minecraft.client.input.KeyEvent
+import net.minecraft.util.CommonColors
 import java.util.function.BiFunction
 import java.util.function.Function
 import me.fzzyhmstrs.fzzy_config.entry.Entry as Entry1
@@ -36,7 +36,7 @@ internal class MapListWidget<K, V>(
     valueSupplier: Entry1<V, *>,
     entryValidator: BiFunction<MapListWidget<K, V>, MapEntry<K, V>?, ChoiceValidator<K>>)
     :
-    ElementListWidget<MapListWidget.MapEntry<K, V>>(MinecraftClient.getInstance(), 268, 160, 0, 22), SuggestionWindowListener {
+    ContainerObjectSelectionList<MapListWidget.MapEntry<K, V>>(Minecraft.getInstance(), 268, 160, 0, 22), SuggestionWindowListener {
 
     fun getRawMap(skip: MapEntry<K, V>? = null): Map<K, V> {
         val map: MutableMap<K, V> = mutableMapOf()
@@ -49,9 +49,9 @@ internal class MapListWidget<K, V>(
         return map.toMap()
     }
 
-    private var suggestionWindowElement: Element? = null
+    private var suggestionWindowElement: GuiEventListener? = null
 
-    override fun setSuggestionWindowElement(element: Element?) {
+    override fun setSuggestionWindowElement(element: GuiEventListener?) {
         this.suggestionWindowElement = element
     }
 
@@ -66,10 +66,10 @@ internal class MapListWidget<K, V>(
         return map.toMap()
     }
 
-    override fun drawHeaderAndFooterSeparators(context: DrawContext?) {
+    override fun extractListSeparators(context: GuiGraphicsExtractor) {
     }
 
-    override fun drawMenuListBackground(context: DrawContext?) {
+    override fun extractListBackground(context: GuiGraphicsExtractor) {
     }
 
     override fun getRowWidth(): Int {
@@ -80,25 +80,25 @@ internal class MapListWidget<K, V>(
         return this.x
     }
 
-    override fun getScrollbarX(): Int {
+    override fun scrollBarX(): Int {
         return this.x + this.width - 6
     }
 
     private fun makeVisible(entry: MapEntry<K, V>) {
-        this.scrollTo(entry)
+        this.scrollToEntry(entry)
     }
 
-    override fun mouseClicked(click: Click, doubled: Boolean): Boolean {
+    override fun mouseClicked(click: MouseButtonEvent, doubled: Boolean): Boolean {
         if (suggestionWindowElement?.mouseClicked(click, doubled) == true) return true
         return super.mouseClicked(click, doubled)
     }
 
     override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
-        if (suggestionWindowElement?.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount) ?: hoveredElement(mouseX, mouseY).filter { element: Element -> element.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount) }.isPresent) return true
+        if (suggestionWindowElement?.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount) ?: getChildAt(mouseX, mouseY).filter { element: GuiEventListener -> element.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount) }.isPresent) return true
         return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
     }
 
-    override fun keyPressed(input: KeyInput): Boolean {
+    override fun keyPressed(input: KeyEvent): Boolean {
         if (suggestionWindowElement?.keyPressed(input) == true) return true
         return super.keyPressed(input)
     }
@@ -112,7 +112,7 @@ internal class MapListWidget<K, V>(
 
     private class ExistingEntry<K, V>(private val key: me.fzzyhmstrs.fzzy_config.entry.Entry<K, *>, private val value: me.fzzyhmstrs.fzzy_config.entry.Entry<V, *>, private val parent: MapListWidget<K, V>, keyValidator: BiFunction<MapListWidget<K, V>, MapEntry<K, V>?, ChoiceValidator<K>>): MapEntry<K, V>() {
 
-        private var clickedWidget: Element? = null
+        private var clickedWidget: GuiEventListener? = null
 
         private val keyWidget = key.widgetAndTooltipEntry(keyValidator.apply(parent, this)).also { if (it is SuggestionWindowProvider) it.addListener(parent) }
         private val valueWidget = value.widgetAndTooltipEntry(ChoiceValidator.any()).also { if (it is SuggestionWindowProvider) it.addListener(parent) }
@@ -130,40 +130,40 @@ internal class MapListWidget<K, V>(
             return Pair(key.get(), value.get())
         }
 
-        override fun children(): MutableList<out Element> {
+        override fun children(): MutableList<out GuiEventListener> {
             return mutableListOf(keyWidget, valueWidget, deleteWidget)
         }
 
-        override fun selectableChildren(): MutableList<out Selectable> {
+        override fun narratables(): MutableList<out NarratableEntry> {
             return mutableListOf(keyWidget, valueWidget, deleteWidget)
         }
 
-        override fun mouseClicked(click: Click, doubled: Boolean): Boolean {
-            hoveredElement(click.x, click.y).ifPresentOrElse({clickedWidget = it}, {clickedWidget = null})
+        override fun mouseClicked(click: MouseButtonEvent, doubled: Boolean): Boolean {
+            getChildAt(click.x, click.y).ifPresentOrElse({clickedWidget = it}, {clickedWidget = null})
             return super.mouseClicked(click, doubled)
         }
 
-        override fun mouseReleased(click: Click): Boolean {
+        override fun mouseReleased(click: MouseButtonEvent): Boolean {
             if (clickedWidget != null) {
                 return (clickedWidget?.mouseReleased(click) ?: super.mouseReleased(click)).also { clickedWidget = null }
             }
             return super.mouseReleased(click)
         }
 
-        override fun render(
-            context: DrawContext,
+        override fun extractContent(
+            context: GuiGraphicsExtractor,
             mouseX: Int,
             mouseY: Int,
             hovered: Boolean,
             tickDelta: Float
         ) {
             keyWidget.setPosition(x, y)
-            keyWidget.render(context, mouseX, mouseY, tickDelta)
-            context.drawTextWithShadow(parent.client.textRenderer, TextureIds.MAP_ARROW, x + 115, y + 5, Colors.WHITE)
+            keyWidget.extractRenderState(context, mouseX, mouseY, tickDelta)
+            context.text(parent.minecraft.font, TextureIds.MAP_ARROW, x + 115, y + 5, CommonColors.WHITE)
             valueWidget.setPosition(x+124, y)
-            valueWidget.render(context, mouseX, mouseY, tickDelta)
+            valueWidget.extractRenderState(context, mouseX, mouseY, tickDelta)
             deleteWidget.setPosition(x+238, y)
-            deleteWidget.render(context, mouseX, mouseY, tickDelta)
+            deleteWidget.extractRenderState(context, mouseX, mouseY, tickDelta)
         }
     }
 
@@ -184,23 +184,23 @@ internal class MapListWidget<K, V>(
             .size(20, 20)
             .build()
 
-        override fun children(): MutableList<out Element> {
+        override fun children(): MutableList<out GuiEventListener> {
             return mutableListOf(addWidget)
         }
 
-        override fun selectableChildren(): MutableList<out Selectable> {
+        override fun narratables(): MutableList<out NarratableEntry> {
             return mutableListOf(addWidget)
         }
 
-        override fun render(
-            context: DrawContext,
+        override fun extractContent(
+            context: GuiGraphicsExtractor,
             mouseX: Int,
             mouseY: Int,
             hovered: Boolean,
             tickDelta: Float
         ) {
             addWidget.setPosition(x+238, y)
-            addWidget.render(context, mouseX, mouseY, tickDelta)
+            addWidget.extractRenderState(context, mouseX, mouseY, tickDelta)
         }
     }
 

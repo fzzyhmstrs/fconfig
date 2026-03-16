@@ -16,9 +16,9 @@ import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.validation.misc.*
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedInt
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber
-import net.minecraft.util.Identifier
+import net.minecraft.resources.Identifier
 
-class TestServerConfigImpl: Config(Identifier.of("fzzy_config_test","server_config")) {
+class TestServerConfigImpl: Config(Identifier.fromNamespaceAndPath("fzzy_config_test","server_config")) {
 
     var bl1 = true
     var bl2 = ValidatedBoolean()

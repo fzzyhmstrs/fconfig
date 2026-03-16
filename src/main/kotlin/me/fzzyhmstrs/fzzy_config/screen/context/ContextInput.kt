@@ -11,7 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.screen.context
 
 import com.mojang.serialization.Codec
-import net.minecraft.util.StringIdentifiable
+import net.minecraft.util.StringRepresentable
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
 
@@ -20,7 +20,7 @@ import net.peanuuutz.tomlkt.TomlLiteral
  * @author fzzyhmstrs
  * @since 0.6.0, stringIdentifiable since 0.6.5
  */
-enum class ContextInput(private val id: String): StringIdentifiable {
+enum class ContextInput(private val id: String): StringRepresentable {
     /**
      * Context event triggered with keyboard input
      * @author fzzyhmstrs
@@ -34,12 +34,12 @@ enum class ContextInput(private val id: String): StringIdentifiable {
      */
     MOUSE("mouse");
 
-    override fun asString(): String {
+    override fun getSerializedName(): String {
         return id
     }
 
     companion object {
-        val CODEC: Codec<ContextInput> = StringIdentifiable.createCodec { ContextInput.entries.toTypedArray() }
+        val CODEC: Codec<ContextInput> = StringRepresentable.fromEnum { ContextInput.entries.toTypedArray() }
 
         fun fallback(): TomlElement {
             return TomlLiteral(KEYBOARD.id)

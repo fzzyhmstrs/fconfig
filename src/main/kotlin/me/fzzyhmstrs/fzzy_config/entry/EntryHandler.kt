@@ -22,7 +22,6 @@ package me.fzzyhmstrs.fzzy_config.entry
  * @author fzzyhmstrs
  * @since 0.2.0, copyValue added 0.6.0
  */
-@JvmDefaultWithCompatibility
 interface EntryHandler<T>: EntrySerializer<T>, EntryDeserializer<T>, EntryValidator<T>, EntryCorrector<T> {
 
     /**

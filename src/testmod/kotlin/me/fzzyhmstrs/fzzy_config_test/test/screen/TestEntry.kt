@@ -7,20 +7,20 @@ import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawOutline
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config_test.FC
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.Element
-import net.minecraft.client.gui.Selectable
-import net.minecraft.client.gui.widget.ButtonWidget
-import net.minecraft.text.Text
-import net.minecraft.util.Colors
+import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.gui.components.events.GuiEventListener
+import net.minecraft.client.gui.narration.NarratableEntry
+import net.minecraft.client.gui.components.Button
+import net.minecraft.network.chat.Component
+import net.minecraft.util.CommonColors
 
-class TestEntry(parentElement: DynamicListWidget, scope: String, group: Int, index: Int, private val n: Text) :
+class TestEntry(parentElement: DynamicListWidget, scope: String, group: Int, index: Int, private val n: Component) :
     DynamicListWidget.Entry(parentElement, Translatable.createResult(scope.lit()), DynamicListWidget.Scope(scope, if (group == index) group.toString() else "", listOf(group.toString())), if (group == index) DynamicListWidget.Visibility.GROUP_VISIBLE else DynamicListWidget.Visibility.VISIBLE)
     {
 
-        private val button: ButtonWidget =
-            ButtonWidget.builder(n) { _ -> FC.LOGGER.info("I Pressed {} for height {}", n, h); h += 5 }.size(75, 20).build()
+        private val button: Button =
+            Button.builder(n) { _ -> FC.LOGGER.info("I Pressed {} for height {}", n, h); h += 5 }.size(75, 20).build()
 
         private val childs = mutableListOf(button)
         override var h: Int = 24
@@ -30,7 +30,7 @@ class TestEntry(parentElement: DynamicListWidget, scope: String, group: Int, ind
         }
 
         override fun renderEntry(
-            context: DrawContext,
+            context: GuiGraphicsExtractor,
             x: Int,
             y: Int,
             width: Int,
@@ -42,12 +42,12 @@ class TestEntry(parentElement: DynamicListWidget, scope: String, group: Int, ind
             delta: Float
         ) {
             button.setPosition(x + width - 75, y + 2)
-            button.render(context, mouseX, mouseY, delta)
-            context.drawText(MinecraftClient.getInstance().textRenderer, "Test Entry".lit(), x + 2, y + 6, 0xFFFFFF, true)
+            button.extractRenderState(context, mouseX, mouseY, delta)
+            context.text(Minecraft.getInstance().font, "Test Entry".lit(), x + 2, y + 6, 0xFFFFFF, true)
         }
 
         override fun renderBorder(
-            context: DrawContext,
+            context: GuiGraphicsExtractor,
             x: Int,
             y: Int,
             width: Int,
@@ -59,10 +59,10 @@ class TestEntry(parentElement: DynamicListWidget, scope: String, group: Int, ind
             delta: Float
         ) {
             if (hovered || focused)
-                context.drawOutline(x, y, width, height, Colors.WHITE)
+                context.drawOutline(x, y, width, height, CommonColors.WHITE)
         }
 
-        override fun children(): MutableList<out Element> {
+        override fun children(): MutableList<out GuiEventListener> {
             return childs
         }
 

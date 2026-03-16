@@ -12,7 +12,7 @@ package me.fzzyhmstrs.fzzy_config.event.api.v2
 
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.event.api.ServerUpdateContext
-import net.minecraft.util.Identifier
+import net.minecraft.resources.Identifier
 
 /**
  * Listener for on-changed events on the server side. Will be fired for any and all updated configs, allowing inspection of other configs. For use in your own configs, consider directly implementing [Config.onUpdateServer][me.fzzyhmstrs.fzzy_config.config.Config.onUpdateServer]. Common code should also use this, as server configs are loaded on both sides regardless of environment (they are not technically "server" configs, they are "synced" configs).

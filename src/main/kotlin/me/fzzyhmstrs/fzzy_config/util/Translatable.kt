@@ -17,10 +17,10 @@ import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.api.ConfigApiJava
 import me.fzzyhmstrs.fzzy_config.util.FcText.transSupplied
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
-import net.minecraft.client.resource.language.I18n
-import net.minecraft.text.MutableText
-import net.minecraft.text.Text
-import net.minecraft.util.Formatting
+import net.minecraft.client.resources.language.I18n
+import net.minecraft.network.chat.MutableComponent
+import net.minecraft.network.chat.Component
+import net.minecraft.ChatFormatting
 import net.peanuuutz.tomlkt.TomlComment
 import java.lang.ref.SoftReference
 import java.util.concurrent.ConcurrentHashMap
@@ -33,7 +33,6 @@ import java.util.function.UnaryOperator
  * @author fzzyhmstrs
  * @since 0.2.0, added prefixes 0.6.0
  */
-@JvmDefaultWithCompatibility
 interface Translatable {
     /**
      * translation key of this Translatable. the "name" in-game
@@ -65,7 +64,7 @@ interface Translatable {
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun translation(fallback: String? = null): MutableText {
+    fun translation(fallback: String? = null): MutableComponent {
         return FcText.translatableWithFallback(translationKey(), fallback ?: this::class.java.simpleName.split(FcText.regex).joinToString(" ").trimStart())
     }
     /**
@@ -75,7 +74,7 @@ interface Translatable {
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun description(fallback: String? = null): MutableText {
+    fun description(fallback: String? = null): MutableComponent {
         return FcText.translatableWithFallback(descriptionKey(), fallback ?: "")
     }
     /**
@@ -85,7 +84,7 @@ interface Translatable {
      * @author fzzyhmstrs
      * @since 0.6.0
      */
-    fun prefix(fallback: String? = null): MutableText {
+    fun prefix(fallback: String? = null): MutableComponent {
         return FcText.translatableWithFallback(prefixKey(), fallback ?: "")
     }
 
@@ -96,7 +95,7 @@ interface Translatable {
      * @author fzzyhmstrs
      * @since 0.6.8
      */
-    fun translationOrNull(fallback: String? = null): MutableText? {
+    fun translationOrNull(fallback: String? = null): MutableComponent? {
         return if (hasTranslation())
             translation(fallback)
         else
@@ -109,7 +108,7 @@ interface Translatable {
      * @author fzzyhmstrs
      * @since 0.6.8
      */
-    fun descriptionOrNull(fallback: String? = null): MutableText? {
+    fun descriptionOrNull(fallback: String? = null): MutableComponent? {
         return if(hasDescription()) description(fallback) else null
     }
     /**
@@ -119,7 +118,7 @@ interface Translatable {
      * @author fzzyhmstrs
      * @since 0.6.8
      */
-    fun prefixOrNull(fallback: String? = null): MutableText? {
+    fun prefixOrNull(fallback: String? = null): MutableComponent? {
         return if (hasPrefix()) prefix(fallback) else null
     }
 
@@ -130,7 +129,7 @@ interface Translatable {
      * @since 0.2.8
      */
     fun hasTranslation(): Boolean {
-        return I18n.hasTranslation(translationKey())
+        return I18n.exists(translationKey())
     }
     /**
      * Whether this Translatable has a valid description
@@ -139,7 +138,7 @@ interface Translatable {
      * @since 0.2.8
      */
     fun hasDescription(): Boolean {
-        return I18n.hasTranslation(descriptionKey())
+        return I18n.exists(descriptionKey())
     }
     /**
      * Whether this Translatable has a valid prefix
@@ -148,7 +147,7 @@ interface Translatable {
      * @since 0.6.0
      */
     fun hasPrefix(): Boolean {
-        return I18n.hasTranslation(prefixKey())
+        return I18n.exists(prefixKey())
     }
 
     object Impls {
@@ -193,13 +192,13 @@ interface Translatable {
             val keyN = if(bl) FcText.concat(annotation.prefix, PERIOD, fieldName) else annotation.prefix
             val keyD = if(bl) FcText.concat(annotation.prefix, PERIOD, fieldName, DESC) else FcText.concat(annotation.prefix, DESC)
             val keyP = if(bl) FcText.concat(annotation.prefix, PERIOD, fieldName, PREFIX) else FcText.concat(annotation.prefix, PREFIX)
-            val n = if (I18n.hasTranslation(keyN)) keyN.translate() else thing.transSupplied { getNameFallback(annotations, fallback) }
-            val d = if (I18n.hasTranslation(keyD)) keyD.translate() else thing.descGet { getDescFallback(annotations, globalAnnotations) }
-            val p = if (I18n.hasTranslation(keyP)) keyP.translate() else thing.prefixGet { getPrefixFallback(annotations) }
+            val n = if (I18n.exists(keyN)) keyN.translate() else thing.transSupplied { getNameFallback(annotations, fallback) }
+            val d = if (I18n.exists(keyD)) keyD.translate() else thing.descGet { getDescFallback(annotations, globalAnnotations) }
+            val p = if (I18n.exists(keyP)) keyP.translate() else thing.prefixGet { getPrefixFallback(annotations) }
             return Utils.createScopedResult(scope, n, d, p)
         }
 
-        private fun Any?.descGet(fallbackSupplier: Supplier<String>): MutableText? {
+        private fun Any?.descGet(fallbackSupplier: Supplier<String>): MutableComponent? {
             if(this is Translatable) {
                 if (this.hasDescription()) {
                     return this.description()
@@ -207,12 +206,12 @@ interface Translatable {
             }
             val fallback = fallbackSupplier.get()
             return if (fallback != "")
-                FcText.literal(fallback).formatted(Formatting.ITALIC)
+                FcText.literal(fallback).withStyle(ChatFormatting.ITALIC)
             else
                 null
         }
 
-        private fun Any?.prefixGet(fallbackSupplier: Supplier<String>): MutableText? {
+        private fun Any?.prefixGet(fallbackSupplier: Supplier<String>): MutableComponent? {
             if(this is Translatable) {
                 if (this.hasPrefix()) {
                     return this.prefix()
@@ -220,7 +219,7 @@ interface Translatable {
             }
             val fallback = fallbackSupplier.get()
             return if (fallback != "")
-                FcText.literal(fallback).formatted(Formatting.ITALIC)
+                FcText.literal(fallback).withStyle(ChatFormatting.ITALIC)
             else
                 null
         }
@@ -263,108 +262,108 @@ interface Translatable {
         }
     }
 
-    private data class Full(override val name: Text, override val desc: Text? = null, override val prefix: Text? = null): Result(), Searcher.SearchContent {
+    private data class Full(override val name: Component, override val desc: Component? = null, override val prefix: Component? = null): Result(), Searcher.SearchContent {
 
         override val content = this
 
         override val skip = false
 
-        override fun map(nameMapper: UnaryOperator<Text>, descMapper: UnaryOperator<Text>, prefixMapper: UnaryOperator<Text>): Result {
+        override fun map(nameMapper: UnaryOperator<Component>, descMapper: UnaryOperator<Component>, prefixMapper: UnaryOperator<Component>): Result {
             return Full(nameMapper.apply(name), desc?.let { descMapper.apply(it) }, prefix?.let { prefixMapper.apply(it) })
         }
 
-        override fun mapName(nameMapper: UnaryOperator<Text>): Result {
+        override fun mapName(nameMapper: UnaryOperator<Component>): Result {
             return Full(nameMapper.apply(name), desc, prefix)
         }
 
-        override fun mapDesc(descMapper: UnaryOperator<Text>): Result {
+        override fun mapDesc(descMapper: UnaryOperator<Component>): Result {
             return Full(name, desc?.let { descMapper.apply(it) }, prefix)
         }
 
-        override fun mapPrefix(prefixMapper: UnaryOperator<Text>): Result {
+        override fun mapPrefix(prefixMapper: UnaryOperator<Component>): Result {
             return Full(name, desc, prefix?.let { prefixMapper.apply(it) })
         }
     }
 
-    private data class Named(override val name: Text): Result() {
+    private data class Named(override val name: Component): Result() {
 
-        override val desc: Text?
+        override val desc: Component?
             get() = null
 
-        override val prefix: Text?
+        override val prefix: Component?
             get() = null
 
-        override fun map(nameMapper: UnaryOperator<Text>, descMapper: UnaryOperator<Text>, prefixMapper: UnaryOperator<Text>): Result {
+        override fun map(nameMapper: UnaryOperator<Component>, descMapper: UnaryOperator<Component>, prefixMapper: UnaryOperator<Component>): Result {
             return Named(nameMapper.apply(name))
         }
 
-        override fun mapName(nameMapper: UnaryOperator<Text>): Result {
+        override fun mapName(nameMapper: UnaryOperator<Component>): Result {
             return Named(nameMapper.apply(name))
         }
 
-        override fun mapDesc(descMapper: UnaryOperator<Text>): Result {
+        override fun mapDesc(descMapper: UnaryOperator<Component>): Result {
             return this
         }
 
-        override fun mapPrefix(prefixMapper: UnaryOperator<Text>): Result {
+        override fun mapPrefix(prefixMapper: UnaryOperator<Component>): Result {
             return this
         }
     }
 
-    private data class NameDesc(override val name: Text, override val desc: Text): Result() {
+    private data class NameDesc(override val name: Component, override val desc: Component): Result() {
 
-        override val prefix: Text?
+        override val prefix: Component?
             get() = null
 
-        override fun map(nameMapper: UnaryOperator<Text>, descMapper: UnaryOperator<Text>, prefixMapper: UnaryOperator<Text>): Result {
+        override fun map(nameMapper: UnaryOperator<Component>, descMapper: UnaryOperator<Component>, prefixMapper: UnaryOperator<Component>): Result {
             return NameDesc(nameMapper.apply(name), descMapper.apply(desc))
         }
 
-        override fun mapName(nameMapper: UnaryOperator<Text>): Result {
+        override fun mapName(nameMapper: UnaryOperator<Component>): Result {
             return NameDesc(nameMapper.apply(name), desc)
         }
 
-        override fun mapDesc(descMapper: UnaryOperator<Text>): Result {
+        override fun mapDesc(descMapper: UnaryOperator<Component>): Result {
             return NameDesc(name, descMapper.apply(desc))
         }
 
-        override fun mapPrefix(prefixMapper: UnaryOperator<Text>): Result {
+        override fun mapPrefix(prefixMapper: UnaryOperator<Component>): Result {
             return this
         }
     }
 
-    private data class NamePrefix(override val name: Text, override val prefix: Text): Result() {
+    private data class NamePrefix(override val name: Component, override val prefix: Component): Result() {
 
-        override val desc: Text?
+        override val desc: Component?
             get() = null
 
-        override fun map(nameMapper: UnaryOperator<Text>, descMapper: UnaryOperator<Text>, prefixMapper: UnaryOperator<Text>): Result {
+        override fun map(nameMapper: UnaryOperator<Component>, descMapper: UnaryOperator<Component>, prefixMapper: UnaryOperator<Component>): Result {
             return NamePrefix(nameMapper.apply(name), prefixMapper.apply(prefix))
         }
 
-        override fun mapName(nameMapper: UnaryOperator<Text>): Result {
+        override fun mapName(nameMapper: UnaryOperator<Component>): Result {
             return NamePrefix(nameMapper.apply(name), prefix)
         }
 
-        override fun mapDesc(descMapper: UnaryOperator<Text>): Result {
+        override fun mapDesc(descMapper: UnaryOperator<Component>): Result {
             return this
         }
 
-        override fun mapPrefix(prefixMapper: UnaryOperator<Text>): Result {
+        override fun mapPrefix(prefixMapper: UnaryOperator<Component>): Result {
             return NamePrefix(name, prefixMapper.apply(prefix))
         }
     }
 
     private data object Empty: Result() {
 
-        override val name: Text = FcText.empty()
-        override val desc: Text? = null
-        override val prefix: Text? = null
+        override val name: Component = FcText.empty()
+        override val desc: Component? = null
+        override val prefix: Component? = null
 
-        override fun map(nameMapper: UnaryOperator<Text>, descMapper: UnaryOperator<Text>, prefixMapper: UnaryOperator<Text>): Result = this
-        override fun mapName(nameMapper: UnaryOperator<Text>): Result = this
-        override fun mapDesc(descMapper: UnaryOperator<Text>): Result = this
-        override fun mapPrefix(prefixMapper: UnaryOperator<Text>): Result = this
+        override fun map(nameMapper: UnaryOperator<Component>, descMapper: UnaryOperator<Component>, prefixMapper: UnaryOperator<Component>): Result = this
+        override fun mapName(nameMapper: UnaryOperator<Component>): Result = this
+        override fun mapDesc(descMapper: UnaryOperator<Component>): Result = this
+        override fun mapPrefix(prefixMapper: UnaryOperator<Component>): Result = this
     }
 
     /**
@@ -373,14 +372,14 @@ interface Translatable {
      * @since 0.6.8, will replace Result itself in 0.7.0
      */
     abstract class Result: Searcher.SearchContent {
-        abstract val name: Text
-        abstract val desc: Text?
-        abstract val prefix: Text?
+        abstract val name: Component
+        abstract val desc: Component?
+        abstract val prefix: Component?
 
-        abstract fun map(nameMapper: UnaryOperator<Text>, descMapper: UnaryOperator<Text>, prefixMapper: UnaryOperator<Text>): Result
-        abstract fun mapName(nameMapper: UnaryOperator<Text>): Result
-        abstract fun mapDesc(descMapper: UnaryOperator<Text>): Result
-        abstract fun mapPrefix(prefixMapper: UnaryOperator<Text>): Result
+        abstract fun map(nameMapper: UnaryOperator<Component>, descMapper: UnaryOperator<Component>, prefixMapper: UnaryOperator<Component>): Result
+        abstract fun mapName(nameMapper: UnaryOperator<Component>): Result
+        abstract fun mapDesc(descMapper: UnaryOperator<Component>): Result
+        abstract fun mapPrefix(prefixMapper: UnaryOperator<Component>): Result
 
         override val content: Result
             get() = this
@@ -419,7 +418,7 @@ interface Translatable {
              * @since 0.7.5
              */
             @JvmStatic
-            val WIDGET_TITLE: Type<Text> = object : Type<Text> {}
+            val WIDGET_TITLE: Type<Component> = object : Type<Component> {}
             /**
              * Currently unused
              * @author fzzyhmstrs
@@ -559,7 +558,7 @@ interface Translatable {
          */
         @JvmOverloads
         @JvmStatic
-        fun createScopedResult(scope: String, name: Text, desc: Text? = null, prefix: Text? = null): Result {
+        fun createScopedResult(scope: String, name: Component, desc: Component? = null, prefix: Component? = null): Result {
             return cacheScopedResult(scope, createResult(name, desc, prefix))
         }
 
@@ -574,7 +573,7 @@ interface Translatable {
          */
         @JvmOverloads
         @JvmStatic
-        fun createResult(name: Text, desc: Text? = null, prefix: Text? = null): Result {
+        fun createResult(name: Component, desc: Component? = null, prefix: Component? = null): Result {
             return if (desc == null) {
                 if (prefix == null) {
                     Named(name)

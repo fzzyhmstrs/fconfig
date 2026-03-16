@@ -10,7 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
-import net.minecraft.text.Text
+import net.minecraft.network.chat.Component
 
 /**
  * A TooltipChild is a child of some parent element that may or may not need to present tooltip and narration information to its parent. This system is used to compile tooltips and narrations from pieces rather than having to manually build the final tooltip in the parent, or having whichever elements tooltip that renders last "winning".
@@ -30,7 +30,7 @@ interface TooltipChild {
      * @author fzzyhmstrs
      * @since 0.6.0
      */
-    fun provideTooltipLines(mouseX: Int, mouseY: Int, parentSelected: Boolean, keyboardFocused: Boolean): List<Text> {
+    fun provideTooltipLines(mouseX: Int, mouseY: Int, parentSelected: Boolean, keyboardFocused: Boolean): List<Component> {
         return EMPTY
     }
 
@@ -44,7 +44,7 @@ interface TooltipChild {
      * @author fzzyhmstrs
      * @since 0.6.0
      */
-    fun provideNarrationLines(): List<Text> {
+    fun provideNarrationLines(): List<Component> {
         return provideTooltipLines(0, 0, parentSelected = true, keyboardFocused = true)
     }
 
@@ -54,6 +54,6 @@ interface TooltipChild {
          * @author fzzyhmstrs
          * @since 0.6.0
          */
-        val EMPTY = listOf<Text>()
+        val EMPTY = listOf<Component>()
     }
 }

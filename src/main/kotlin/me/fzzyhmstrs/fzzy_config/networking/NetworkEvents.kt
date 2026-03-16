@@ -17,24 +17,24 @@ import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
 import me.fzzyhmstrs.fzzy_config.util.ThreadingUtils
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.networking.v1.*
-import net.minecraft.network.packet.CustomPayload
-import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload
+import net.minecraft.server.level.ServerPlayer
 
 
 internal object NetworkEvents {
 
-    fun canSend(playerEntity: ServerPlayerEntity, id: CustomPayload.Id<*>): Boolean {
+    fun canSend(playerEntity: ServerPlayer, id: CustomPacketPayload.Type<*>): Boolean {
         return ServerPlayNetworking.canSend(playerEntity, id)
     }
 
-    fun send(playerEntity: ServerPlayerEntity, payload: CustomPayload) {
+    fun send(playerEntity: ServerPlayer, payload: CustomPacketPayload) {
         ServerPlayNetworking.send(playerEntity, payload)
     }
 
     private fun receiveUpdate(payload: ConfigUpdateC2SCustomPayload, context: ServerPlayNetworkContext) {
         SyncedConfigRegistry.receiveConfigUpdate(
             payload.updates,
-            context.player().entityWorld.server,
+            context.player().level().server,
             context.player(),
             payload.playerPerm,
             payload.changeHistory,
@@ -57,7 +57,7 @@ internal object NetworkEvents {
 
     fun registerServer() {
 
-        PayloadTypeRegistry.configurationS2C().register(ConfigSyncS2CCustomPayload.type, ConfigSyncS2CCustomPayload.codec)
+        PayloadTypeRegistry.clientboundConfiguration().register(ConfigSyncS2CCustomPayload.type, ConfigSyncS2CCustomPayload.codec)
         ConfigApi.network().registerLenientS2C(ConfigPermissionsS2CCustomPayload.type, ConfigPermissionsS2CCustomPayload.codec, NetworkEventsClient::receivePerms)
         ConfigApi.network().registerLenientS2C(ConfigSyncS2CCustomPayload.type, ConfigSyncS2CCustomPayload.codec, NetworkEventsClient::receiveSync)
         ConfigApi.network().registerLenientS2C(ConfigUpdateS2CCustomPayload.type, ConfigUpdateS2CCustomPayload.codec, NetworkEventsClient::receiveUpdate)
@@ -87,7 +87,7 @@ internal object NetworkEvents {
 
         ServerLifecycleEvents.END_DATA_PACK_RELOAD.register { server, _, _ ->
             SyncedConfigRegistry.onEndDataReload(
-                server.playerManager.playerList,
+                server.playerList.players,
                 { player, id -> ConfigApi.network().canSend(id.id, player) },
                 { player, payload -> ConfigApi.network().send(payload, player) }
             )
@@ -95,12 +95,12 @@ internal object NetworkEvents {
         }
 
         ServerLifecycleEvents.SERVER_STARTED.register { server ->
-            if (server.isDedicated)
+            if (server.isDedicatedServer)
                 SyncedConfigRegistry.start(server)
         }
 
         ServerLifecycleEvents.SERVER_STOPPING.register { server ->
-            if (server.isDedicated)
+            if (server.isDedicatedServer)
                 ThreadingUtils.stop()
         }
 

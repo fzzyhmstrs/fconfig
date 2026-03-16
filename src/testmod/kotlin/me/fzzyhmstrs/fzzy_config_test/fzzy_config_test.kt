@@ -26,8 +26,6 @@ import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedBoolean
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedString
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedInt
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber
-import me.fzzyhmstrs.fzzy_config_test.loot.ConfigLootCondition
-import me.fzzyhmstrs.fzzy_config_test.loot.ConfigLootNumberProvider
 import me.fzzyhmstrs.fzzy_config_test.test.TestConfig
 import me.fzzyhmstrs.fzzy_config_test.test.TestConfig.gson
 import me.fzzyhmstrs.fzzy_config_test.test.TestConfigClient
@@ -37,21 +35,21 @@ import me.fzzyhmstrs.fzzy_config_test.test.screen.TestPopupScreen
 import me.lucko.fabric.api.permissions.v0.PermissionCheckEvent
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.api.ModInitializer
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
+import net.fabricmc.fabric.api.client.command.v2.ClientCommands
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
-import net.minecraft.util.Identifier
+import net.minecraft.resources.Identifier
 import net.fabricmc.fabric.api.util.TriState
-import net.minecraft.entity.effect.StatusEffect
-import net.minecraft.entity.effect.StatusEffectCategory
-import net.minecraft.nbt.NbtElement
-import net.minecraft.nbt.NbtEnd
+import net.minecraft.world.effect.MobEffect
+import net.minecraft.world.effect.MobEffectCategory
+import net.minecraft.nbt.Tag
+import net.minecraft.nbt.EndTag
 import net.minecraft.nbt.NbtOps
-import net.minecraft.registry.Registries
-import net.minecraft.registry.Registry
-import net.minecraft.server.command.CommandManager
+import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.core.Registry
+import net.minecraft.commands.Commands
 import net.peanuuutz.tomlkt.TomlElement
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -62,26 +60,26 @@ object FC: ModInitializer {
     const val TEST_PERMISSION_GOOD = "test.perm.good"
     const val TEST_PERMISSION_BAD = "test.perm.bad"
 
-    private val TEST_REGISTRAR = ConfigApi.platform().createRegistrar(MOD_ID, Registries.STATUS_EFFECT)
+    private val TEST_REGISTRAR = ConfigApi.platform().createRegistrar(MOD_ID, BuiltInRegistries.MOB_EFFECT)
 
     init {
         TEST_REGISTRAR.init()
     }
 
     @Translatable.Name("Test Status 1")
-    val TEST_STATUS_1 = TEST_REGISTRAR.register("test_1") { object: StatusEffect(StatusEffectCategory.NEUTRAL, 0xFFFFFF){} }
+    val TEST_STATUS_1 = TEST_REGISTRAR.register("test_1") { object: MobEffect(MobEffectCategory.NEUTRAL, 0xFFFFFF){} }
     @Translatable.Name("Test Status 2")
-    val TEST_STATUS_2 = TEST_REGISTRAR.register("test_2") { object: StatusEffect(StatusEffectCategory.NEUTRAL, 0xFFFFFF){} }
+    val TEST_STATUS_2 = TEST_REGISTRAR.register("test_2") { object: MobEffect(MobEffectCategory.NEUTRAL, 0xFFFFFF){} }
     @Translatable.Name("Test Direct Status")
-    val TEST_DIRECT_STATUS_ID = Identifier.of("fzzy_config_test", "direct")
-    val TEST_DIRECT_STATUS = Registry.register(Registries.STATUS_EFFECT, TEST_DIRECT_STATUS_ID, object: StatusEffect(StatusEffectCategory.NEUTRAL, 0xFFFFFF){})
+    val TEST_DIRECT_STATUS_ID = Identifier.fromNamespaceAndPath("fzzy_config_test", "direct")
+    val TEST_DIRECT_STATUS = Registry.register(BuiltInRegistries.MOB_EFFECT, TEST_DIRECT_STATUS_ID, object: MobEffect(MobEffectCategory.NEUTRAL, 0xFFFFFF){})
 
-    internal fun encodeNbt(toml: TomlElement): ValidationResult<NbtElement> {
+    internal fun encodeNbt(toml: TomlElement): ValidationResult<Tag> {
         return try {
             val jsonElement = TomlOps.INSTANCE.convertTo(NbtOps.INSTANCE, toml)
             ValidationResult.success(jsonElement)
         } catch (e: Throwable) {
-            ValidationResult.error(NbtEnd.INSTANCE, ValidationResult.ErrorEntry.Type("NBT Encoding Problem"), "Exception encountered while encoding NBT", e)
+            ValidationResult.error(EndTag.INSTANCE, ValidationResult.ErrorEntry.Type("NBT Encoding Problem"), "Exception encountered while encoding NBT", e)
         }
     }
 
@@ -89,22 +87,20 @@ object FC: ModInitializer {
 
         buildRegTranslation("en_us", "effect")
 
-        PermissionCheckEvent.EVENT.register { _, permission ->
+        /*PermissionCheckEvent.EVENT.register { _, permission ->
             if (permission == TEST_PERMISSION_GOOD)
                 TriState.TRUE
             else if (permission == TEST_PERMISSION_BAD)
                 TriState.FALSE
             else
                 TriState.DEFAULT
-        }
+        }*/
 
         TestConfig.init()
-        ConfigLootCondition.init()
-        ConfigLootNumberProvider.init()
 
         CommandRegistrationCallback.EVENT.register { dispatcher, _, _ ->
             dispatcher.register(
-                CommandManager.literal("check_server_config")
+                Commands.literal("check_server_config")
                     .executes { _ ->
                         FC.LOGGER.info(TestConfig.serverConfig.toString())
                         1
@@ -118,7 +114,7 @@ object FC: ModInitializer {
 
         LOGGER.info("Test Config 2 Written to:")
         LOGGER.info("  Toml String: ${test1.get().encodeToByteArray().size} bytes")
-        LOGGER.info("  NBT Element: ${test2.get().sizeInBytes} bytes")
+        LOGGER.info("  NBT Element: ${test2.get().sizeInBytes()} bytes")
 
         /*val expressionTestResults = AssertionResults()
         assertConstExpression("3 + 5", 8.0, expressionTestResults)
@@ -156,7 +152,7 @@ object FC: ModInitializer {
             testObj.add(key, JsonPrimitive(value))
         }
 
-        ConfigApi.buildTranslations(TestConfigImplAny::class, Identifier.of("fzzy_config_test","test_config_any"), lang, true, ::add)
+        ConfigApi.buildTranslations(TestConfigImplAny::class, Identifier.fromNamespaceAndPath("fzzy_config_test","test_config_any"), lang, true, ::add)
 
         LOGGER.info("Test translation for $lang")
         LOGGER.info(gson.toJson(testObj))
@@ -268,13 +264,13 @@ object FCC: ClientModInitializer {
 
     private fun registerClientCommands(dispatcher: CommandDispatcher<FabricClientCommandSource>) {
         dispatcher.register(
-            ClientCommandManager.literal("test_screen_1")
+            ClientCommands.literal("test_screen_1")
                 .executes{ context ->
                     openDamnScreen = "please"
                     1
                 }
                 .then(
-                    ClientCommandManager.argument("count", IntegerArgumentType.integer(1))
+                    ClientCommands.argument("count", IntegerArgumentType.integer(1))
                         .executes { context ->
                             val entries = IntegerArgumentType.getInteger(context, "count")
                             this.openDamnScreen = "please"
@@ -286,14 +282,14 @@ object FCC: ClientModInitializer {
 
         )
         dispatcher.register(
-            ClientCommandManager.literal("load_late_config")
+            ClientCommands.literal("load_late_config")
                 .executes { context ->
                     ConfigApi.registerAndLoadConfig({ TestLateConfigImpl() }, RegisterType.CLIENT)
                     1
                 }
         )
         dispatcher.register(
-            ClientCommandManager.literal("test_screen_2")
+            ClientCommands.literal("test_screen_2")
                 .executes{ context ->
                     openDamnScreen = "the_big_one"
                     1
@@ -304,5 +300,5 @@ object FCC: ClientModInitializer {
 }
 
 fun String.fctId(): Identifier {
-    return Identifier.of(FC.MOD_ID, this)
+    return Identifier.fromNamespaceAndPath(FC.MOD_ID, this)
 }

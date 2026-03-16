@@ -13,7 +13,7 @@ package me.fzzyhmstrs.fzzy_config.screen.decoration
 import me.fzzyhmstrs.fzzy_config.cast
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureProvider
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureSet
-import net.minecraft.util.Identifier
+import net.minecraft.resources.Identifier
 
 /**
  * Implementation of a [SpriteDecorated] for rendering a [TextureSet] as a decoration

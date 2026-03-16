@@ -13,7 +13,7 @@ package me.fzzyhmstrs.fzzy_config.util
 import me.fzzyhmstrs.fzzy_config.annotations.Comment
 import me.fzzyhmstrs.fzzy_config.util.platform.Registrar
 import me.fzzyhmstrs.fzzy_config.util.platform.RegistryBuilder
-import net.minecraft.registry.Registry
+import net.minecraft.core.Registry
 import net.peanuuutz.tomlkt.TomlComment
 import org.jetbrains.annotations.ApiStatus
 import org.slf4j.Logger
@@ -88,7 +88,7 @@ interface PlatformApi {
      * @author fzzyhmstrs
      * @since 0.5.9, no longer experimental 0.7.0
      */
-    fun <T> createRegistrar(namespace: String, registry: Registry<T>): Registrar<T>
+    fun <T: Any> createRegistrar(namespace: String, registry: Registry<T>): Registrar<T>
 
     /**
      * Creates a [RegistryBuilder] for creating registries in a platform-agnostic way, along with providing other registry utilities.

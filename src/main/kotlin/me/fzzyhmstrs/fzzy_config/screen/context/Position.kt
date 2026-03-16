@@ -10,8 +10,8 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.context
 
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.widget.Widget
+import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.layouts.LayoutElement
 
 /**
  * Position context information for context handling. Includes information about the screen, mouse, and scoped context area. This scoped context initially is the same as screen context (i.e. x: 0, y: 0, w: screenW, h: screenH), but can be updated with proper scoped information as handling moved downstream. For example if handling moves to a widget, it can update xy and wh with it's xy position and width/height.
@@ -42,16 +42,16 @@ data class Position(val contextInput: ContextInput,
          * @author fzzyhmstrs
          * @since 0.6.0
          */
-        fun fromWidget(widget: Widget, contextInput: ContextInput = ContextInput.KEYBOARD): Position {
-            val client = MinecraftClient.getInstance()
-            val mX = client.mouse.x * client.window.scaledWidth / client.window.width
-            val mY = client.mouse.y * client.window.scaledHeight / client.window.height
+        fun fromWidget(widget: LayoutElement, contextInput: ContextInput = ContextInput.KEYBOARD): Position {
+            val client = Minecraft.getInstance()
+            val mX = client.mouseHandler.xpos() * client.window.guiScaledWidth / client.window.screenWidth
+            val mY = client.mouseHandler.ypos() * client.window.guiScaledHeight / client.window.screenHeight
             return Position(contextInput,
                 mX.toInt(), mY.toInt(),
                 widget.x, widget.y,
                 widget.width, widget.height,
-                MinecraftClient.getInstance()?.currentScreen?.width ?: widget.width,
-                MinecraftClient.getInstance()?.currentScreen?.height ?: widget.height)
+                Minecraft.getInstance()?.screen?.width ?: widget.width,
+                Minecraft.getInstance()?.screen?.height ?: widget.height)
         }
     }
 }

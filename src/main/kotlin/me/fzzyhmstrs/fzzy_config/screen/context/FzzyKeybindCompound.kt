@@ -11,8 +11,8 @@
 package me.fzzyhmstrs.fzzy_config.screen.context
 
 import me.fzzyhmstrs.fzzy_config.util.FcText
-import net.minecraft.text.MutableText
-import net.minecraft.text.Text
+import net.minecraft.network.chat.MutableComponent
+import net.minecraft.network.chat.Component
 
 /**
  *
@@ -41,7 +41,7 @@ data class FzzyKeybindCompound(val keybinds: List<FzzyKeybind>): FzzyKeybind {
         return keybinds.any { it.needsAlt() }
     }
 
-    override fun keybind(): MutableText {
+    override fun keybind(): MutableComponent {
         return when (keybinds.size) {
             0 -> {
                 FcText.translatable("key.keyboard.unknown")

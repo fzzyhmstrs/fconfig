@@ -24,20 +24,21 @@ import me.fzzyhmstrs.fzzy_config.networking.NetworkEventsClient
 import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
+import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.transLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.PortingUtils.sendChat
 import me.fzzyhmstrs.fzzy_config.util.Translatable
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.Element
-import net.minecraft.client.gui.ScreenRect
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
-import net.minecraft.client.gui.screen.narration.NarrationPart
-import net.minecraft.client.gui.tooltip.FocusedTooltipPositioner
-import net.minecraft.client.gui.tooltip.HoveredTooltipPositioner
-import net.minecraft.client.gui.tooltip.Tooltip
+import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.gui.components.events.GuiEventListener
+import net.minecraft.client.gui.navigation.ScreenRectangle
+import net.minecraft.client.gui.narration.NarrationElementOutput
+import net.minecraft.client.gui.narration.NarratedElementType
+import net.minecraft.client.gui.screens.inventory.tooltip.BelowOrAboveWidgetTooltipPositioner
+import net.minecraft.client.gui.screens.inventory.tooltip.DefaultTooltipPositioner
+import net.minecraft.client.gui.components.Tooltip
 import net.peanuuutz.tomlkt.Toml
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.function.Supplier
@@ -46,7 +47,7 @@ import java.util.function.Supplier
 internal class ConfigSingleUpdateManager(private val configSet: ConfigSet, private val forwardedUpdates: MutableList<ConfigScreenManager.ForwardedUpdate>, private val perms: Int): ConfigBaseUpdateManager() {
 
     override fun managerId(): String {
-        return configSet.active.getId().toTranslationKey()
+        return configSet.active.getId().toLanguageKey()
     }
 
     private val updatableEntries: MutableMap<String, Updatable> = hashMapOf()
@@ -121,7 +122,7 @@ internal class ConfigSingleUpdateManager(private val configSet: ConfigSet, priva
         val config = configSet.active
         val isClient = configSet.clientOnly
         var fireOnUpdate = false
-        ConfigApiImpl.walk(config, config.getId().toTranslationKey(), 1) { walkable, _, new, thing, prop, annotations, globalAnnotations, _ ->
+        ConfigApiImpl.walk(config, config.getId().toLanguageKey(), 1) { walkable, _, new, thing, prop, annotations, globalAnnotations, _ ->
             if (!(thing is Updatable && thing is Entry<*, *>)) {
                 val update = getUpdate(new)
                 if (update != null && update is Supplier<*>) {
@@ -186,44 +187,44 @@ internal class ConfigSingleUpdateManager(private val configSet: ConfigSet, priva
 
         if (clientActions.isNotEmpty()) {
             for (action in clientActions) {
-                MinecraftClient.getInstance().player?.sendChat(action.clientUpdateMessage)
+                Minecraft.getInstance().player?.sendChat(action.clientUpdateMessage)
             }
         }
         if (serverActions.isNotEmpty()) {
-            if (MinecraftClient.getInstance().isInSingleplayer)
+            if (Minecraft.getInstance().isLocalServer)
                 for (action in serverActions) {
-                    MinecraftClient.getInstance().player?.sendChat(action.clientUpdateMessage)
+                    Minecraft.getInstance().player?.sendChat(action.clientUpdateMessage)
                 }
             else
                 for (action in serverActions) {
-                    MinecraftClient.getInstance().player?.sendChat(action.serverUpdateMessage)
+                    Minecraft.getInstance().player?.sendChat(action.serverUpdateMessage)
                 }
         }
         //save config updates locally
         if (isClient
             || configSet.active.saveType() == SaveType.OVERWRITE
-            || MinecraftClient.getInstance().isInSingleplayer
+            || Minecraft.getInstance().isLocalServer
             || outOfGame())
         {
             configSet.active.save()
         }
 
         val syncNeeded = !configSet.clientOnly && updatedConfig
-        if (syncNeeded && !MinecraftClient.getInstance().isInSingleplayer && !outOfGame()) {
+        if (syncNeeded && !Minecraft.getInstance().isLocalServer && !outOfGame()) {
             //send updates to the server for distribution and saving there
-            val updates = mapOf(this.configSet.active.getId().toTranslationKey() to ConfigApiImpl.serializeUpdate(configSet.active, this, "Error(s) while serializing update to send to the server").log().get())
+            val updates = mapOf(this.configSet.active.getId().toLanguageKey() to ConfigApiImpl.serializeUpdate(configSet.active, this, "Error(s) while serializing update to send to the server").log().get())
             NetworkEventsClient.updateServer(updates, flush(), perms)
-            ConfigApiImpl.printChangeHistory(flush(), configSet.active.getId().toTranslationKey(), MinecraftClient.getInstance().player)
+            ConfigApiImpl.printChangeHistory(flush(), configSet.active.getId().toLanguageKey(), Minecraft.getInstance().player)
         } else {
-            ConfigApiImpl.printChangeHistory(flush(), configSet.active.getId().toTranslationKey(), MinecraftClient.getInstance().player)
+            ConfigApiImpl.printChangeHistory(flush(), configSet.active.getId().toLanguageKey(), Minecraft.getInstance().player)
         }
         if (!final)
             pushUpdatableStatesInternal()
     }
 
     private fun outOfGame(): Boolean {
-        val client = MinecraftClient.getInstance()
-        return (client.world == null || client.networkHandler == null || client.networkHandler?.isConnectionOpen == false)
+        val client = Minecraft.getInstance()
+        return (client.level == null || client.connection == null || client.connection?.isAcceptingMessages == false)
     }
 
     private class ForwardEntry(parentElement: DynamicListWidget, private val forwardedUpdate: ConfigScreenManager.ForwardedUpdate, private val manager: ConfigSingleUpdateManager)
@@ -231,7 +232,7 @@ internal class ConfigSingleUpdateManager(private val configSet: ConfigSet, priva
     {
 
         override var h: Int = 20
-        private val tooltip = Tooltip.of(texts.desc)
+        private val tooltip = Tooltip.create(texts.desc ?: FcText.empty())
 
         val acceptForwardWidget = CustomButtonWidget.builder { manager.acceptForward(forwardedUpdate); applyVisibility { stack -> stack.push(DynamicListWidget.Visibility.HIDDEN) } }
             .textures("widget/action/accept".fcId(),
@@ -255,26 +256,26 @@ internal class ConfigSingleUpdateManager(private val configSet: ConfigSet, priva
             return listOf(acceptForwardWidget, denyForwardWidget).cast()
         }
 
-        override fun children(): MutableList<out Element> {
+        override fun children(): MutableList<out GuiEventListener> {
             return mutableListOf(acceptForwardWidget, denyForwardWidget)
         }
 
-        override fun renderEntry(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {
-            val client = MinecraftClient.getInstance()
+        override fun renderEntry(context: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {
+            val client = Minecraft.getInstance()
             if (hovered) {
-                context.drawTooltip(client.textRenderer, tooltip.getLines(client), HoveredTooltipPositioner.INSTANCE, mouseX, mouseY, true)
+                context.setTooltipForNextFrame(client.font, tooltip.toCharSequence(client), DefaultTooltipPositioner.INSTANCE, mouseX, mouseY, true)
             } else if (focused) {
-                context.drawTooltip(client.textRenderer, tooltip.getLines(client), FocusedTooltipPositioner(ScreenRect(x + 2, y + 4, width, height)), x, y, true)
+                context.setTooltipForNextFrame(client.font, tooltip.toCharSequence(client), BelowOrAboveWidgetTooltipPositioner(ScreenRectangle(x + 2, y + 4, width, height)), x, y, true)
             }
-            context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, texts.name, x, y + 5, -1)
+            context.text(Minecraft.getInstance().font, texts.name, x, y + 5, -1)
             acceptForwardWidget.setPosition(x + 126, y)
-            acceptForwardWidget.render(context, mouseX, mouseY, delta)
+            acceptForwardWidget.extractRenderState(context, mouseX, mouseY, delta)
             denyForwardWidget.setPosition(x + 150, y)
-            denyForwardWidget.render(context, mouseX, mouseY, delta)
+            denyForwardWidget.extractRenderState(context, mouseX, mouseY, delta)
         }
 
-        override fun appendNarrations(builder: NarrationMessageBuilder) {
-            builder.put(NarrationPart.HINT, texts.desc)
+        override fun appendNarrations(builder: NarrationElementOutput) {
+            texts.desc?.let { builder.add(NarratedElementType.HINT, it) }
         }
 
     }

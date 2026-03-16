@@ -12,11 +12,11 @@ package me.fzzyhmstrs.fzzy_config.screen
 
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import me.fzzyhmstrs.fzzy_config.util.TriState
-import net.minecraft.client.gui.Click
-import net.minecraft.client.gui.Element
-import net.minecraft.client.gui.ParentElement
-import net.minecraft.client.input.CharInput
-import net.minecraft.client.input.KeyInput
+import net.minecraft.client.input.MouseButtonEvent
+import net.minecraft.client.gui.components.events.GuiEventListener
+import net.minecraft.client.gui.components.events.ContainerEventHandler
+import net.minecraft.client.input.CharacterEvent
+import net.minecraft.client.input.KeyEvent
 import java.util.*
 
 /**
@@ -28,8 +28,7 @@ import java.util.*
  * @since 0.2.0
  */
 //client
-@JvmDefaultWithCompatibility
-interface PopupParentElement: ParentElement, PopupController {
+interface PopupParentElement: ContainerEventHandler, PopupController {
 
     override val child: LastSelectable?
         get() = focused as? LastSelectable
@@ -43,14 +42,14 @@ interface PopupParentElement: ParentElement, PopupController {
         focused = lastSelected
     }
 
-    override fun hoveredElement(mouseX: Double, mouseY: Double): Optional<Element> {
+    override fun getChildAt(mouseX: Double, mouseY: Double): Optional<GuiEventListener> {
         return if (popupWidgets.isEmpty())
-            return super.hoveredElement(mouseX, mouseY)
+            return super.getChildAt(mouseX, mouseY)
         else
             Optional.empty()
     }
 
-    override fun mouseClicked(click: Click, doubled: Boolean): Boolean {
+    override fun mouseClicked(click: MouseButtonEvent, doubled: Boolean): Boolean {
         val popupWidget = activeWidget() ?: return mouseClick(click, doubled)
         if (popupWidget.mouseClicked(click, doubled) || popupWidget.isMouseOver(click.x, click.y)) {
             return true
@@ -62,7 +61,7 @@ interface PopupParentElement: ParentElement, PopupController {
         return false
     }
 
-    private fun mouseClick(click: Click, doubled: Boolean): Boolean {
+    private fun mouseClick(click: MouseButtonEvent, doubled: Boolean): Boolean {
         for (element in this.children()) {
             if (element.mouseClicked(click, doubled)) {
                 this.focused = element
@@ -76,7 +75,7 @@ interface PopupParentElement: ParentElement, PopupController {
         return false
     }
 
-    override fun mouseReleased(click: Click): Boolean {
+    override fun mouseReleased(click: MouseButtonEvent): Boolean {
         if (justClosedWidget) {
             justClosedWidget = false
             return false
@@ -93,16 +92,16 @@ interface PopupParentElement: ParentElement, PopupController {
         return popupWidget.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
     }
 
-    override fun mouseDragged(click: Click, offsetX: Double, offsetY: Double): Boolean {
+    override fun mouseDragged(click: MouseButtonEvent, offsetX: Double, offsetY: Double): Boolean {
         val popupWidget = activeWidget() ?: return super.mouseDragged(click, offsetX, offsetY)
         return popupWidget.mouseDragged(click, offsetX, offsetY)
     }
 
-    override fun keyReleased(input: KeyInput): Boolean {
+    override fun keyReleased(input: KeyEvent): Boolean {
         return activeWidget()?.keyReleased(input) ?: super.keyReleased(input)
     }
 
-    override fun charTyped(input: CharInput): Boolean {
+    override fun charTyped(input: CharacterEvent): Boolean {
         return activeWidget()?.charTyped(input) ?: super.charTyped(input)
     }
 }

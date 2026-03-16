@@ -31,24 +31,25 @@ import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedFloat
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedInt
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber
 import me.fzzyhmstrs.fzzy_config_test.FC.TEST_PERMISSION_GOOD
-import net.minecraft.registry.RegistryKeys
-import net.minecraft.registry.tag.ItemTags
-import net.minecraft.registry.tag.TagKey
-import net.minecraft.text.MutableText
-import net.minecraft.util.Formatting
-import net.minecraft.util.Identifier
+import net.minecraft.core.registries.Registries
+import net.minecraft.tags.ItemTags
+import net.minecraft.tags.TagKey
+import net.minecraft.network.chat.MutableComponent
+import net.minecraft.ChatFormatting
+import net.minecraft.resources.Identifier
 import net.peanuuutz.tomlkt.TomlComment
 import java.awt.Color
 
 @Version(1)
 @IgnoreVisibility
-class TestConfigImpl2: Config(Identifier.of("fzzy_config_test","test_config2")) {
+class TestConfigImpl2: Config(Identifier.fromNamespaceAndPath("fzzy_config_test","test_config2")) {
 
     @ClientModifiable
     @WithPerms(5)
     var bl1 = true
     @RequiresAction(Action.RELOAD_DATA)
-    var bl2 = ValidatedBoolean().toCondition({ bl3.get() }, "bl3 needs to be true".lit().formatted(Formatting.RED), { false }).withCondition({ set2.isNotEmpty() }, "Set2 can't be empty".lit().formatted(Formatting.RED)).withFailTitle("Disabled".lit(), "Super disabled".lit())
+    var bl2 = ValidatedBoolean().toCondition({ bl3.get() }, "bl3 needs to be true".lit().withStyle(ChatFormatting.RED), { false }).withCondition({ set2.isNotEmpty() }, "Set2 can't be empty".lit().withStyle(
+        ChatFormatting.RED)).withFailTitle("Disabled".lit(), "Super disabled".lit())
     @RequiresAction(Action.RESTART)
     var bl3 = ValidatedBoolean(false)
 
@@ -89,9 +90,9 @@ class TestConfigImpl2: Config(Identifier.of("fzzy_config_test","test_config2")) 
             }
             .build()
 
-        var ingredient1 = ValidatedIngredient(Identifier.of("diamond_axe"))
+        var ingredient1 = ValidatedIngredient(Identifier.parse("diamond_axe"))
 
-        var ingredient2 = ValidatedIngredient(setOf(Identifier.of("diamond_axe"), TagKey.of(RegistryKeys.ITEM, Identifier.of("barrels"))))
+        var ingredient2 = ValidatedIngredient(setOf(Identifier.parse("diamond_axe"), TagKey.create(Registries.ITEM, Identifier.parse("barrels"))))
 
         @RequiresAction(Action.RELOAD_DATA)
         var tag1 = ValidatedTagKey(ItemTags.PICKAXES)
@@ -121,11 +122,11 @@ class TestConfigImpl2: Config(Identifier.of("fzzy_config_test","test_config2")) 
                 return ""
             }
 
-            override fun translation(fallback: String?): MutableText {
+            override fun translation(fallback: String?): MutableComponent {
                 return FcText.literal("Butthead")
             }
 
-            override fun description(fallback: String?): MutableText {
+            override fun description(fallback: String?): MutableComponent {
                 return FcText.literal("Beavis and Butthead")
             }
 
@@ -161,7 +162,7 @@ class TestConfigImpl2: Config(Identifier.of("fzzy_config_test","test_config2")) 
 
     var map1 = mapOf(1 to "a", 2 to "c")
 
-    var id1 = ValidatedIdentifier.ofList(Identifier.of("stick"), listOf(Identifier.of("stick"), Identifier.of("blaze_rod"), Identifier.of("coal"), Identifier.of("charcoal")))
+    var id1 = ValidatedIdentifier.ofList(Identifier.parse("stick"), listOf(Identifier.parse("stick"), Identifier.parse("blaze_rod"), Identifier.parse("coal"), Identifier.parse("charcoal")))
 
     var choice1 = ValidatedList.ofInt(1, 2, 5, 10).toChoices(translationProvider = { t, u -> ("$u.$t").translate() }, descriptionProvider = { t, u -> "Rad description for $u, $t".lit() })
     var choice2 = ValidatedList.ofInt(1, 2, 5, 10).toChoices(widgetType = ValidatedChoice.WidgetType.INLINE, translationProvider = { t, u -> ("$u.$t").translate() }, descriptionProvider = { t, u -> ("$u.$t").translate() })

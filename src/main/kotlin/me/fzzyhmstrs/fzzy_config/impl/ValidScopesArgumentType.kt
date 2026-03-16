@@ -16,7 +16,7 @@ import com.mojang.brigadier.context.CommandContext
 import com.mojang.brigadier.suggestion.Suggestions
 import com.mojang.brigadier.suggestion.SuggestionsBuilder
 import me.fzzyhmstrs.fzzy_config.registry.ClientConfigRegistry
-import net.minecraft.command.CommandSource
+import net.minecraft.commands.SharedSuggestionProvider
 import java.util.concurrent.CompletableFuture
 
 //client
@@ -30,7 +30,7 @@ internal class ValidScopesArgumentType: ArgumentType<String> {
         context: CommandContext<S>,
         builder: SuggestionsBuilder
     ): CompletableFuture<Suggestions> {
-        return CommandSource.suggestMatching(ClientConfigRegistry.getScreenScopes(), builder)
+        return SharedSuggestionProvider.suggest(ClientConfigRegistry.getScreenScopes(), builder)
     }
 
     override fun getExamples(): MutableCollection<String> {

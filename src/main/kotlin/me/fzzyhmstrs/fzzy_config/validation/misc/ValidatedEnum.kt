@@ -28,14 +28,14 @@ import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedEnum.WidgetType
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
-import net.minecraft.client.gui.screen.narration.NarrationPart
-import net.minecraft.client.gui.tooltip.Tooltip
-import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.text.MutableText
-import net.minecraft.text.Text
+import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.gui.narration.NarrationElementOutput
+import net.minecraft.client.gui.narration.NarratedElementType
+import net.minecraft.client.gui.components.Tooltip
+import net.minecraft.client.gui.components.AbstractWidget
+import net.minecraft.network.chat.MutableComponent
+import net.minecraft.network.chat.Component
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
 import org.jetbrains.annotations.ApiStatus.Internal
@@ -100,7 +100,7 @@ open class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, 
 
     @Internal
     //client
-    override fun widgetEntry(choicePredicate: ChoiceValidator<T>): ClickableWidget {
+    override fun widgetEntry(choicePredicate: ChoiceValidator<T>): AbstractWidget {
         return when(widgetType) {
             WidgetType.POPUP -> {
                 EnumPopupButtonWidget(this.translation(), choicePredicate)
@@ -119,7 +119,7 @@ open class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, 
                     layout.add("choice$index", button, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_CENTER)
                 }
                 LayoutClickableWidget(0, 0, 110, 20 * constants.size, layout).withNarrationAppender { builder ->
-                    builder.put(NarrationPart.TITLE, "fc.validated_field.current".translate(this@ValidatedEnum.get().transLit(this@ValidatedEnum.get().name)).append(". "))
+                    builder.add(NarratedElementType.TITLE, "fc.validated_field.current".translate(this@ValidatedEnum.get().transLit(this@ValidatedEnum.get().name)).append(". "))
                 }
             }
             WidgetType.SCROLLABLE -> {
@@ -150,7 +150,7 @@ open class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, 
     }
 
     @Internal
-    override fun provideDescription(fallback: String?): MutableText {
+    override fun provideDescription(fallback: String?): MutableComponent {
         return FcText.translatable(descriptionKey(), fallback ?: valuesMap.keys.toString())
     }
 
@@ -198,16 +198,16 @@ open class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, 
         SCROLLABLE
     }
 
-    private fun openEnumPopup(name: Text, choicePredicate: ChoiceValidator<T> = ChoiceValidator.any(), xPosition: BiFunction<Int, Int, Int> = PopupWidget.Builder.center(), yPosition: BiFunction<Int, Int, Int> = PopupWidget.Builder.center()) {
+    private fun openEnumPopup(name: Component, choicePredicate: ChoiceValidator<T> = ChoiceValidator.any(), xPosition: BiFunction<Int, Int, Int> = PopupWidget.Builder.center(), yPosition: BiFunction<Int, Int, Int> = PopupWidget.Builder.center()) {
         val builder = PopupWidget.Builder(name, spacingH = 0)
-        val textRenderer = MinecraftClient.getInstance().textRenderer
+        val textRenderer = Minecraft.getInstance().font
         var buttonWidth = 86
         val constants = this@ValidatedEnum.get().declaringJavaClass.enumConstants.mapNotNull {
             @Suppress("UNCHECKED_CAST")
             it as? T
         }.filter { choicePredicate.validateEntry(it, EntryValidator.ValidationType.STRONG).isValid() }
         for (const in constants) {
-            buttonWidth = max(buttonWidth, textRenderer.getWidth(const.let { it.transLit(it.name) }))
+            buttonWidth = max(buttonWidth, textRenderer.width(const.let { it.transLit(it.name) }))
         }
         buttonWidth = max(150, buttonWidth + 4)
         var prevParent = "title"
@@ -222,15 +222,15 @@ open class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, 
         PopupWidget.push(builder.build())
     }
 
-    private fun openPopup(name: Text, choicePredicate: ChoiceValidator<T> = ChoiceValidator.any(), choiceOptionRunnable: Runnable = Runnable { }, xPosition: BiFunction<Int, Int, Int> = PopupWidget.Builder.center(), yPosition: BiFunction<Int, Int, Int> = PopupWidget.Builder.center()) {
-        val textRenderer = MinecraftClient.getInstance().textRenderer
+    private fun openPopup(name: Component, choicePredicate: ChoiceValidator<T> = ChoiceValidator.any(), choiceOptionRunnable: Runnable = Runnable { }, xPosition: BiFunction<Int, Int, Int> = PopupWidget.Builder.center(), yPosition: BiFunction<Int, Int, Int> = PopupWidget.Builder.center()) {
+        val textRenderer = Minecraft.getInstance().font
         var buttonWidth = 86
         val constants = this@ValidatedEnum.get().declaringJavaClass.enumConstants.mapNotNull {
             @Suppress("UNCHECKED_CAST")
             it as? T
         }.filter { choicePredicate.validateEntry(it, EntryValidator.ValidationType.STRONG).isValid() }
         for (const in constants) {
-            buttonWidth = max(buttonWidth, textRenderer.getWidth(const.let { it.transLit(it.name) }))
+            buttonWidth = max(buttonWidth, textRenderer.width(const.let { it.transLit(it.name) }))
         }
         buttonWidth = max(150, buttonWidth + 4)
         val entries: MutableList<BiFunction<DynamicListWidget, Int, out DynamicListWidget.Entry>> = mutableListOf()
@@ -251,22 +251,22 @@ open class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, 
         } else {
             DynamicListWidget.ListSpec(leftPadding = 0, rightPadding = -6, verticalPadding = 0, listNarrationKey = "fc.narrator.position.entry")
         }
-        val entryList = DynamicListWidget(MinecraftClient.getInstance(), entries, 0, 0, listWidth, 120, spec)
+        val entryList = DynamicListWidget(Minecraft.getInstance(), entries, 0, 0, listWidth, 120, spec)
 
         val builder = PopupWidget.Builder(name)
         builder.add("enum_list", entryList, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
         if (entries.size > 6) {
-            val searchField = NavigableTextFieldWidget(MinecraftClient.getInstance().textRenderer, listWidth, 20, FcText.EMPTY)
+            val searchField = NavigableTextFieldWidget(Minecraft.getInstance().font, listWidth, 20, FcText.EMPTY)
             searchField.setMaxLength(100)
-            searchField.text = ""
+            searchField.setValue("")
             fun setColor(entries: Int) {
                 if(entries > 0)
-                    searchField.setEditableColor(-1)
+                    searchField.setTextColor(-1)
                 else
-                    searchField.setEditableColor(-43691)
+                    searchField.setTextColor(-43691)
             }
-            searchField.setChangedListener { s -> setColor(entryList.search(s)) }
-            searchField.setTooltip(Tooltip.of("fc.config.search.desc".translate()))
+            searchField.setResponder { s -> setColor(entryList.search(s)) }
+            searchField.setTooltip(Tooltip.create("fc.config.search.desc".translate()))
             builder.add("choice_search", searchField, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_JUSTIFY_WEAK)
         }
         builder.positionX(xPosition)
@@ -276,15 +276,15 @@ open class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, 
     }
 
     //client
-    private inner class EnumPopupButtonWidget(private val name: Text, private val choicePredicate: ChoiceValidator<T>)
+    private inner class EnumPopupButtonWidget(private val name: Component, private val choicePredicate: ChoiceValidator<T>)
         : CustomPressableWidget(0, 0, 110, 20, FcText.EMPTY) {
 
-        override fun getMessage(): Text {
+        override fun getMessage(): Component {
             return this@ValidatedEnum.get().let { it.transLit(it.name) }
         }
 
-        override fun appendClickableNarrations(builder: NarrationMessageBuilder?) {
-            builder?.put(NarrationPart.TITLE, this.getMessage())
+        override fun updateWidgetNarration(builder: NarrationElementOutput) {
+            builder?.add(NarratedElementType.TITLE, this.getMessage())
         }
 
         override fun onPress() {
@@ -293,15 +293,15 @@ open class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, 
     }
 
     //client
-    private inner class EnumScrollablePopupButtonWidget(private val name: Text, private val choicePredicate: ChoiceValidator<T>)
+    private inner class EnumScrollablePopupButtonWidget(private val name: Component, private val choicePredicate: ChoiceValidator<T>)
         : CustomPressableWidget(0, 0, 110, 20, FcText.EMPTY) {
 
-        override fun getMessage(): Text {
+        override fun getMessage(): Component {
             return this@ValidatedEnum.get().let { it.transLit(it.name) }
         }
 
-        override fun appendClickableNarrations(builder: NarrationMessageBuilder?) {
-            builder?.put(NarrationPart.TITLE, this.getMessage())
+        override fun updateWidgetNarration(builder: NarrationElementOutput) {
+            builder?.add(NarratedElementType.TITLE, this.getMessage())
         }
 
         override fun onPress() {
@@ -313,15 +313,15 @@ open class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, 
     private class EnumOptionWidget<T: Enum<*>>(private val thisVal: T, width: Int, private val activePredicate: Predicate<T>, private val valueApplier: Consumer<T>): CustomPressableWidget(0, 0, width, 20, thisVal.transLit(thisVal.name)) {
 
         init {
-            thisVal.descLit("").takeIf { it.string != "" }?.also { setTooltip(Tooltip.of(it)) }
+            thisVal.descLit("").takeIf { it.string != "" }?.also { setTooltip(Tooltip.create(it)) }
         }
 
-        override fun renderCustom(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
+        override fun renderCustom(context: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
             this.active = activePredicate.test(thisVal)
             super.renderCustom(context, x, y, width, height, mouseX, mouseY, delta)
         }
 
-        override fun getNarrationMessage(): MutableText {
+        override fun createNarrationMessage(): MutableComponent {
             return thisVal.transLit(thisVal.name)
         }
 
@@ -340,10 +340,10 @@ open class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, 
         }
 
         init {
-            entry.descLit("").takeIf { it.string != "" }?.let { setTooltip(Tooltip.of(it)) }
+            entry.descLit("").takeIf { it.string != "" }?.let { setTooltip(Tooltip.create(it)) }
         }
 
-        override fun getNarrationMessage(): MutableText {
+        override fun createNarrationMessage(): MutableComponent {
             return entry.get().let { it.transLit(it.name) }
         }
 
@@ -351,7 +351,7 @@ open class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, 
             val newIndex = (constants.indexOf(entry.get()) + 1).takeIf { it < constants.size } ?: 0
             val newConst = constants[newIndex]
             message = newConst.let { it.transLit(it.name) }
-            newConst.descLit("").takeIf { it.string != "" }?.also { setTooltip(Tooltip.of(it)) }
+            newConst.descLit("").takeIf { it.string != "" }?.also { setTooltip(Tooltip.create(it)) }
             entry.accept(newConst)
         }
 

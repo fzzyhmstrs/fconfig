@@ -14,14 +14,14 @@ import me.fzzyhmstrs.fzzy_config.config.ConfigAction
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomTextWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
-import net.minecraft.client.font.Alignment
-import net.minecraft.client.font.DrawnTextConsumer
-import net.minecraft.client.font.DrawnTextConsumer.ClickHandler
-import net.minecraft.client.font.TextRenderer
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.DrawContext.HoverType
-import net.minecraft.client.gui.screen.Screen
-import net.minecraft.text.Text
+import net.minecraft.client.gui.TextAlignment
+import net.minecraft.client.gui.ActiveTextCollector
+import net.minecraft.client.gui.ActiveTextCollector.ClickableStyleFinder
+import net.minecraft.client.gui.Font
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.gui.GuiGraphicsExtractor.HoveredTextEffects
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.network.chat.Component
 import kotlin.math.roundToInt
 
 /**
@@ -32,12 +32,12 @@ import kotlin.math.roundToInt
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-class ClickableTextWidget(private val parent: Screen, message: Text, textRenderer: TextRenderer): CustomTextWidget(0, 0, textRenderer.getWidth(message.asOrderedText()), textRenderer.fontHeight, message, textRenderer) {
+class ClickableTextWidget(private val parent: Screen, message: Component, textRenderer: Font): CustomTextWidget(0, 0, textRenderer.width(message.visualOrderText), textRenderer.lineHeight, message, textRenderer) {
 
     override fun onPress(event: CustomWidget.MouseEvent): Boolean {
-        val clickHandler = ClickHandler(this.textRenderer, event.x().toInt(), event.y().toInt())
-        this.draw(clickHandler)
-        val style = clickHandler.style
+        val clickHandler = ClickableStyleFinder(this.font, event.x().toInt(), event.y().toInt())
+        this.visitLines(clickHandler)
+        val style = clickHandler.result()
         if (style != null && style.clickEvent != null) {
             val ce = style.clickEvent ?: return false
             return ConfigAction.handleClickEvent(ce)

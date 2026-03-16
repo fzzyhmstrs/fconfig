@@ -29,46 +29,46 @@ import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedFloat
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedInt
 import me.fzzyhmstrs.fzzy_config_test.FC
 import me.fzzyhmstrs.fzzy_config_test.fctId
-import net.minecraft.block.Blocks
-import net.minecraft.client.MinecraftClient
-import net.minecraft.entity.EntityType
-import net.minecraft.fluid.Fluids
-import net.minecraft.item.Items
-import net.minecraft.loot.LootTables
-import net.minecraft.registry.Registries
-import net.minecraft.registry.RegistryKeys
-import net.minecraft.text.ClickEvent
-import net.minecraft.util.Identifier
+import net.minecraft.world.level.block.Blocks
+import net.minecraft.client.Minecraft
+import net.minecraft.world.entity.EntityType
+import net.minecraft.world.level.material.Fluids
+import net.minecraft.world.item.Items
+import net.minecraft.world.level.storage.loot.BuiltInLootTables
+import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.core.registries.Registries
+import net.minecraft.network.chat.ClickEvent
+import net.minecraft.resources.Identifier
 import net.minecraft.util.TriState
 import java.net.URI
 
 @IgnoreVisibility
 @ConvertFrom("test_config3.json","fzzy_config_test")
-class TestConfigImpl3: Config(Identifier.of("fzzy_config_test","test_config3")) {
+class TestConfigImpl3: Config(Identifier.fromNamespaceAndPath("fzzy_config_test","test_config3")) {
 
     private var configAction = ConfigAction.Builder().title("Open Docs...".lit()).build(ClickEvent.OpenUrl(URI.create("https://fzzyhmstrs.github.io/fconfig/")))
 
-    private var configAction2 = ConfigAction.Builder().title("Say Hi...".lit()).build(Runnable { MinecraftClient.getInstance().player?.sendChat("Hiya".lit()) })
+    private var configAction2 = ConfigAction.Builder().title("Say Hi...".lit()).build(Runnable { Minecraft.getInstance().player?.sendChat("Hiya".lit()) })
 
     private var configAction3 = ConfigAction.Builder().title("Give Loots...".lit()).build(ClickEvent.RunCommand("/give @s minecraft:diamond"))
 
     private var configAction4 = ConfigAction.Builder().decoration(TextureIds.DECO_BOOK).title("Set With Flags...".lit()).build(Runnable {
         FC.LOGGER.warn("A")
-        testLootIdentifier.validateAndSetFlagged(LootTables.SHEEP_SHEARING.value, EntryFlag.Flag.STRONG, EntryFlag.Flag.QUIET, EntryFlag.Flag.UPDATE).report(FC.LOGGER::error)
+        testLootIdentifier.validateAndSetFlagged(BuiltInLootTables.SHEAR_SHEEP.identifier(), EntryFlag.Flag.STRONG, EntryFlag.Flag.QUIET, EntryFlag.Flag.UPDATE).report(FC.LOGGER::error)
         FC.LOGGER.warn("B")
         testLootIdentifier.validateAndSetFlagged("this_should_fail".fctId(), EntryFlag.Flag.STRONG).report(FC.LOGGER::error)
         FC.LOGGER.warn("C")
-        testLootIdentifier.validateAndSetFlagged(LootTables.SHEEP_SHEARING.value, EntryFlag.Flag.STRONG).report(FC.LOGGER::error)
+        testLootIdentifier.validateAndSetFlagged(BuiltInLootTables.SHEAR_SHEEP.identifier(), EntryFlag.Flag.STRONG).report(FC.LOGGER::error)
     })
 
     private var configAction5 = ConfigAction.Builder().decoration(TextureIds.DECO_FOLDER).title("Status Registry...".lit()).build(Runnable {
         FC.LOGGER.info("Current status effect entries")
-        for ((key, _) in Registries.STATUS_EFFECT.entrySet) {
-            FC.LOGGER.info(key.value.toString())
+        for ((key, _) in BuiltInRegistries.MOB_EFFECT.entrySet()) {
+            FC.LOGGER.info(key.identifier().toString())
         }
     })
 
-    var testLootIdentifier = ValidatedIdentifier.ofRegistryKey(RegistryKeys.LOOT_TABLE).withListener { f -> FC.LOGGER.info("My value is ${f.get()}") }
+    var testLootIdentifier = ValidatedIdentifier.ofRegistryKey(Registries.LOOT_TABLE).withListener { f -> FC.LOGGER.info("My value is ${f.get()}") }
 
     fun getBl1(): Boolean {
         return bl1

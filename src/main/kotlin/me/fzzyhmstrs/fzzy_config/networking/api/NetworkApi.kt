@@ -11,12 +11,12 @@
 package me.fzzyhmstrs.fzzy_config.networking.api
 
 import me.fzzyhmstrs.fzzy_config.config.Config
-import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.network.RegistryByteBuf
-import net.minecraft.network.codec.PacketCodec
-import net.minecraft.network.packet.CustomPayload
+import net.minecraft.world.entity.player.Player
+import net.minecraft.network.RegistryFriendlyByteBuf
+import net.minecraft.network.codec.StreamCodec
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload
 import net.minecraft.server.MinecraftServer
-import net.minecraft.util.Identifier
+import net.minecraft.resources.Identifier
 
 /**
  * API for multi-loader abstraction of simple play-phase networking
@@ -37,7 +37,7 @@ interface NetworkApi {
      * @author fzzyhmstrs
      * @since 0.4.1
      */
-    fun canSend(id: Identifier, playerEntity: PlayerEntity?): Boolean
+    fun canSend(id: Identifier, playerEntity: Player?): Boolean
 
     /**
      * Sends a payload to a receiver. If the server player is defined, will be an S2C transmission, otherwise C2S
@@ -48,7 +48,7 @@ interface NetworkApi {
      * @author fzzyhmstrs
      * @since 0.4.1
      */
-    fun send(payload: CustomPayload, playerEntity: PlayerEntity?)
+    fun send(payload: CustomPacketPayload, playerEntity: Player?)
 
     /**
      * registers a client-bound (S2C) payload type and receipt handler. This must be done on both logical sides (client and server). A common entrypoint is typically the best place for this.
@@ -59,7 +59,7 @@ interface NetworkApi {
      * @author fzzyhmstrs
      * @since 0.4.1
      */
-    fun <T: CustomPayload> registerS2C(id: CustomPayload.Id<T>, codec: PacketCodec<in RegistryByteBuf, T>, handler: S2CPayloadHandler<T>)
+    fun <T: CustomPacketPayload> registerS2C(id: CustomPacketPayload.Type<T>, codec: StreamCodec<in RegistryFriendlyByteBuf, T>, handler: S2CPayloadHandler<T>)
     /**
      * registers a server-bound (C2S) payload type and receipt handler. This must be done on both logical sides (client and server). A common entrypoint is typically the best place for this.
      * @param T the payload type to register
@@ -69,7 +69,7 @@ interface NetworkApi {
      * @author fzzyhmstrs
      * @since 0.4.1
      */
-    fun <T: CustomPayload> registerC2S(id: CustomPayload.Id<T>, codec: PacketCodec<in RegistryByteBuf, T>, handler: C2SPayloadHandler<T>)
+    fun <T: CustomPacketPayload> registerC2S(id: CustomPacketPayload.Type<T>, codec: StreamCodec<in RegistryFriendlyByteBuf, T>, handler: C2SPayloadHandler<T>)
     /**
      * registers a client-bound (S2C) payload type and receipt handler. This does not have to be done on both server and client (hence lenient). This allows for clients without Fzzy Config to connect to a server with mods that register connections this way. A common entrypoint is typically the best place for registering this.     * @param T the payload type to register
      * @param id [CustomPayload.Id] the id of the custom payload
@@ -78,7 +78,7 @@ interface NetworkApi {
      * @author fzzyhmstrs
      * @since 0.6.6, 0.6.5-fix1 for Forge 1.20.1
      */
-    fun <T: CustomPayload> registerLenientS2C(id: CustomPayload.Id<T>, codec: PacketCodec<in RegistryByteBuf, T>, handler: S2CPayloadHandler<T>)
+    fun <T: CustomPacketPayload> registerLenientS2C(id: CustomPacketPayload.Type<T>, codec: StreamCodec<in RegistryFriendlyByteBuf, T>, handler: S2CPayloadHandler<T>)
     /**
      * registers a server-bound (C2S) payload type and receipt handler. This does not have to be done on both server and client (hence lenient). This allows for clients without Fzzy Config to connect to a server with mods that register connections this way. A common entrypoint is typically the best place for this.     * @param T the payload type to register
      * @param id [CustomPayload.Id] the id of the custom payload
@@ -87,7 +87,7 @@ interface NetworkApi {
      * @author fzzyhmstrs
      * @since 0.6.6, 0.6.5-fix1 for Forge 1.20.1
      */
-    fun <T: CustomPayload> registerLenientC2S(id: CustomPayload.Id<T>, codec: PacketCodec<in RegistryByteBuf, T>, handler: C2SPayloadHandler<T>)
+    fun <T: CustomPacketPayload> registerLenientC2S(id: CustomPacketPayload.Type<T>, codec: StreamCodec<in RegistryFriendlyByteBuf, T>, handler: C2SPayloadHandler<T>)
 
     /**
      * Manually sync a non-client config (which doesn't need syncing).

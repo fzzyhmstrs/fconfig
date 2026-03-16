@@ -12,26 +12,26 @@ package me.fzzyhmstrs.fzzy_config.networking
 
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
-import net.minecraft.network.PacketByteBuf
-import net.minecraft.network.codec.PacketCodec
-import net.minecraft.network.packet.CustomPayload
-import net.minecraft.network.packet.CustomPayload.Id
+import net.minecraft.network.FriendlyByteBuf
+import net.minecraft.network.codec.StreamCodec
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload.Type
 
-internal class ConfigSyncS2CCustomPayload(val id: String, val serializedConfig: String): CustomPayload {
+internal class ConfigSyncS2CCustomPayload(val id: String, val serializedConfig: String): CustomPacketPayload {
 
-    constructor(buf: PacketByteBuf): this(buf.readString(), buf.readString())
+    constructor(buf: FriendlyByteBuf): this(buf.readUtf(), buf.readUtf())
 
-    fun write(buf: PacketByteBuf) {
-        buf.writeString(id)
-        buf.writeString(serializedConfig, ConfigApiImpl.MAX_CONFIG_SERIALIZATION_LENGTH)
+    fun write(buf: FriendlyByteBuf) {
+        buf.writeUtf(id)
+        buf.writeUtf(serializedConfig, ConfigApiImpl.MAX_CONFIG_SERIALIZATION_LENGTH)
     }
 
-    override fun getId(): Id<out CustomPayload> {
+    override fun type(): Type<out CustomPacketPayload> {
         return type
     }
 
     companion object {
-        val type: Id<ConfigSyncS2CCustomPayload> = Id("config_sync_s2c".fcId())
-        val codec: PacketCodec<PacketByteBuf, ConfigSyncS2CCustomPayload> = CustomPayload.codecOf({ c, b -> c.write(b) }, { b -> ConfigSyncS2CCustomPayload(b)})
+        val type: Type<ConfigSyncS2CCustomPayload> = Type("config_sync_s2c".fcId())
+        val codec: StreamCodec<FriendlyByteBuf, ConfigSyncS2CCustomPayload> = CustomPacketPayload.codec({ c, b -> c.write(b) }, { b -> ConfigSyncS2CCustomPayload(b)})
     }
 }

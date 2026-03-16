@@ -15,8 +15,8 @@ import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.event.api.*
 import me.fzzyhmstrs.fzzy_config.event.api.v2.OnUpdateServerListener as OnUpdateServerListenerV2
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.util.Identifier
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.resources.Identifier
 
 internal object EventApiImpl: EventApi {
 
@@ -103,7 +103,7 @@ internal object EventApiImpl: EventApi {
     }
 
     @Deprecated("Soft-remove by 0.8.0, remove by 0.9.0")
-    internal fun fireOnUpdateServer(id: Identifier, config: Config, player: ServerPlayerEntity) {
+    internal fun fireOnUpdateServer(id: Identifier, config: Config, player: ServerPlayer) {
         for (listener in onUpdateServerListeners) {
             listener.onChanged(id, config, player)
         }

@@ -21,11 +21,11 @@ import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedTagKey
 import me.fzzyhmstrs.fzzy_config.validation.misc.*
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedColor.Companion.validatedColor
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedInt
-import net.minecraft.item.AxeItem
-import net.minecraft.item.Items
-import net.minecraft.registry.Registries
-import net.minecraft.registry.tag.ItemTags
-import net.minecraft.util.Identifier
+import net.minecraft.world.item.AxeItem
+import net.minecraft.world.item.Items
+import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.tags.ItemTags
+import net.minecraft.resources.Identifier
 import java.awt.Color
 import java.util.function.Function
 
@@ -186,10 +186,11 @@ object ValidatedMiscExamples {
     fun identifiers() {
         //Example validated identifier. Note that this "raw" usage of the constructor is not recommended in most cases.
         //For instance, in this case, an implementation of ofRegistry(Registry, BiPredicate) would be advisable
-        val validatedIdentifier = ValidatedIdentifier(Identifier.of("oak_planks"), AllowableIdentifiers({ id -> id.toString().contains("planks") }, { Registries.BLOCK.ids.filter { it.toString().contains("planks") } }))
+        val validatedIdentifier = ValidatedIdentifier(Identifier.parse("oak_planks"), AllowableIdentifiers({ id -> id.toString().contains("planks") }, { BuiltInRegistries.BLOCK.keySet()
+            .filter { it.toString().contains("planks") } }))
 
         //Unbounded validated Identifier. Any valid Identifier will be allowed
-        val unboundedIdentifier = ValidatedIdentifier(Identifier.of("nether_star"))
+        val unboundedIdentifier = ValidatedIdentifier(Identifier.parse("nether_star"))
 
         //Unbounded validated Identifier directly from string. Any valid Identifier will be allowed
         val stringIdentifier = ValidatedIdentifier("nether_star")
@@ -274,7 +275,7 @@ object ValidatedMiscExamples {
         class ExampleAny {
             var exampleInt = 4
             var exampleDouble = 0.4
-            var exampleTag = ValidatedTagKey(ItemTags.AXES) { id -> listOf(ItemTags.AXES.id, ItemTags.SWORDS.id).contains(id) }
+            var exampleTag = ValidatedTagKey(ItemTags.AXES) { id -> listOf(ItemTags.AXES.location, ItemTags.SWORDS.location).contains(id) }
         }
 
         // wraps a plain object (that implements Walkable) into validation and serialization
@@ -298,15 +299,15 @@ object ValidatedMiscExamples {
     fun registries() {
         //example simple validation of items. Any item in the Registries.ITEM registry will be valid.
         //Type: ValidatedField<Item>
-        var validatedItem = ValidatedRegistryType.of(Registries.ITEM)
+        var validatedItem = ValidatedRegistryType.of(BuiltInRegistries.ITEM)
 
         //in a more complex example, we can filter down. Maybe only swords from your mod (we'll pretend your mod is minecraft for this example)
         //Type: ValidatedField<Item>
-        var validatedItemComplex = ValidatedRegistryType.of(Items.WOODEN_SWORD, Registries.ITEM) { id, re -> id.namespace == "minecraft" && re.value() is AxeItem }
+        var validatedItemComplex = ValidatedRegistryType.of(Items.WOODEN_SWORD, BuiltInRegistries.ITEM) { id, re -> id.namespace == "minecraft" && re.value() is AxeItem }
 
         //Since we know all the outputs will be swords, we could map it down to provide SwordItem outputs
         //Type: ValidatedField<SwordItem>
-        var validatedItemSword = ValidatedRegistryType.of(Items.WOODEN_SWORD, Registries.ITEM) { id, re ->
+        var validatedItemSword = ValidatedRegistryType.of(Items.WOODEN_SWORD, BuiltInRegistries.ITEM) { id, re ->
             id.namespace == "minecraft" && re.value() is AxeItem
         }.map(
             { item -> item as AxeItem },

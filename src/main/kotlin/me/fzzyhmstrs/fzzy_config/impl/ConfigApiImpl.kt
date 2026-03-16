@@ -40,16 +40,16 @@ import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.map
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.outmap
 import me.fzzyhmstrs.fzzy_config.util.platform.impl.PlatformUtils
 import me.fzzyhmstrs.fzzy_config.validation.number.*
-import net.minecraft.command.DefaultPermissions
-import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.nbt.NbtElement
-import net.minecraft.nbt.NbtEnd
+import net.minecraft.server.permissions.Permissions
+import net.minecraft.world.entity.player.Player
+import net.minecraft.nbt.Tag
+import net.minecraft.nbt.EndTag
 import net.minecraft.nbt.NbtOps
-import net.minecraft.registry.BuiltinRegistries
-import net.minecraft.registry.RegistryWrapper.WrapperLookup
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.util.Identifier
-import net.minecraft.util.math.MathHelper
+import net.minecraft.data.registries.VanillaRegistries
+import net.minecraft.core.HolderLookup.Provider
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.resources.Identifier
+import net.minecraft.util.Mth
 import net.peanuuutz.tomlkt.*
 import java.io.BufferedReader
 import java.io.File
@@ -86,15 +86,15 @@ internal object ConfigApiImpl {
         PlatformUtils.isClient()
     }
 
-    private var wrapperLookup: WrapperLookup? = null
+    private var wrapperLookup: Provider? = null
 
     internal fun invalidateLookup() {
         ResultApiImpl.invalidateProviderCaches()
         this.wrapperLookup = null
     }
 
-    internal fun getWrapperLookup(): WrapperLookup {
-        return wrapperLookup ?: BuiltinRegistries.createWrapperLookup().also { wrapperLookup = it }
+    internal fun getWrapperLookup(): Provider {
+        return wrapperLookup ?: VanillaRegistries.createLookup().also { wrapperLookup = it }
     }
 
     internal const val CHECK_NON_SYNC: Byte = 0
@@ -145,7 +145,7 @@ internal object ConfigApiImpl {
     }
 
     internal fun getSyncedConfig(id: Identifier): Config? {
-        return SyncedConfigRegistry.getConfig(id.toTranslationKey())
+        return SyncedConfigRegistry.getConfig(id.toLanguageKey())
     }
 
     internal fun getClientConfig(id: Identifier): Config? {
@@ -206,7 +206,7 @@ internal object ConfigApiImpl {
     }
 
     internal fun isSyncedConfigLoaded(id: Identifier): Boolean {
-        return SyncedConfigRegistry.hasConfig(id.toTranslationKey())
+        return SyncedConfigRegistry.hasConfig(id.toLanguageKey())
     }
 
     internal fun isSyncedConfigLoaded(scope: String): Boolean {
@@ -412,16 +412,16 @@ internal object ConfigApiImpl {
         }
     }
 
-    internal fun encodeNbt(toml: TomlElement): ValidationResult<NbtElement> {
+    internal fun encodeNbt(toml: TomlElement): ValidationResult<Tag> {
         return try {
             val jsonElement = TomlOps.INSTANCE.convertTo(NbtOps.INSTANCE, toml)
             ValidationResult.success(jsonElement)
         } catch (e: Throwable) {
-            ValidationResult.error(NbtEnd.INSTANCE, ValidationResult.ErrorEntry.Type("NBT Encoding Problem"), "Exception encountered while encoding NBT", e)
+            ValidationResult.error(EndTag.INSTANCE, ValidationResult.ErrorEntry.Type("NBT Encoding Problem"), "Exception encountered while encoding NBT", e)
         }
     }
 
-    internal fun decodeNbt(input: NbtElement): ValidationResult<TomlElement> {
+    internal fun decodeNbt(input: Tag): ValidationResult<TomlElement> {
         return try {
             val tomlElement = NbtOps.INSTANCE.convertTo(TomlOps.INSTANCE, input)
             ValidationResult.success(tomlElement)
@@ -542,7 +542,7 @@ internal object ConfigApiImpl {
     private fun <T: Config, M> serializeUpdateToToml(config: T, manager: M, errorBuilder: ValidationResult.ErrorEntry.Mutable, flags: Byte): ValidationResult<TomlTable> where M: UpdateManager, M: BasicValidationProvider {
         val toml = TomlTableBuilder()
         try {
-            walk(config, config.getId().toTranslationKey(), flags) { _, _, str, v, prop, _, _, _ ->
+            walk(config, config.getId().toLanguageKey(), flags) { _, _, str, v, prop, _, _, _ ->
                 if(manager.hasUpdate(str)) {
                     if(v is EntrySerializer<*>) {
                         toml.element(str, v.serializeEntry(null, flags).attachTo(errorBuilder).get())
@@ -632,7 +632,7 @@ internal object ConfigApiImpl {
                         errorBuilder.addError(ValidationResult.Errors.ACTION) { b -> b.content(action) }
                         propVal.deserializeEntry(tomlElement, name, newFlags).also { r ->
                             if (action.restartPrompt && r.has(ValidationResult.Errors.CHANGED)) {
-                                errorBuilder.addRestart(recordRestarts, action, ((config as? Config)?.getId()?.toTranslationKey() ?: "") + "." + name)
+                                errorBuilder.addRestart(recordRestarts, action, ((config as? Config)?.getId()?.toLanguageKey() ?: "") + "." + name)
                             }
                         }
                     } else {
@@ -649,7 +649,7 @@ internal object ConfigApiImpl {
                             if (action != null) {
                                 errorBuilder.addError(ValidationResult.Errors.ACTION) { b -> b.content(action) }
                                 if (action.restartPrompt && result.has(ValidationResult.Errors.CHANGED)) {
-                                    errorBuilder.addRestart(recordRestarts, action, ((config as? Config)?.getId()?.toTranslationKey() ?: "") + "." + name)
+                                    errorBuilder.addRestart(recordRestarts, action, ((config as? Config)?.getId()?.toLanguageKey() ?: "") + "." + name)
                                 }
                             }
                             if (ignoreVisibility) trySetAccessible(prop)
@@ -666,7 +666,7 @@ internal object ConfigApiImpl {
                                 if(ignoreVisibility) trySetAccessible(prop)
                                 prop.setter.call(config, validateNumber(decodeFromTomlElement(tomlElement, prop.returnType), prop).also {
                                     if (action.restartPrompt && propVal != it) {
-                                        errorBuilder.addRestart(recordRestarts, action, ((config as? Config)?.getId()?.toTranslationKey() ?: "") + "." + name)
+                                        errorBuilder.addRestart(recordRestarts, action, ((config as? Config)?.getId()?.toLanguageKey() ?: "") + "." + name)
                                     }
                                 })
                             } else {
@@ -738,7 +738,7 @@ internal object ConfigApiImpl {
                 errorBuilder.addError(ValidationResult.Errors.FILE_STRUCTURE, "TomlElement passed to deserializeUpdateFromToml not a TomlTable! Deserialization aborted.")
                 return ValidationResult.ofMutable(config, errorBuilder)
             }
-            val id = (config as? Config)?.getId()?.toTranslationKey() ?: ""
+            val id = (config as? Config)?.getId()?.toLanguageKey() ?: ""
             walk(config, id, flags) { c, _, str, v, prop, _, _, _ -> toml[str]?.let {
                 if(v is EntryDeserializer<*>) {
                     val action = requiredAction(checkActions, prop, globalAction)
@@ -806,7 +806,7 @@ internal object ConfigApiImpl {
             }
             val liveConfig = entry.config
             val writeConfig = entry.configCreator()
-            val id = (liveConfig as? Config)?.getId()?.toTranslationKey() ?: ""
+            val id = (liveConfig as? Config)?.getId()?.toLanguageKey() ?: ""
             val updateToml = !entry.skipSync()
             val flattenedToml = flattenToml(id, toml)
             val clientOnly = entry.skipSync() && entry.client
@@ -900,7 +900,7 @@ internal object ConfigApiImpl {
 
     internal fun applyFileUpdate(liveConfig: Config, writeConfig: Config, errorHeader: String): ValidationResult<Boolean> {
         val errorBuilder = ValidationResult.createMutable(errorHeader)
-        val id = liveConfig.getId().toTranslationKey() ?: ""
+        val id = liveConfig.getId().toLanguageKey() ?: ""
         try {
             biWalk(liveConfig, writeConfig, id, 0) { liveC, _, _, _, _, writeV, liveProp, _, _, _ ->
                 try {
@@ -938,10 +938,10 @@ internal object ConfigApiImpl {
         return toml.build()
     }
 
-    internal fun <T: Any> generatePermissionsReport(player: ServerPlayerEntity, config: T, flags: Byte = CHECK_NON_SYNC): MutableMap<String, Boolean> {
+    internal fun <T: Any> generatePermissionsReport(player: ServerPlayer, config: T, flags: Byte = CHECK_NON_SYNC): MutableMap<String, Boolean> {
         val map: MutableMap<String, Boolean> = hashMapOf()
 
-        walk(config, (config as? Config)?.getId()?.toTranslationKey() ?: "", flags) { _, _, key, _, _, annotations, _, _ ->
+        walk(config, (config as? Config)?.getId()?.toLanguageKey() ?: "", flags) { _, _, key, _, _, annotations, _, _ ->
             annotations.firstOrNull { it is WithCustomPerms }?.cast<WithCustomPerms>()?.let {
                 for (group in it.perms) {
                     if (PlatformUtils.hasPermission(player, group)) {
@@ -960,7 +960,7 @@ internal object ConfigApiImpl {
         return map
     }
 
-    internal fun validatePermissions(player: ServerPlayerEntity, id: String, config: Config, configString: String, clientPermissions: Int): ValidationResult<List<String>> {
+    internal fun validatePermissions(player: ServerPlayer, id: String, config: Config, configString: String, clientPermissions: Int): ValidationResult<List<String>> {
         val toml = try {
             Toml.parseToTomlTable(configString)
         } catch (_: Throwable) {
@@ -988,10 +988,10 @@ internal object ConfigApiImpl {
         return ValidationResult.predicated(list, list.isEmpty(), ValidationResult.Errors.ACCESS_VIOLATION) { b -> b.content("Config updated without proper permissions!") }
     }
 
-    internal fun isConfigAdmin(player: ServerPlayerEntity, config: Config): Boolean {
+    internal fun isConfigAdmin(player: ServerPlayer, config: Config): Boolean {
         val annotation = config::class.annotations.firstOrNull{ it is AdminAccess }?.cast<WithCustomPerms>()
         if (annotation == null) {
-            return player.permissions.hasPermission(DefaultPermissions.ADMINS)
+            return player.permissions().hasPermission(Permissions.COMMANDS_ADMIN)
         }
         for (perm in annotation.perms) {
             if(PlatformUtils.hasPermission(player, perm)) {
@@ -1001,11 +1001,11 @@ internal object ConfigApiImpl {
         if (annotation.fallback >= 0) {
             return getPlayerPermissionLevel(player) >= annotation.fallback
         }
-        return player.permissions.hasPermission(DefaultPermissions.ADMINS)
+        return player.permissions().hasPermission(Permissions.COMMANDS_ADMIN)
     }
 
-    private fun getPlayerPermissionLevel(player: ServerPlayerEntity): Int {
-        return player.entityWorld.server!!.getPermissionLevel(player.playerConfigEntry).level.level
+    private fun getPlayerPermissionLevel(player: ServerPlayer): Int {
+        return player.level().server!!.getProfilePermissions(player.nameAndId()).level().id()
     }
 
     private fun makeDir(dir: File): Pair<File, Boolean> {
@@ -1106,7 +1106,7 @@ internal object ConfigApiImpl {
 
     @Deprecated("Move by 0.8.0")
     internal fun <T: Any> buildTranslations(clazz: KClass<T>, id: Identifier, lang: String, builder: BiConsumer<String, String>, logWarnings: Boolean = true) {
-        buildTranslations(clazz, id.toTranslationKey(), lang, builder, logWarnings)
+        buildTranslations(clazz, id.toLanguageKey(), lang, builder, logWarnings)
     }
 
     @Deprecated("Move by 0.8.0")
@@ -1387,7 +1387,7 @@ internal object ConfigApiImpl {
         when (thing) {
             is Int -> {
                 val restriction = property.findAnnotation<ValidatedInt.Restrict>() ?: return thing
-                return MathHelper.clamp(thing, restriction.min, restriction.max)
+                return Mth.clamp(thing, restriction.min, restriction.max)
             }
             is Byte -> {
                 val restriction = property.findAnnotation<ValidatedByte.Restrict>() ?: return thing
@@ -1399,21 +1399,21 @@ internal object ConfigApiImpl {
             }
             is Long -> {
                 val restriction = property.findAnnotation<ValidatedLong.Restrict>() ?: return thing
-                return MathHelper.clamp(thing, restriction.min, restriction.max)
+                return Mth.clamp(thing, restriction.min, restriction.max)
             }
             is Double -> {
                 val restriction = property.findAnnotation<ValidatedDouble.Restrict>() ?: return thing
-                return MathHelper.clamp(thing, restriction.min, restriction.max)
+                return Mth.clamp(thing, restriction.min, restriction.max)
             }
             is Float -> {
                 val restriction = property.findAnnotation<ValidatedFloat.Restrict>() ?: return thing
-                return MathHelper.clamp(thing, restriction.min, restriction.max)
+                return Mth.clamp(thing, restriction.min, restriction.max)
             }
             else -> return thing
         }
     }
 
-    private fun hasNeededPermLevel(player: ServerPlayerEntity, playerPermLevel: Int, config: Config, annotations: List<Annotation>): Boolean {
+    private fun hasNeededPermLevel(player: ServerPlayer, playerPermLevel: Int, config: Config, annotations: List<Annotation>): Boolean {
         // 1. NonSync wins over everything, even whole config annotations
         if (isNonSync(annotations)) return true
         val configAnnotations = config::class.annotations
@@ -1499,7 +1499,7 @@ internal object ConfigApiImpl {
 
     ///////////////// Printing ////////////////////////////////////////////////////////////
 
-    internal fun printChangeHistory(history: List<String>, id: String, player: PlayerEntity? = null) {
+    internal fun printChangeHistory(history: List<String>, id: String, player: Player? = null) {
         FC.LOGGER.info("$$$$$$$$$$$$$$$$$$$$$$$$$$")
         FC.LOGGER.info("Completed updates for configs: [$id]")
         if (player != null)

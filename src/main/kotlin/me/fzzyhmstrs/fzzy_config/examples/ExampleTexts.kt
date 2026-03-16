@@ -26,10 +26,10 @@ import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.FcText.underline
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricLanguageProvider.TranslationBuilder
-import net.minecraft.registry.RegistryKeys
-import net.minecraft.registry.tag.TagKey
-import net.minecraft.util.Identifier
-import net.minecraft.util.math.ChunkPos
+import net.minecraft.core.registries.Registries
+import net.minecraft.tags.TagKey
+import net.minecraft.resources.Identifier
+import net.minecraft.world.level.ChunkPos
 import java.util.*
 
 object ExampleTexts {
@@ -39,12 +39,12 @@ object ExampleTexts {
         val standardText = FcText.literal("Normal text")
         val translateText = FcText.translatable("my.translatable.text")
         val fallbackText = FcText.translatableWithFallback("my.translatable.text", "My Fallback")
-        val stringifiedText = FcText.stringified("my.stringified.text", TagKey.of(RegistryKeys.ITEM, "arg_requiring_stringification".fcId()))
+        val stringifiedText = FcText.stringified("my.stringified.text", TagKey.create(Registries.ITEM, "arg_requiring_stringification".fcId()))
         val emptyText = FcText.empty()
         val appendedText = FcText.appended(standardText, fallbackText)
 
         //several extension functions for converting common MC and Java objects into text
-        val idText = Identifier.of("stick").text()
+        val idText = Identifier.parse("stick").text()
         val uuidText = UUID.fromString("732bf411-5bb5-4f5d-8ef0-feb45d6032ee").text()
         val dateText = Date().text()
         val messageText = LiteralMessage("Example Message").text()
@@ -135,7 +135,7 @@ object ExampleTexts {
 
         //Then in datagen, these annotations will be automatically applied to the provided translation builder
         fun buildTranslations(lang: String, builder: TranslationBuilder) {
-            ConfigApi.buildTranslations(BoisConfig::class, Identifier.of(FC.MOD_ID, "bois_config"), lang, true, builder::add)
+            ConfigApi.buildTranslations(BoisConfig::class, Identifier.fromNamespaceAndPath(FC.MOD_ID, "bois_config"), lang, true, builder::add)
         }
 
         //output will be:

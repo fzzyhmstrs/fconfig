@@ -21,9 +21,9 @@ import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.Walkable
 import me.fzzyhmstrs.fzzy_config.util.platform.impl.PlatformUtils
 import net.minecraft.server.MinecraftServer
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.text.MutableText
-import net.minecraft.util.Identifier
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.network.chat.MutableComponent
+import net.minecraft.resources.Identifier
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.io.File
 
@@ -192,7 +192,7 @@ open class Config @JvmOverloads constructor(protected val identifier: Identifier
      * @since 0.5.0, deprecated 0.7.4, soft-removal by 0.8.0, removal by 0.9.0
      */
     @Deprecated("Scheduled for removal 0.9.0. Will stop functioning by 0.8.0. Will not crash in 0.8.0, but will not be wired in any more. Replace with the version that uses a ServerUpdateContext input. This may not be called in all cases, potentially skipping needed events")
-    open fun onUpdateServer(playerEntity: ServerPlayerEntity) {}
+    open fun onUpdateServer(playerEntity: ServerPlayer) {}
 
     /**
      * Runs on the logical server after an updated config is prepared for saving. Typically, this will be after a config update is received from a connected client, and that update passes permission checks.
@@ -238,36 +238,36 @@ open class Config @JvmOverloads constructor(protected val identifier: Identifier
      * @suppress
      */
     override fun translationKey(): String {
-        return getId().toTranslationKey()
+        return getId().toLanguageKey()
     }
     /**
      * @suppress
      */
     override fun descriptionKey(): String {
-        return getId().toTranslationKey() + ".desc"
+        return getId().toLanguageKey() + ".desc"
     }
     /**
      * @suppress
      */
     override fun prefixKey(): String {
-        return getId().toTranslationKey() + ".prefix"
+        return getId().toLanguageKey() + ".prefix"
     }
     /**
      * @suppress
      */
-    override fun translation(fallback: String?): MutableText {
+    override fun translation(fallback: String?): MutableComponent {
         return Translatable.getScopedResult(translationKey())?.name?.nullCast() ?: super.translation(fallback)
     }
     /**
      * @suppress
      */
-    override fun description(fallback: String?): MutableText {
+    override fun description(fallback: String?): MutableComponent {
         return Translatable.getScopedResult(translationKey())?.desc?.nullCast() ?: super.description(fallback)
     }
     /**
      * @suppress
      */
-    override fun prefix(fallback: String?): MutableText {
+    override fun prefix(fallback: String?): MutableComponent {
         return Translatable.getScopedResult(translationKey())?.prefix?.nullCast() ?: super.prefix(fallback)
     }
 }

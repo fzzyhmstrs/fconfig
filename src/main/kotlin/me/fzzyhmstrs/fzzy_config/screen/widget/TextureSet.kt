@@ -1,6 +1,6 @@
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
-import net.minecraft.util.Identifier
+import net.minecraft.resources.Identifier
 
 /**
  * A set of textures used for enabled, disabled, and focused contexts of an element. All three textures can be the same, in which case the texture rendered is of course the same no matter the state of the underlying object.

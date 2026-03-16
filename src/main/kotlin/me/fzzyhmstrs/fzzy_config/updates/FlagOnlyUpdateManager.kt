@@ -10,14 +10,14 @@
 
 package me.fzzyhmstrs.fzzy_config.updates
 
-import net.minecraft.text.Text
+import net.minecraft.network.chat.Component
 import java.util.*
 
 internal class FlagOnlyUpdateManager: UpdateManager, BasicValidationProvider {
 
     private val updates: MutableSet<String> = mutableSetOf()
 
-    override fun update(updatable: Updatable, updateMessage: Text) {
+    override fun update(updatable: Updatable, updateMessage: Component) {
         updates.add(updatable.getEntryKey())
     }
 
@@ -29,10 +29,10 @@ internal class FlagOnlyUpdateManager: UpdateManager, BasicValidationProvider {
         return null
     }
 
-    override fun addUpdateMessage(key: Updatable, text: Text) {
+    override fun addUpdateMessage(key: Updatable, text: Component) {
     }
 
-    fun getHistory(): Map<Updatable, SortedMap<Long, Text>> {
+    fun getHistory(): Map<Updatable, SortedMap<Long, Component>> {
         return mapOf()
     }
 

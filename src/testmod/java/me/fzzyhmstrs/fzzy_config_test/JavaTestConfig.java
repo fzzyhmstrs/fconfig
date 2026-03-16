@@ -20,8 +20,8 @@ import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedList;
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier;
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedDouble;
 import me.fzzyhmstrs.fzzy_config_test.test.TestConfigImpl3;
-import net.minecraft.registry.Registries;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -34,7 +34,7 @@ public class JavaTestConfig extends Config {
     public JavaTestConfig(Identifier id) {super(id, "test");}
 
     public JavaTestConfig() {
-        super(Identifier.of("fzzy_config_test","java_config"), "test");
+        super(Identifier.fromNamespaceAndPath("fzzy_config_test","java_config"), "test");
     }
 
     public int anInt = 4;
@@ -44,12 +44,12 @@ public class JavaTestConfig extends Config {
 
     @RequiresAction(action = Action.RESTART)
     public ValidatedList<Identifier> foxTamingItems = new ValidatedList<>(List.of(
-            Identifier.of("glow_berries")
-    ), ValidatedIdentifier.ofRegistry(Identifier.of("glow_berries"), Registries.ITEM));
+            Identifier.parse("glow_berries")
+    ), ValidatedIdentifier.ofRegistry(Identifier.parse("glow_berries"), BuiltInRegistries.ITEM));
     @RequiresAction(action = Action.RESTART)
     public ValidatedList<Identifier> foxBreedingItems = new ValidatedList<>(List.of(
-            Identifier.of("sweet_berries")
-    ), ValidatedIdentifier.ofRegistry(Identifier.of("sweet_berries"), Registries.ITEM));
+            Identifier.parse("sweet_berries")
+    ), ValidatedIdentifier.ofRegistry(Identifier.parse("sweet_berries"), BuiltInRegistries.ITEM));
 
     public TestEnum testEnum = TestEnum.C;
 

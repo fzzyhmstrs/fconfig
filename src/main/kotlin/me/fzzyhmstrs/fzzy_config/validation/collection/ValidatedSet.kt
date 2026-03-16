@@ -37,9 +37,9 @@ import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedChoice.WidgetType
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedMapped
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedString
 import me.fzzyhmstrs.fzzy_config.validation.number.*
-import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.text.MutableText
-import net.minecraft.text.Text
+import net.minecraft.client.gui.components.AbstractWidget
+import net.minecraft.network.chat.MutableComponent
+import net.minecraft.network.chat.Component
 import net.peanuuutz.tomlkt.TomlArrayBuilder
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.asTomlArray
@@ -185,7 +185,7 @@ open class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry
 
     @Internal
     //client
-    override fun widgetEntry(choicePredicate: ChoiceValidator<Set<T>>): ClickableWidget {
+    override fun widgetEntry(choicePredicate: ChoiceValidator<Set<T>>): AbstractWidget {
         return CustomButtonWidget.builder { b: CustomButtonWidget ->
             openListEditPopup(PopupWidget.Builder.popupContext { w -> b.x + b.width/2 - w/2 }, PopupWidget.Builder.popupContext { h -> b.y + b.height/2 - h/2 })
         }.size(110, 20).messageSupplier { provideAttachedValue(Translatable.Provider.WIDGET_TITLE, TextureIds.SET_LANG) }.build()
@@ -245,7 +245,7 @@ open class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry
      * @author fzzyhmstrs
      * @since 0.2.0, added optional params 0.4.0
      */
-    fun toChoices(widgetType: WidgetType = WidgetType.POPUP, translationProvider: BiFunction<T, String, MutableText> = BiFunction { t, _ -> t.transLit(t.toString()) }, descriptionProvider: BiFunction<T, String, Text> = BiFunction { t, _ -> t.descLit("") }): ValidatedChoice<T> {
+    fun toChoices(widgetType: WidgetType = WidgetType.POPUP, translationProvider: BiFunction<T, String, MutableComponent> = BiFunction { t, _ -> t.transLit(t.toString()) }, descriptionProvider: BiFunction<T, String, Component> = BiFunction { t, _ -> t.descLit("") }): ValidatedChoice<T> {
         return ValidatedChoice(defaultValue.toList(), entryHandler, translationProvider, descriptionProvider, widgetType)
     }
 
@@ -260,7 +260,7 @@ open class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry
      * @since 0.6.3
      */
     @JvmOverloads
-    fun toChoiceList(selectedChoices: List<T> = listOf(), widgetType: ValidatedChoiceList.WidgetType = ValidatedChoiceList.WidgetType.POPUP, translationProvider: BiFunction<T, String, MutableText> = BiFunction { t, _ -> t.transLit(t.toString()) }, descriptionProvider: BiFunction<T, String, Text> = BiFunction { t, _ -> t.descLit("") }): ValidatedChoiceList<T> {
+    fun toChoiceList(selectedChoices: List<T> = listOf(), widgetType: ValidatedChoiceList.WidgetType = ValidatedChoiceList.WidgetType.POPUP, translationProvider: BiFunction<T, String, MutableComponent> = BiFunction { t, _ -> t.transLit(t.toString()) }, descriptionProvider: BiFunction<T, String, Component> = BiFunction { t, _ -> t.descLit("") }): ValidatedChoiceList<T> {
         @Suppress("DEPRECATION")
         return ValidatedChoiceList(selectedChoices, defaultValue.toList(), entryHandler, translationProvider, descriptionProvider, widgetType)
     }

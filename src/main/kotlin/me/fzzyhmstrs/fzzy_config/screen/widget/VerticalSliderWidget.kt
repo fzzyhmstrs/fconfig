@@ -14,19 +14,19 @@ import com.mojang.blaze3d.systems.RenderSystem
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawNineSlice
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.Click
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.navigation.GuiNavigationType
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
-import net.minecraft.client.gui.screen.narration.NarrationPart
-import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.client.input.KeyInput
-import net.minecraft.client.sound.SoundManager
-import net.minecraft.text.MutableText
-import net.minecraft.text.Text
-import net.minecraft.util.Identifier
-import net.minecraft.util.math.MathHelper
+import net.minecraft.client.Minecraft
+import net.minecraft.client.input.MouseButtonEvent
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.InputType
+import net.minecraft.client.gui.narration.NarrationElementOutput
+import net.minecraft.client.gui.narration.NarratedElementType
+import net.minecraft.client.gui.components.AbstractWidget
+import net.minecraft.client.input.KeyEvent
+import net.minecraft.client.sounds.SoundManager
+import net.minecraft.network.chat.MutableComponent
+import net.minecraft.network.chat.Component
+import net.minecraft.resources.Identifier
+import net.minecraft.util.Mth
 import org.lwjgl.glfw.GLFW
 import java.util.function.Consumer
 import java.util.function.Supplier
@@ -44,9 +44,9 @@ import java.util.function.Supplier
  * @since 0.2.0
  */
 //client
-class VerticalSliderWidget(private val wrappedValue: Supplier<Double>, x: Int, y: Int, width: Int, height: Int, message: Text, private val valueApplier: Consumer<Double>)
+class VerticalSliderWidget(private val wrappedValue: Supplier<Double>, x: Int, y: Int, width: Int, height: Int, message: Component, private val valueApplier: Consumer<Double>)
     :
-    ClickableWidget(x, y, width, height, message)
+    AbstractWidget(x, y, width, height, message)
 {
     companion object {
         private val TEXTURE = "widget/vertical_slider".fcId()
@@ -73,7 +73,7 @@ class VerticalSliderWidget(private val wrappedValue: Supplier<Double>, x: Int, y
             HANDLE
     }
 
-    override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun extractWidgetRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
         if (wrappedValue.get() != value) {
             value = wrappedValue.get()
         }
@@ -87,14 +87,14 @@ class VerticalSliderWidget(private val wrappedValue: Supplier<Double>, x: Int, y
             this.sliderFocused = false
             return
         }
-        val guiNavigationType = MinecraftClient.getInstance().navigationType
-        if (guiNavigationType == GuiNavigationType.MOUSE || guiNavigationType == GuiNavigationType.KEYBOARD_TAB) {
+        val guiNavigationType = Minecraft.getInstance().lastInputType
+        if (guiNavigationType == InputType.MOUSE || guiNavigationType == InputType.KEYBOARD_TAB) {
             sliderFocused = true
         }
     }
 
-    override fun keyPressed(input: KeyInput): Boolean {
-        if (input.isEnterOrSpace) {
+    override fun keyPressed(input: KeyEvent): Boolean {
+        if (input.isSelection) {
             sliderFocused = !sliderFocused
             return true
         }
@@ -109,22 +109,22 @@ class VerticalSliderWidget(private val wrappedValue: Supplier<Double>, x: Int, y
         return false
     }
 
-    override fun onClick(click: Click, doubled: Boolean) {
+    override fun onClick(click: MouseButtonEvent, doubled: Boolean) {
         mouseHasBeenClicked = true
         setValueFromMouse(click.y)
     }
 
-    override fun onDrag(click: Click, offsetX: Double, offsetY: Double) {
+    override fun onDrag(click: MouseButtonEvent, offsetX: Double, offsetY: Double) {
         setValueFromMouse(click.y)
         super.onDrag(click, offsetX, offsetY)
     }
 
-    override fun playDownSound(soundManager: SoundManager?) {
+    override fun playDownSound(soundManager: SoundManager) {
     }
 
-    override fun onRelease(click: Click) {
+    override fun onRelease(click: MouseButtonEvent) {
         if (mouseHasBeenClicked)
-            super.playDownSound(MinecraftClient.getInstance().soundManager)
+            super.playDownSound(Minecraft.getInstance().soundManager)
     }
 
     private fun setValueFromMouse(mouseY: Double) {
@@ -133,23 +133,23 @@ class VerticalSliderWidget(private val wrappedValue: Supplier<Double>, x: Int, y
 
     private fun setValue(value: Double) {
         val d = this.value
-        this.value = MathHelper.clamp(value, 0.0, 1.0)
+        this.value = Mth.clamp(value, 0.0, 1.0)
         if (d != this.value) {
             valueApplier.accept(this.value)
         }
     }
 
-    override fun getNarrationMessage(): MutableText {
+    override fun createNarrationMessage(): MutableComponent {
         return "gui.narrate.slider".translate(message)
     }
 
-    override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
-        builder.put(NarrationPart.TITLE, this.narrationMessage as Text)
+    override fun updateWidgetNarration(builder: NarrationElementOutput) {
+        builder.add(NarratedElementType.TITLE, this.createNarrationMessage() as Component)
         if (active) {
             if (this.isFocused) {
-                builder.put(NarrationPart.USAGE, "fc.button.slider.usage.focused".translate())
+                builder.add(NarratedElementType.USAGE, "fc.button.slider.usage.focused".translate())
             } else {
-                builder.put(NarrationPart.USAGE, "narration.slider.usage.hovered".translate())
+                builder.add(NarratedElementType.USAGE, "narration.slider.usage.hovered".translate())
             }
         }
     }

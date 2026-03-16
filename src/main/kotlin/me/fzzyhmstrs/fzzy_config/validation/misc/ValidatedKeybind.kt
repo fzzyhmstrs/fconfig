@@ -27,13 +27,13 @@ import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.attachTo
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.map
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.screen.Screen
-import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.client.util.InputUtil
-import net.minecraft.text.MutableText
-import net.minecraft.text.Text
-import net.minecraft.util.Formatting
+import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.client.gui.components.AbstractWidget
+import com.mojang.blaze3d.platform.InputConstants
+import net.minecraft.network.chat.MutableComponent
+import net.minecraft.network.chat.Component
+import net.minecraft.ChatFormatting
 import net.peanuuutz.tomlkt.*
 import org.jetbrains.annotations.ApiStatus.Internal
 import org.lwjgl.glfw.GLFW
@@ -165,7 +165,7 @@ open class ValidatedKeybind(defaultValue: FzzyKeybind): ValidatedField<FzzyKeybi
 
     @Internal
     //client
-    override fun widgetEntry(choicePredicate: ChoiceValidator<FzzyKeybind>): ClickableWidget {
+    override fun widgetEntry(choicePredicate: ChoiceValidator<FzzyKeybind>): AbstractWidget {
         val layout = LayoutWidget.Builder().paddingBoth(0).spacingBoth(0).build()
         val keybindWidget = KeybindWidget()
         layout.add(
@@ -285,12 +285,13 @@ open class ValidatedKeybind(defaultValue: FzzyKeybind): ValidatedField<FzzyKeybi
         var justCLickedToggle = false
         var justClickedShift = false
 
-        override fun getMessage(): Text {
+        override fun getMessage(): Component {
             return if (resetting) {
                 if (compounding) {
-                    FcText.translatable("fc.keybind.or", this@ValidatedKeybind.get().keybind(), FcText.translatable("fc.keybind.resetting", FcText.literal("  ").formatted(Formatting.UNDERLINE)))
+                    FcText.translatable("fc.keybind.or", this@ValidatedKeybind.get().keybind(), FcText.translatable("fc.keybind.resetting", FcText.literal("  ").withStyle(
+                        ChatFormatting.UNDERLINE)))
                 } else {
-                    FcText.translatable("fc.keybind.resetting", this@ValidatedKeybind.get().keybind().copy().formatted(Formatting.UNDERLINE))
+                    FcText.translatable("fc.keybind.resetting", this@ValidatedKeybind.get().keybind().copy().withStyle(ChatFormatting.UNDERLINE))
                 }
             } else {
                 this@ValidatedKeybind.get().keybind()
@@ -307,7 +308,7 @@ open class ValidatedKeybind(defaultValue: FzzyKeybind): ValidatedField<FzzyKeybi
                 }
                 resetting = false
                 compounding = false
-                MinecraftClient.getInstance().currentScreen?.nullCast<ConfigScreen>()?.setGlobalInputHandler(null)
+                Minecraft.getInstance().screen?.nullCast<ConfigScreen>()?.setGlobalInputHandler(null)
             }
         }
 
@@ -322,12 +323,12 @@ open class ValidatedKeybind(defaultValue: FzzyKeybind): ValidatedField<FzzyKeybi
         }
 
         fun setupHandler() {
-            MinecraftClient.getInstance().currentScreen?.nullCast<ConfigScreen>()?.setGlobalInputHandler { key, released, type, ctrl, shift, alt ->
+            Minecraft.getInstance().screen?.nullCast<ConfigScreen>()?.setGlobalInputHandler { key, released, type, ctrl, shift, alt ->
                 if (!released || justCLickedToggle || justClickedShift) {
                     if (released && (key == GLFW.GLFW_KEY_LEFT_SHIFT || key == GLFW.GLFW_KEY_RIGHT_SHIFT)) {
                         justClickedShift = false
                     }
-                    if (released && (key == GLFW.GLFW_MOUSE_BUTTON_1 || (key == InputUtil.GLFW_KEY_ENTER || key == InputUtil.GLFW_KEY_SPACE || key == InputUtil.GLFW_KEY_KP_ENTER ))) {
+                    if (released && (key == GLFW.GLFW_MOUSE_BUTTON_1 || (key == InputConstants.KEY_RETURN || key == InputConstants.KEY_SPACE || key == InputConstants.KEY_NUMPADENTER))) {
                         justCLickedToggle = false
                     }
                     return@setGlobalInputHandler TriState.FALSE
@@ -345,12 +346,12 @@ open class ValidatedKeybind(defaultValue: FzzyKeybind): ValidatedField<FzzyKeybi
                 }
                 resetting = false
                 compounding = false
-                MinecraftClient.getInstance().currentScreen?.nullCast<ConfigScreen>()?.setGlobalInputHandler(null)
+                Minecraft.getInstance().screen?.nullCast<ConfigScreen>()?.setGlobalInputHandler(null)
                 TriState.TRUE
             }
         }
 
-        override fun getNarrationMessage(): MutableText {
+        override fun createNarrationMessage(): MutableComponent {
             return if (resetting)
                 FcText.translatable("fc.keybind.resetting.narrate", message)
             else

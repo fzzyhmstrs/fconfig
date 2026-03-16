@@ -1,26 +1,35 @@
 package me.fzzyhmstrs.fzzy_config.util.platform.impl
 
 import me.fzzyhmstrs.fzzy_config.util.platform.RegistrySupplier
-import net.minecraft.registry.RegistryKey
-import net.minecraft.registry.entry.RegistryEntry
-import net.minecraft.util.Identifier
+import net.minecraft.resources.ResourceKey
+import net.minecraft.core.Holder
+import net.minecraft.core.component.DataComponentMap
+import net.minecraft.resources.Identifier
 import java.util.*
 
-internal class RegistrySupplierImpl<T>(private val entry: RegistryEntry.Reference<T>): RegistrySupplier<T> {
+internal class RegistrySupplierImpl<T: Any>(private val entry: Holder.Reference<T>): RegistrySupplier<T> {
 
-    override fun getRegistryKey(): RegistryKey<T> {
-        return entry.registryKey()
+    override fun getRegistryKey(): ResourceKey<T> {
+        return entry.key()
     }
 
-    override fun getKey(): Optional<RegistryKey<T>> {
-        return entry.key
+    override fun areComponentsBound(): Boolean {
+        return entry.areComponentsBound()
+    }
+
+    override fun components(): DataComponentMap {
+        return entry.components()
+    }
+
+    override fun unwrapKey(): Optional<ResourceKey<T>> {
+        return entry.unwrapKey()
     }
 
     override fun getId(): Identifier {
-        return entry.registryKey().value
+        return entry.key().identifier()
     }
 
-    override fun getEntry(): RegistryEntry<T> {
+    override fun getEntry(): Holder<T> {
         return entry
     }
 

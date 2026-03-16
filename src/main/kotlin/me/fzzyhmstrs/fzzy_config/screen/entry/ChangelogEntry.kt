@@ -16,11 +16,11 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomMultilineTextWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawOutline
 import me.fzzyhmstrs.fzzy_config.util.Translatable
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.Element
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
-import net.minecraft.client.gui.screen.narration.NarrationPart
+import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.gui.components.events.GuiEventListener
+import net.minecraft.client.gui.narration.NarrationElementOutput
+import net.minecraft.client.gui.narration.NarratedElementType
 
 internal class ChangelogEntry(parentElement: DynamicListWidget, changes: String, private val index: Int) :
     DynamicListWidget.Entry(parentElement, Translatable.createResult(changes.lit()), DynamicListWidget.Scope(index.toString() + changes)) {
@@ -37,7 +37,7 @@ internal class ChangelogEntry(parentElement: DynamicListWidget, changes: String,
         return selectables
     }
 
-    override fun children(): MutableList<out Element> {
+    override fun children(): MutableList<out GuiEventListener> {
         return children
     }
 
@@ -50,23 +50,23 @@ internal class ChangelogEntry(parentElement: DynamicListWidget, changes: String,
         widget.width = this.w.get()
     }
 
-    override fun renderEntry(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {
+    override fun renderEntry(context: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {
         widget.setPosition(x, y)
-        widget.render(context, mouseX, mouseY, delta)
+        widget.extractRenderState(context, mouseX, mouseY, delta)
     }
 
-    override fun renderBorder(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {
-        if (focused && MinecraftClient.getInstance().navigationType.isKeyboard) {
+    override fun renderBorder(context: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {
+        if (focused && Minecraft.getInstance().lastInputType.isKeyboard) {
             context.drawOutline(x, y, width, height, -1)
         }
     }
 
-    override fun renderHighlight(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {
+    override fun renderHighlight(context: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {
         if (index % 2 == 1)
             context.fill(x, y - 1, x + width, y + height, 1684300900)
     }
 
-    override fun appendTitleNarrations(builder: NarrationMessageBuilder) {
-        builder.put(NarrationPart.TITLE, texts.name)
+    override fun appendTitleNarrations(builder: NarrationElementOutput) {
+        builder.add(NarratedElementType.TITLE, texts.name)
     }
 }

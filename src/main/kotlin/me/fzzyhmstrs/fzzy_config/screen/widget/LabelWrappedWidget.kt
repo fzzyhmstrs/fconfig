@@ -11,20 +11,20 @@
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
 import me.fzzyhmstrs.fzzy_config.nullCast
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.Click
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.Element
-import net.minecraft.client.gui.Selectable
-import net.minecraft.client.gui.navigation.GuiNavigation
-import net.minecraft.client.gui.navigation.GuiNavigationPath
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
-import net.minecraft.client.gui.screen.narration.NarrationPart
-import net.minecraft.client.gui.tooltip.Tooltip
-import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.client.input.CharInput
-import net.minecraft.client.input.KeyInput
-import net.minecraft.text.Text
+import net.minecraft.client.Minecraft
+import net.minecraft.client.input.MouseButtonEvent
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.gui.components.events.GuiEventListener
+import net.minecraft.client.gui.narration.NarratableEntry
+import net.minecraft.client.gui.navigation.FocusNavigationEvent
+import net.minecraft.client.gui.ComponentPath
+import net.minecraft.client.gui.narration.NarrationElementOutput
+import net.minecraft.client.gui.narration.NarratedElementType
+import net.minecraft.client.gui.components.Tooltip
+import net.minecraft.client.gui.components.AbstractWidget
+import net.minecraft.client.input.CharacterEvent
+import net.minecraft.client.input.KeyEvent
+import net.minecraft.network.chat.Component
 
 /**
  * A widget that wraps another widget with a display label. The label will appear under the widget aligned left
@@ -38,23 +38,23 @@ import net.minecraft.text.Text
  * @author fzzyhmstrs
  * @since 0.6.0
  */
-class LabelWrappedWidget(private val child: ClickableWidget, private val label: Text, private val showLabel: Boolean = true)
-    : ClickableWidget(child.x, child.y, child.width, child.height, label), TooltipChild {
+class LabelWrappedWidget(private val child: AbstractWidget, private val label: Component, private val showLabel: Boolean = true)
+    : AbstractWidget(child.x, child.y, child.width, child.height, label), TooltipChild {
 
-    override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-        child.render(context, mouseX, mouseY, delta)
+    override fun extractWidgetRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
+        child.extractRenderState(context, mouseX, mouseY, delta)
         if (showLabel) {
-            context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, label.asOrderedText(), x, y + getHeight() - 9, -1)
+            context.text(Minecraft.getInstance().font, label.visualOrderText, x, y + getHeight() - 9, -1)
         }
     }
 
-    override fun mouseClicked(click: Click, doubled: Boolean): Boolean {
+    override fun mouseClicked(click: MouseButtonEvent, doubled: Boolean): Boolean {
         return child.mouseClicked(click, doubled)
     }
-    override fun mouseDragged(click: Click, offsetX: Double, offsetY: Double): Boolean {
+    override fun mouseDragged(click: MouseButtonEvent, offsetX: Double, offsetY: Double): Boolean {
         return child.mouseDragged(click, offsetX, offsetY)
     }
-    override fun mouseReleased(click: Click): Boolean {
+    override fun mouseReleased(click: MouseButtonEvent): Boolean {
         return child.mouseReleased(click)
     }
 
@@ -62,14 +62,14 @@ class LabelWrappedWidget(private val child: ClickableWidget, private val label: 
         return child.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
     }
 
-    override fun keyPressed(input: KeyInput): Boolean {
+    override fun keyPressed(input: KeyEvent): Boolean {
         return child.keyPressed(input)
     }
-    override fun keyReleased(input: KeyInput): Boolean {
+    override fun keyReleased(input: KeyEvent): Boolean {
         return child.keyReleased(input)
     }
 
-    override fun charTyped(input: CharInput): Boolean {
+    override fun charTyped(input: CharacterEvent): Boolean {
         return child.charTyped(input)
     }
 
@@ -84,12 +84,12 @@ class LabelWrappedWidget(private val child: ClickableWidget, private val label: 
         return child.isHovered
     }
 
-    override fun isSelected(): Boolean {
-        return child.isSelected
+    override fun isHoveredOrFocused(): Boolean {
+        return child.isHoveredOrFocused
     }
 
-    override fun getType(): Selectable.SelectionType {
-        return child.type
+    override fun narrationPriority(): NarratableEntry.NarrationPriority {
+        return child.narrationPriority()
     }
 
     override fun isMouseOver(mouseX: Double, mouseY: Double): Boolean {
@@ -122,29 +122,29 @@ class LabelWrappedWidget(private val child: ClickableWidget, private val label: 
         child.height = height
     }
 
-    override fun getNavigationPath(navigation: GuiNavigation?): GuiNavigationPath? {
-        val childPath = child.getNavigationPath(navigation)
+    override fun nextFocusPath(navigation: FocusNavigationEvent): ComponentPath? {
+        val childPath = child.nextFocusPath(navigation)
         return if(childPath != null) Layered(this, childPath) else null
     }
 
-    override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
-        builder.put(NarrationPart.TITLE, this.label)
-        child.appendNarrations(builder.nextMessage())
+    override fun updateWidgetNarration(builder: NarrationElementOutput) {
+        builder.add(NarratedElementType.TITLE, this.label)
+        child.updateNarration(builder.nest())
     }
 
-    override fun provideTooltipLines(mouseX: Int, mouseY: Int, parentSelected: Boolean, keyboardFocused: Boolean): List<Text> {
+    override fun provideTooltipLines(mouseX: Int, mouseY: Int, parentSelected: Boolean, keyboardFocused: Boolean): List<Component> {
         return child.nullCast<TooltipChild>()?.provideTooltipLines(mouseX, mouseY, parentSelected, keyboardFocused) ?: TooltipChild.EMPTY
     }
 
-    private class Layered(private val element: Element, private val childPath: GuiNavigationPath): GuiNavigationPath {
+    private class Layered(private val element: GuiEventListener, private val childPath: ComponentPath): ComponentPath {
 
-        override fun component(): Element {
+        override fun component(): GuiEventListener {
             return element
         }
 
-        override fun setFocused(focused: Boolean) {
+        override fun applyFocus(focused: Boolean) {
             element.isFocused = focused
-            childPath.setFocused(focused)
+            childPath.applyFocus(focused)
         }
     }
 }

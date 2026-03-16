@@ -48,18 +48,22 @@ import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier.Compan
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier.Companion.ofSuppliedList
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier.Companion.ofTag
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.Click
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.client.gui.widget.TextFieldWidget
-import net.minecraft.client.input.KeyInput
-import net.minecraft.registry.*
-import net.minecraft.registry.entry.RegistryEntry
-import net.minecraft.registry.tag.TagKey
-import net.minecraft.util.Formatting
-import net.minecraft.util.Identifier
-import net.minecraft.util.math.ColorHelper
+import net.minecraft.client.Minecraft
+import net.minecraft.client.input.MouseButtonEvent
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.gui.components.AbstractWidget
+import net.minecraft.client.gui.components.EditBox
+import net.minecraft.client.input.KeyEvent
+import net.minecraft.core.Holder
+import net.minecraft.tags.TagKey
+import net.minecraft.ChatFormatting
+import net.minecraft.core.HolderLookup
+import net.minecraft.core.Registry
+import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.resources.Identifier
+import net.minecraft.resources.RegistryDataLoader
+import net.minecraft.resources.ResourceKey
+import net.minecraft.util.ARGB
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
 import org.jetbrains.annotations.ApiStatus.Internal
@@ -67,6 +71,7 @@ import org.lwjgl.glfw.GLFW
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.function.*
+import kotlin.collections.mapNotNull
 import kotlin.jvm.optionals.getOrNull
 
 /**
@@ -205,7 +210,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
 
     @Internal
     //client
-    override fun widgetEntry(choicePredicate: ChoiceValidator<Identifier>): ClickableWidget {
+    override fun widgetEntry(choicePredicate: ChoiceValidator<Identifier>): AbstractWidget {
         return OnClickTextFieldWidget({ this.get().toString() }, { b, isKb, key, code, mods ->
             openIdentifierPopup(isKb, key, code, mods, choicePredicate, { _, _ -> b.x - 8 }, { _, h -> b.y + 28 + 24 - h })
         })
@@ -229,7 +234,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
         PopupWidget.push(popup)
         PopupWidget.focusElement(popup, textField)
         if (isKb)
-            textField.keyPressed(KeyInput(key, code, mods))
+            textField.keyPressed(KeyEvent(key, code, mods))
     }
 
     //////////// IDENTIFIER ///////////////////
@@ -248,20 +253,20 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
         return storedValue.namespace
     }
 
-    fun withPath(path: String?): Identifier {
+    fun withPath(path: String): Identifier {
         return storedValue.withPath(path)
     }
 
-    fun withPath(pathFunction: UnaryOperator<String?>): Identifier {
+    fun withPath(pathFunction: UnaryOperator<String>): Identifier {
         return storedValue.withPath(pathFunction)
     }
 
     fun withPrefixedPath(prefix: String): Identifier {
-        return storedValue.withPrefixedPath(prefix)
+        return storedValue.withPrefix(prefix)
     }
 
     fun withSuffixedPath(suffix: String): Identifier {
-        return storedValue.withSuffixedPath(suffix)
+        return storedValue.withSuffix(suffix)
     }
 
     override fun equals(other: Any?): Boolean {
@@ -277,23 +282,23 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
     }
 
     fun toUnderscoreSeparatedString(): String {
-        return storedValue.toUnderscoreSeparatedString()
+        return storedValue.toDebugFileName()
     }
 
     fun toTranslationKey(): String {
-        return storedValue.toTranslationKey()
+        return storedValue.toLanguageKey()
     }
 
     fun toShortTranslationKey(): String {
-        return storedValue.toShortTranslationKey()
+        return storedValue.toShortLanguageKey()
     }
 
     fun toTranslationKey(prefix: String): String {
-        return storedValue.toTranslationKey(prefix)
+        return storedValue.toLanguageKey(prefix)
     }
 
     fun toTranslationKey(prefix: String, suffix: String): String? {
-        return storedValue.toTranslationKey(prefix, suffix)
+        return storedValue.toLanguageKey(prefix, suffix)
     }
 
     //////// END IDENTIFIER ///////////////////
@@ -307,35 +312,35 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
 
     companion object {
 
-        private val keyFilterOffsets: MutableMap<RegistryKey<out Registry<*>>, AtomicInteger> = mutableMapOf()
-        private val dynamicRegistrySyncsNeeded: MutableSet<RegistryKey<out Registry<*>>> = hashSetOf()
-        private val filteredDynamicRegistrySyncsNeeded: MutableSet<Triple<RegistryKey<out Registry<*>>, Identifier, Predicate<RegistryEntry<*>>>> = hashSetOf()
+        private val keyFilterOffsets: MutableMap<ResourceKey<out Registry<*>>, AtomicInteger> = mutableMapOf()
+        private val dynamicRegistrySyncsNeeded: MutableSet<ResourceKey<out Registry<*>>> = hashSetOf()
+        private val filteredDynamicRegistrySyncsNeeded: MutableSet<Triple<ResourceKey<out Registry<*>>, Identifier, Predicate<Holder<*>>>> = hashSetOf()
 
-        private fun getOffset(key: RegistryKey<out Registry<*>>): Int {
+        private fun getOffset(key: ResourceKey<out Registry<*>>): Int {
             return keyFilterOffsets.computeIfAbsent(key) { _ -> AtomicInteger() }.getAndIncrement()
         }
 
-        internal fun createSyncs(manager: RegistryWrapper.WrapperLookup): List<DynamicIdsS2CCustomPayload> {
+        internal fun createSyncs(manager: HolderLookup.Provider): List<DynamicIdsS2CCustomPayload> {
             return dynamicRegistrySyncsNeeded.mapNotNull { regKey ->
                 manager.anyOptional(regKey).getOrNull()?.let {
-                    impl -> DynamicIdsS2CCustomPayload(regKey.value, impl.streamKeys().map { key -> key.value }.toList().also { list -> dynamicIds[regKey.value] = list })
+                    impl -> DynamicIdsS2CCustomPayload(regKey.identifier(), impl.listElementIds().map { key -> key.identifier() }.toList().also { list -> dynamicIds[regKey.identifier()] = list })
                 }
             } + filteredDynamicRegistrySyncsNeeded.mapNotNull { (regKey, id, filter) ->
                 manager.anyOptional(regKey).getOrNull()?.let {
-                        impl -> DynamicIdsS2CCustomPayload(id, impl.streamEntries().filter(filter).map { it.registryKey() }.map { key -> key.value }.toList().also { list -> dynamicIds[regKey.value] = list })
+                        impl -> DynamicIdsS2CCustomPayload(id, impl.listElements().filter(filter).map { it.key() }.map { key -> key.identifier() }.toList().also { list -> dynamicIds[regKey.identifier()] = list })
                 }
             }
         }
 
-        internal fun createSpSyncs(manager: RegistryWrapper.WrapperLookup) {
+        internal fun createSpSyncs(manager: HolderLookup.Provider) {
             dynamicRegistrySyncsNeeded.mapNotNull { regKey ->
                 manager.anyOptional(regKey).getOrNull()?.let {
-                        impl -> impl.streamKeys().map { key -> key.value }.toList().also { list -> dynamicIds[regKey.value] = list }
+                        impl -> impl.listElementIds().map { key -> key.identifier() }.toList().also { list -> dynamicIds[regKey.identifier()] = list }
                 }
             }
             filteredDynamicRegistrySyncsNeeded.mapNotNull { (regKey, id, filter) ->
                 manager.anyOptional(regKey).getOrNull()?.let {
-                        impl -> impl.streamEntries().filter(filter).map { it.registryKey() }.map { key -> key.value }.toList().also { list -> dynamicIds[id] = list }
+                        impl -> impl.listElements().filter(filter).map { it.key() }.map { key -> key.identifier() }.toList().also { list -> dynamicIds[id] = list }
                 }
             }
         }
@@ -397,11 +402,11 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          */
         @JvmStatic
         @Suppress("UNCHECKED_CAST")
-        fun <T> ofTag(defaultValue: Identifier, tag: TagKey<T>): ValidatedIdentifier {
-            val maybeRegistry = Registries.REGISTRIES.optional(tag.regRefId())
+        fun <T: Any> ofTag(defaultValue: Identifier, tag: TagKey<T>): ValidatedIdentifier {
+            val maybeRegistry = BuiltInRegistries.REGISTRY.optional(tag.regRefId())
             if (maybeRegistry.isEmpty) return ValidatedIdentifier(defaultValue, AllowableIdentifiers({ false }, { emptyList() }))
             val registry = maybeRegistry.get() as? Registry<T> ?: return ValidatedIdentifier(defaultValue, AllowableIdentifiers({ false }, { emptyList() }))
-            val supplier = Supplier { registry.iterateEntries(tag).mapNotNull { registry.getId(it.value()) } }
+            val supplier = Supplier { registry.getTagOrEmpty(tag).mapNotNull { registry.getKey(it.value()) } }
             return ValidatedIdentifier(defaultValue, AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier, false))
         }
 
@@ -421,11 +426,11 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
         @JvmStatic
         @Suppress("UNCHECKED_CAST")
         @Deprecated("Only use for validation in a list or map")
-        fun <T> ofTag(tag: TagKey<T>): ValidatedIdentifier {
-            val maybeRegistry = Registries.REGISTRIES.optional(tag.regRefId())
+        fun <T: Any> ofTag(tag: TagKey<T>): ValidatedIdentifier {
+            val maybeRegistry = BuiltInRegistries.REGISTRY.optional(tag.regRefId())
             if (maybeRegistry.isEmpty) return ValidatedIdentifier("minecraft:air".simpleId(), AllowableIdentifiers({ false }, { emptyList() }))
             val registry = maybeRegistry.get() as? Registry<T> ?: return ValidatedIdentifier("minecraft:air".simpleId(), AllowableIdentifiers({ false }, { emptyList() }))
-            val supplier = Supplier { registry.iterateEntries(tag).mapNotNull { registry.getId(it.value()) } }
+            val supplier = Supplier { registry.getTagOrEmpty(tag).mapNotNull { registry.getKey(it.value()) } }
             return ValidatedIdentifier("minecraft:air".simpleId(), AllowableIdentifiers( { id -> supplier.get().contains(id) }, supplier, false))
         }
 
@@ -442,8 +447,8 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * @since 0.2.0, added caching 0.5.0
          */
         @JvmStatic
-        fun <T> ofRegistry(defaultValue: Identifier, registry: Registry<T>): ValidatedIdentifier {
-            return ValidatedIdentifier(defaultValue, AllowableIdentifiers({ id -> registry.containsId(id) }, { registry.ids.toList() }, true))
+        fun <T: Any> ofRegistry(defaultValue: Identifier, registry: Registry<T>): ValidatedIdentifier {
+            return ValidatedIdentifier(defaultValue, AllowableIdentifiers({ id -> registry.containsKey(id) }, { registry.keySet().toList() }, true))
         }
 
         /**
@@ -460,11 +465,11 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * @since 0.2.0, added caching 0.5.0
          */
         @JvmStatic
-        fun <T> ofRegistry(defaultValue: Identifier, registry: Registry<T>, predicate: Predicate<RegistryEntry<T>>): ValidatedIdentifier {
+        fun <T: Any> ofRegistry(defaultValue: Identifier, registry: Registry<T>, predicate: Predicate<Holder<T>>): ValidatedIdentifier {
             return ValidatedIdentifier(defaultValue,
                 AllowableIdentifiers(
-                    { id -> registry.containsId(id) && predicate.test ((registry.getEntry(id).takeIf { it.isPresent } ?: return@AllowableIdentifiers false).get()) },
-                    { registry.ids.filter { id -> predicate.test ((registry.getEntry(id).takeIf { it.isPresent } ?: return@filter false).get()) } },
+                    { id -> registry.containsKey(id) && predicate.test ((registry.get(id).takeIf { it.isPresent } ?: return@AllowableIdentifiers false).get()) },
+                    { registry.keySet().filter { id -> predicate.test ((registry.get(id).takeIf { it.isPresent } ?: return@filter false).get()) } },
                     true
                 )
             )
@@ -484,11 +489,11 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * @since 0.5.0
          */
         @JvmStatic
-        fun <T> ofRegistry(defaultValue: Identifier, registry: Registry<T>, predicate: BiPredicate<Identifier, RegistryEntry<T>>): ValidatedIdentifier {
+        fun <T: Any> ofRegistry(defaultValue: Identifier, registry: Registry<T>, predicate: BiPredicate<Identifier, Holder<T>>): ValidatedIdentifier {
             return ValidatedIdentifier(defaultValue,
                 AllowableIdentifiers(
-                    { id -> registry.containsId(id) && predicate.test (id, (registry.getEntry(id).takeIf { it.isPresent } ?: return@AllowableIdentifiers false).get()) },
-                    { registry.ids.filter { id -> predicate.test (id, (registry.getEntry(id).takeIf { it.isPresent } ?: return@filter false).get()) } },
+                    { id -> registry.containsKey(id) && predicate.test (id, (registry.get(id).takeIf { it.isPresent } ?: return@AllowableIdentifiers false).get()) },
+                    { registry.keySet().filter { id -> predicate.test (id, (registry.get(id).takeIf { it.isPresent } ?: return@filter false).get()) } },
                     true
                 )
             )
@@ -509,8 +514,8 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          */
         @JvmStatic
         @Deprecated("Only use for validation in a list or map")
-        fun <T> ofRegistry(registry: Registry<T>): ValidatedIdentifier {
-            return ValidatedIdentifier("minecraft:air".simpleId(), AllowableIdentifiers({ id -> registry.containsId(id) }, { registry.ids.toList() }, true))
+        fun <T: Any> ofRegistry(registry: Registry<T>): ValidatedIdentifier {
+            return ValidatedIdentifier("minecraft:air".simpleId(), AllowableIdentifiers({ id -> registry.containsKey(id) }, { registry.keySet().toList() }, true))
         }
 
         /**
@@ -529,11 +534,11 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          */
         @JvmStatic
         @Deprecated("Only use for validation in a list or map")
-        fun <T> ofRegistry(registry: Registry<T>, predicate: Predicate<RegistryEntry<T>>): ValidatedIdentifier {
+        fun <T: Any> ofRegistry(registry: Registry<T>, predicate: Predicate<Holder<T>>): ValidatedIdentifier {
             return ValidatedIdentifier("minecraft:air".simpleId(),
                 AllowableIdentifiers(
-                    { id -> registry.containsId(id) && predicate.test((registry.getEntry(id).takeIf { it.isPresent } ?: return@AllowableIdentifiers false).get()) },
-                    { registry.ids.filter { id -> predicate.test((registry.getEntry(id).takeIf { it.isPresent } ?: return@filter false).get()) } },
+                    { id -> registry.containsKey(id) && predicate.test((registry.get(id).takeIf { it.isPresent } ?: return@AllowableIdentifiers false).get()) },
+                    { registry.keySet().filter { id -> predicate.test((registry.get(id).takeIf { it.isPresent } ?: return@filter false).get()) } },
                     true
                 )
             )
@@ -555,11 +560,11 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          */
         @JvmStatic
         @Deprecated("Only use for validation in a list or map")
-        fun <T> ofRegistry(registry: Registry<T>, predicate: BiPredicate<Identifier, RegistryEntry<T>>): ValidatedIdentifier {
+        fun <T: Any> ofRegistry(registry: Registry<T>, predicate: BiPredicate<Identifier, Holder<T>>): ValidatedIdentifier {
             return ValidatedIdentifier("minecraft:air".simpleId(),
                 AllowableIdentifiers(
-                    { id -> registry.containsId(id) && predicate.test (id, (registry.getEntry(id).takeIf { it.isPresent } ?: return@AllowableIdentifiers false).get()) },
-                    { registry.ids.filter { id -> predicate.test (id, (registry.getEntry(id).takeIf { it.isPresent } ?: return@filter false).get()) } },
+                    { id -> registry.containsKey(id) && predicate.test (id, (registry.get(id).takeIf { it.isPresent } ?: return@AllowableIdentifiers false).get()) },
+                    { registry.keySet().filter { id -> predicate.test (id, (registry.get(id).takeIf { it.isPresent } ?: return@filter false).get()) } },
                     true
                 )
             )
@@ -583,25 +588,25 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
         @JvmStatic
         @Suppress("UNCHECKED_CAST")
         @Deprecated("Only use for validation in a list or map")
-        fun <T> ofRegistryKey(defaultValue: Identifier, key: RegistryKey<out Registry<T>>): ValidatedIdentifier {
-            val maybeRegistry = Registries.REGISTRIES.optional(key.value)
+        fun <T: Any> ofRegistryKey(defaultValue: Identifier, key: ResourceKey<out Registry<T>>): ValidatedIdentifier {
+            val maybeRegistry = BuiltInRegistries.REGISTRY.optional(key.identifier())
 
             if (maybeRegistry.isPresent) {
                 val registry = maybeRegistry.get() as? Registry<T> ?: throw IllegalStateException("Couldn't find registry based on passed key")
                 return ofRegistry(defaultValue, registry)
             } else {
-                if (RegistryLoader.SYNCED_REGISTRIES.any { entry -> entry.key == key }) {
+                if (RegistryDataLoader.SYNCHRONIZED_REGISTRIES.any { entry -> entry.key == key }) {
                     val maybeRegistry2 = ConfigApiImpl.getWrapperLookup().optional(key)
                     if (maybeRegistry2.isPresent) {
-                        val registry2 = maybeRegistry2.get() as? RegistryWrapper.Impl<T> ?: throw IllegalStateException("Couldn't find registry based on passed key")
-                        val predicate2: Predicate<Identifier> = Predicate { id -> registry2.streamKeys().anyMatch { key -> key.value == id } }
-                        val supplier2: Supplier<List<Identifier>> = Supplier { registry2.streamKeys().map { it.value }.toList() }
+                        val registry2 = maybeRegistry2.get() as? HolderLookup.RegistryLookup<T> ?: throw IllegalStateException("Couldn't find registry based on passed key")
+                        val predicate2: Predicate<Identifier> = Predicate { id -> registry2.listElementIds().anyMatch { key -> key.identifier() == id } }
+                        val supplier2: Supplier<List<Identifier>> = Supplier { registry2.listElementIds().map { it.identifier() }.toList() }
                         return ValidatedIdentifier(defaultValue, AllowableIdentifiers(predicate2, supplier2, false)).withFlag(EntryFlag.Flag.REQUIRES_WORLD)
                     }
                 }
                 dynamicRegistrySyncsNeeded.add(key)
-                val predicate3: Predicate<Identifier> = Predicate { id -> dynamicIds[key.value]?.contains(id) == true}
-                val supplier3: Supplier<List<Identifier>> = Supplier { dynamicIds[key.value] ?: emptyList() }
+                val predicate3: Predicate<Identifier> = Predicate { id -> dynamicIds[key.identifier()]?.contains(id) == true}
+                val supplier3: Supplier<List<Identifier>> = Supplier { dynamicIds[key.identifier()] ?: emptyList() }
                 return ValidatedIdentifier(defaultValue, AllowableIdentifiers(predicate3, supplier3, false)).withFlag(EntryFlag.Flag.REQUIRES_WORLD)
             }
         }
@@ -619,28 +624,29 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          */
         @JvmStatic
         @Suppress("UNCHECKED_CAST")
-        fun <T> ofRegistryKey(defaultValue: Identifier, key: RegistryKey<out Registry<T>>, predicate: Predicate<RegistryEntry<T>>): ValidatedIdentifier {
-            val maybeRegistry = Registries.REGISTRIES.optional(key.value)
+        fun <T: Any> ofRegistryKey(defaultValue: Identifier, key: ResourceKey<out Registry<T>>, predicate: Predicate<Holder<T>>): ValidatedIdentifier {
+            val maybeRegistry = BuiltInRegistries.REGISTRY.optional(key.identifier())
             if (maybeRegistry.isPresent) {
                 val registry = maybeRegistry.get() as? Registry<T> ?: throw IllegalStateException("Couldn't find registry based on passed key")
                 return ofRegistry(defaultValue, registry, predicate)
             } else {
-                if (RegistryLoader.SYNCED_REGISTRIES.any { entry -> entry.key == key }) {
+                if (RegistryDataLoader.SYNCHRONIZED_REGISTRIES.any { entry -> entry.key == key }) {
                     val maybeRegistry2 = ConfigApiImpl.getWrapperLookup().optional(key)
                     if (maybeRegistry2.isPresent) {
-                        val registry2 = maybeRegistry2.get() as? RegistryWrapper.Impl<T> ?: throw IllegalStateException("Couldn't find registry based on passed key")
+                        val registry2 = maybeRegistry2.get() as? HolderLookup.RegistryLookup<T> ?: throw IllegalStateException("Couldn't find registry based on passed key")
                         val predicate2: Predicate<Identifier> = Predicate {
-                                id -> registry2.streamKeys().anyMatch { key -> key.value == id } && predicate.test((registry2.getOptional(RegistryKey.of(key, id)).takeIf { it.isPresent } ?: return@Predicate false).get())
+                                id -> registry2.listElementIds().anyMatch { key -> key.identifier() == id } && predicate.test((registry2.get(
+                            ResourceKey.create(key, id)).takeIf { it.isPresent } ?: return@Predicate false).get())
                         }
                         val supplier2: Supplier<List<Identifier>> = Supplier {
-                            registry2.streamKeys().filter { key -> predicate.test((registry2.getOptional(key).takeIf { it.isPresent } ?: return@filter false).get()) }.map { it.value }.toList()
+                            registry2.listElementIds().filter { key -> predicate.test((registry2.get(key).takeIf { it.isPresent } ?: return@filter false).get()) }.map { it.identifier() }.toList()
                         }
                         return ValidatedIdentifier(defaultValue, AllowableIdentifiers(predicate2, supplier2, false)).withFlag(EntryFlag.Flag.REQUIRES_WORLD)
                     }
                 }
                 FC.LOGGER.warn("Method ofRegistryKey with Predicate is deprecated for registry $key; use ofDynamicKey instead")
-                val predicateId = key.value.withSuffixedPath(getOffset(key).toString())
-                filteredDynamicRegistrySyncsNeeded.add(Triple((key as RegistryKey<Registry<*>>), predicateId, (predicate as Predicate<RegistryEntry<*>>)))
+                val predicateId = key.identifier().withSuffix(getOffset(key).toString())
+                filteredDynamicRegistrySyncsNeeded.add(Triple((key as ResourceKey<Registry<*>>), predicateId, (predicate as Predicate<Holder<*>>)))
                 val predicate3: Predicate<Identifier> = Predicate { id -> dynamicIds[predicateId]?.contains(id) == true }
                 val supplier3: Supplier<List<Identifier>> = Supplier { dynamicIds[predicateId] ?: emptyList() }
                 return ValidatedIdentifier(defaultValue, AllowableIdentifiers(predicate3, supplier3, false)).withFlag(EntryFlag.Flag.REQUIRES_WORLD)
@@ -660,28 +666,29 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          */
         @JvmStatic
         @Suppress("UNCHECKED_CAST")
-        fun <T> ofRegistryKey(defaultValue: Identifier, key: RegistryKey<out Registry<T>>, predicate: BiPredicate<Identifier, RegistryEntry<T>>): ValidatedIdentifier {
-            val maybeRegistry = Registries.REGISTRIES.optional(key.value)
+        fun <T: Any> ofRegistryKey(defaultValue: Identifier, key: ResourceKey<out Registry<T>>, predicate: BiPredicate<Identifier, Holder<T>>): ValidatedIdentifier {
+            val maybeRegistry = BuiltInRegistries.REGISTRY.optional(key.identifier())
             if (maybeRegistry.isPresent) {
                 val registry = maybeRegistry.get() as? Registry<T> ?: throw IllegalStateException("Couldn't find registry based on passed key")
                 return ofRegistry(defaultValue, registry, predicate)
             } else {
-                if (RegistryLoader.SYNCED_REGISTRIES.any { entry -> entry.key == key }) {
+                if (RegistryDataLoader.SYNCHRONIZED_REGISTRIES.any { entry -> entry.key == key }) {
                     val maybeRegistry2 = ConfigApiImpl.getWrapperLookup().optional(key)
                     if (maybeRegistry2.isPresent) {
-                        val registry2 = maybeRegistry2.get() as? RegistryWrapper.Impl<T> ?: throw IllegalStateException("Couldn't find registry based on passed key")
+                        val registry2 = maybeRegistry2.get() as? HolderLookup.RegistryLookup<T> ?: throw IllegalStateException("Couldn't find registry based on passed key")
                         val predicate2: Predicate<Identifier> = Predicate { id ->
-                            registry2.streamKeys().anyMatch { key -> key.value == id } && predicate.test(
+                            registry2.listElementIds().anyMatch { key -> key.identifier() == id } && predicate.test(
                                 id,
-                                (registry2.getOptional(RegistryKey.of(key, id)).takeIf { it.isPresent } ?: return@Predicate false).get())
+                                (registry2.get(ResourceKey.create(key, id)).takeIf { it.isPresent } ?: return@Predicate false).get())
                         }
-                        val supplier2: Supplier<List<Identifier>> = Supplier { registry2.streamKeys().map { it.value }.toList() }
+                        val supplier2: Supplier<List<Identifier>> = Supplier { registry2.listElementIds().map { it.identifier() }.toList() }
                         return ValidatedIdentifier(defaultValue, AllowableIdentifiers(predicate2, supplier2, false)).withFlag(EntryFlag.Flag.REQUIRES_WORLD)
                     }
                 }
                 FC.LOGGER.warn("Method ofRegistryKey with BiPredicate is deprecated for registry $key; use ofDynamicKey instead")
-                val predicateId = key.value.withSuffixedPath(getOffset(key).toString())
-                filteredDynamicRegistrySyncsNeeded.add(Triple((key as RegistryKey<Registry<*>>), predicateId, (Predicate { re: RegistryEntry<T> -> predicate.test(re.key.map { it.value }.orElse("minecraft:air".simpleId()), re) } as Predicate<RegistryEntry<*>>)))
+                val predicateId = key.identifier().withSuffix(getOffset(key).toString())
+                filteredDynamicRegistrySyncsNeeded.add(Triple((key as ResourceKey<Registry<*>>), predicateId, (Predicate { re: Holder<T> -> predicate.test(re.unwrapKey()
+                    .map { it.identifier() }.orElse("minecraft:air".simpleId()), re) } as Predicate<Holder<*>>)))
                 val predicate3: Predicate<Identifier> = Predicate { id -> dynamicIds[predicateId]?.contains(id) == true }
                 val supplier3: Supplier<List<Identifier>> = Supplier { dynamicIds[predicateId] ?: emptyList() }
                 return ValidatedIdentifier(defaultValue, AllowableIdentifiers(predicate3, supplier3, false)).withFlag(EntryFlag.Flag.REQUIRES_WORLD)
@@ -702,7 +709,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
         @JvmStatic
         @Suppress("DeprecatedCallableAddReplaceWith", "DEPRECATION")
         @Deprecated("Only use for validation in a list or map")
-        fun <T> ofRegistryKey(key: RegistryKey<out Registry<T>>): ValidatedIdentifier {
+        fun <T: Any> ofRegistryKey(key: ResourceKey<out Registry<T>>): ValidatedIdentifier {
             return ofRegistryKey("minecraft:air".simpleId(), key)
         }
 
@@ -720,28 +727,29 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          */
         @JvmStatic
         @Suppress("UNCHECKED_CAST", "DEPRECATION")
-        fun <T> ofRegistryKey(key: RegistryKey<out Registry<T>>, predicate: BiPredicate<Identifier, RegistryEntry<T>>): ValidatedIdentifier {
-            val maybeRegistry = Registries.REGISTRIES.optional(key.value)
+        fun <T: Any> ofRegistryKey(key: ResourceKey<out Registry<T>>, predicate: BiPredicate<Identifier, Holder<T>>): ValidatedIdentifier {
+            val maybeRegistry = BuiltInRegistries.REGISTRY.optional(key.identifier())
             if (maybeRegistry.isPresent) {
                 val registry = maybeRegistry.get() as? Registry<T> ?: throw IllegalStateException("Couldn't find registry based on passed key")
                 return ofRegistry(registry, predicate)
             } else {
-                if (RegistryLoader.SYNCED_REGISTRIES.any { entry -> entry.key == key }) {
+                if (RegistryDataLoader.SYNCHRONIZED_REGISTRIES.any { entry -> entry.key == key }) {
                     val maybeRegistry2 = ConfigApiImpl.getWrapperLookup().optional(key)
                     if (maybeRegistry2.isPresent) {
-                        val registry2 = maybeRegistry2.get() as? RegistryWrapper.Impl<T> ?: throw IllegalStateException("Couldn't find registry based on passed key")
+                        val registry2 = maybeRegistry2.get() as? HolderLookup.RegistryLookup<T> ?: throw IllegalStateException("Couldn't find registry based on passed key")
                         val predicate2: Predicate<Identifier> = Predicate { id ->
-                            registry2.streamKeys().anyMatch { key -> key.value == id } && predicate.test(
+                            registry2.listElementIds().anyMatch { key -> key.identifier() == id } && predicate.test(
                                 id,
-                                (registry2.getOptional(RegistryKey.of(key, id)).takeIf { it.isPresent } ?: return@Predicate false).get())
+                                (registry2.get(ResourceKey.create(key, id)).takeIf { it.isPresent } ?: return@Predicate false).get())
                         }
-                        val supplier2: Supplier<List<Identifier>> = Supplier { registry2.streamKeys().map { it.value }.toList() }
+                        val supplier2: Supplier<List<Identifier>> = Supplier { registry2.listElementIds().map { it.identifier() }.toList() }
                         return ValidatedIdentifier("minecraft:air".simpleId(), AllowableIdentifiers(predicate2, supplier2, false)).withFlag(EntryFlag.Flag.REQUIRES_WORLD)
                     }
                 }
                 FC.LOGGER.warn("Method ofRegistryKey is deprecated for registry $key; use ofDynamicKey instead")
-                val predicateId = key.value.withSuffixedPath(getOffset(key).toString())
-                filteredDynamicRegistrySyncsNeeded.add(Triple((key as RegistryKey<Registry<*>>), predicateId, (Predicate { re: RegistryEntry<T> -> predicate.test(re.key.map { it.value }.orElse("minecraft:air".simpleId()), re) } as Predicate<RegistryEntry<*>>)))
+                val predicateId = key.identifier().withSuffix(getOffset(key).toString())
+                filteredDynamicRegistrySyncsNeeded.add(Triple((key as ResourceKey<Registry<*>>), predicateId, (Predicate { re: Holder<T> -> predicate.test(re.unwrapKey()
+                    .map { it.identifier() }.orElse("minecraft:air".simpleId()), re) } as Predicate<Holder<*>>)))
                 val predicate3: Predicate<Identifier> = Predicate { id -> dynamicIds[predicateId]?.contains(id) == true }
                 val supplier3: Supplier<List<Identifier>> = Supplier { dynamicIds[predicateId] ?: emptyList() }
                 return ValidatedIdentifier("minecraft:air".simpleId(), AllowableIdentifiers(predicate3, supplier3, false)).withFlag(EntryFlag.Flag.REQUIRES_WORLD)
@@ -764,27 +772,28 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          */
         @JvmStatic
         @Suppress("UNCHECKED_CAST")
-        fun <T> ofDynamicKey(defaultValue: Identifier, key: RegistryKey<out Registry<T>>, predicateId: String, predicate: Predicate<RegistryEntry<T>>): ValidatedIdentifier {
-            val maybeRegistry = Registries.REGISTRIES.optional(key.value)
+        fun <T: Any> ofDynamicKey(defaultValue: Identifier, key: ResourceKey<out Registry<T>>, predicateId: String, predicate: Predicate<Holder<T>>): ValidatedIdentifier {
+            val maybeRegistry = BuiltInRegistries.REGISTRY.optional(key.identifier())
             if (maybeRegistry.isPresent) {
                 val registry = maybeRegistry.get() as? Registry<T> ?: throw IllegalStateException("Couldn't find registry based on passed key")
                 return ofRegistry(defaultValue, registry, predicate)
             } else {
-                if (RegistryLoader.SYNCED_REGISTRIES.any { entry -> entry.key == key }) {
+                if (RegistryDataLoader.SYNCHRONIZED_REGISTRIES.any { entry -> entry.key == key }) {
                     val maybeRegistry2 = ConfigApiImpl.getWrapperLookup().optional(key)
                     if (maybeRegistry2.isPresent) {
-                        val registry2 = maybeRegistry2.get() as? RegistryWrapper.Impl<T> ?: throw IllegalStateException("Couldn't find registry based on passed key")
+                        val registry2 = maybeRegistry2.get() as? HolderLookup.RegistryLookup<T> ?: throw IllegalStateException("Couldn't find registry based on passed key")
                         val predicate2: Predicate<Identifier> = Predicate {
-                                id -> registry2.streamKeys().anyMatch { key -> key.value == id } && predicate.test((registry2.getOptional(RegistryKey.of(key, id)).takeIf { it.isPresent } ?: return@Predicate false).get())
+                                id -> registry2.listElementIds().anyMatch { key -> key.identifier() == id } && predicate.test((registry2.get(
+                            ResourceKey.create(key, id)).takeIf { it.isPresent } ?: return@Predicate false).get())
                         }
                         val supplier2: Supplier<List<Identifier>> = Supplier {
-                            registry2.streamKeys().filter { key -> predicate.test((registry2.getOptional(key).takeIf { it.isPresent } ?: return@filter false).get()) }.map { it.value }.toList()
+                            registry2.listElementIds().filter { key -> predicate.test((registry2.get(key).takeIf { it.isPresent } ?: return@filter false).get()) }.map { it.identifier() }.toList()
                         }
                         return ValidatedIdentifier(defaultValue, AllowableIdentifiers(predicate2, supplier2, false)).withFlag(EntryFlag.Flag.REQUIRES_WORLD)
                     }
                 }
-                val pId = key.value.withSuffixedPath(predicateId)
-                filteredDynamicRegistrySyncsNeeded.add(Triple((key as RegistryKey<Registry<*>>), pId, (predicate as Predicate<RegistryEntry<*>>)))
+                val pId = key.identifier().withSuffix(predicateId)
+                filteredDynamicRegistrySyncsNeeded.add(Triple((key as ResourceKey<Registry<*>>), pId, (predicate as Predicate<Holder<*>>)))
                 val predicate3: Predicate<Identifier> = Predicate { id -> dynamicIds[pId]?.contains(id) == true }
                 val supplier3: Supplier<List<Identifier>> = Supplier { dynamicIds[pId] ?: emptyList() }
                 return ValidatedIdentifier(defaultValue, AllowableIdentifiers(predicate3, supplier3, false)).withFlag(EntryFlag.Flag.REQUIRES_WORLD)
@@ -807,27 +816,28 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          */
         @JvmStatic
         @Suppress("UNCHECKED_CAST")
-        fun <T> ofDynamicKey(defaultValue: Identifier, key: RegistryKey<out Registry<T>>, predicateId: String, predicate: BiPredicate<Identifier, RegistryEntry<T>>): ValidatedIdentifier {
-            val maybeRegistry = Registries.REGISTRIES.optional(key.value)
+        fun <T: Any> ofDynamicKey(defaultValue: Identifier, key: ResourceKey<out Registry<T>>, predicateId: String, predicate: BiPredicate<Identifier, Holder<T>>): ValidatedIdentifier {
+            val maybeRegistry = BuiltInRegistries.REGISTRY.optional(key.identifier())
             if (maybeRegistry.isPresent) {
                 val registry = maybeRegistry.get() as? Registry<T> ?: throw IllegalStateException("Couldn't find registry based on passed key")
                 return ofRegistry(defaultValue, registry, predicate)
             } else {
-                if (RegistryLoader.SYNCED_REGISTRIES.any { entry -> entry.key == key }) {
+                if (RegistryDataLoader.SYNCHRONIZED_REGISTRIES.any { entry -> entry.key == key }) {
                     val maybeRegistry2 = ConfigApiImpl.getWrapperLookup().optional(key)
                     if (maybeRegistry2.isPresent) {
-                        val registry2 = maybeRegistry2.get() as? RegistryWrapper.Impl<T> ?: throw IllegalStateException("Couldn't find registry based on passed key")
+                        val registry2 = maybeRegistry2.get() as? HolderLookup.RegistryLookup<T> ?: throw IllegalStateException("Couldn't find registry based on passed key")
                         val predicate2: Predicate<Identifier> = Predicate { id ->
-                            registry2.streamKeys().anyMatch { key -> key.value == id } && predicate.test(
+                            registry2.listElementIds().anyMatch { key -> key.identifier() == id } && predicate.test(
                                 id,
-                                (registry2.getOptional(RegistryKey.of(key, id)).takeIf { it.isPresent } ?: return@Predicate false).get())
+                                (registry2.get(ResourceKey.create(key, id)).takeIf { it.isPresent } ?: return@Predicate false).get())
                         }
-                        val supplier2: Supplier<List<Identifier>> = Supplier { registry2.streamKeys().map { it.value }.toList() }
+                        val supplier2: Supplier<List<Identifier>> = Supplier { registry2.listElementIds().map { it.identifier() }.toList() }
                         return ValidatedIdentifier(defaultValue, AllowableIdentifiers(predicate2, supplier2, false)).withFlag(EntryFlag.Flag.REQUIRES_WORLD)
                     }
                 }
-                val pId = key.value.withSuffixedPath(predicateId)
-                filteredDynamicRegistrySyncsNeeded.add(Triple((key as RegistryKey<Registry<*>>), pId, (Predicate { re: RegistryEntry<T> -> predicate.test(re.key.map { it.value }.orElse("minecraft:air".simpleId()), re) } as Predicate<RegistryEntry<*>>)))
+                val pId = key.identifier().withSuffix(predicateId)
+                filteredDynamicRegistrySyncsNeeded.add(Triple((key as ResourceKey<Registry<*>>), pId, (Predicate { re: Holder<T> -> predicate.test(re.unwrapKey()
+                    .map { it.identifier() }.orElse("minecraft:air".simpleId()), re) } as Predicate<Holder<*>>)))
                 val predicate3: Predicate<Identifier> = Predicate { id -> dynamicIds[pId]?.contains(id) == true }
                 val supplier3: Supplier<List<Identifier>> = Supplier { dynamicIds[pId] ?: emptyList() }
                 return ValidatedIdentifier(defaultValue, AllowableIdentifiers(predicate3, supplier3, false)).withFlag(EntryFlag.Flag.REQUIRES_WORLD)
@@ -851,27 +861,28 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          */
         @JvmStatic
         @Suppress("UNCHECKED_CAST", "DEPRECATION")
-        fun <T> ofDynamicKey(key: RegistryKey<out Registry<T>>, predicateId: String, predicate: BiPredicate<Identifier, RegistryEntry<T>>): ValidatedIdentifier {
-            val maybeRegistry = Registries.REGISTRIES.optional(key.value)
+        fun <T: Any> ofDynamicKey(key: ResourceKey<out Registry<T>>, predicateId: String, predicate: BiPredicate<Identifier, Holder<T>>): ValidatedIdentifier {
+            val maybeRegistry = BuiltInRegistries.REGISTRY.optional(key.identifier())
             if (maybeRegistry.isPresent) {
                 val registry = maybeRegistry.get() as? Registry<T> ?: throw IllegalStateException("Couldn't find registry based on passed key")
                 return ofRegistry(registry, predicate)
             } else {
-                if (RegistryLoader.SYNCED_REGISTRIES.any { entry -> entry.key == key }) {
+                if (RegistryDataLoader.SYNCHRONIZED_REGISTRIES.any { entry -> entry.key == key }) {
                     val maybeRegistry2 = ConfigApiImpl.getWrapperLookup().optional(key)
                     if (maybeRegistry2.isPresent) {
-                        val registry2 = maybeRegistry2.get() as? RegistryWrapper.Impl<T> ?: throw IllegalStateException("Couldn't find registry based on passed key")
+                        val registry2 = maybeRegistry2.get() as? HolderLookup.RegistryLookup<T> ?: throw IllegalStateException("Couldn't find registry based on passed key")
                         val predicate2: Predicate<Identifier> = Predicate { id ->
-                            registry2.streamKeys().anyMatch { key -> key.value == id } && predicate.test(
+                            registry2.listElementIds().anyMatch { key -> key.identifier() == id } && predicate.test(
                                 id,
-                                (registry2.getOptional(RegistryKey.of(key, id)).takeIf { it.isPresent } ?: return@Predicate false).get())
+                                (registry2.get(ResourceKey.create(key, id)).takeIf { it.isPresent } ?: return@Predicate false).get())
                         }
-                        val supplier2: Supplier<List<Identifier>> = Supplier { registry2.streamKeys().map { it.value }.toList() }
+                        val supplier2: Supplier<List<Identifier>> = Supplier { registry2.listElementIds().map { it.identifier() }.toList() }
                         return ValidatedIdentifier("minecraft:air".simpleId(), AllowableIdentifiers(predicate2, supplier2, false)).withFlag(EntryFlag.Flag.REQUIRES_WORLD)
                     }
                 }
-                val pId = key.value.withSuffixedPath(predicateId)
-                filteredDynamicRegistrySyncsNeeded.add(Triple((key as RegistryKey<Registry<*>>), pId, (Predicate { re: RegistryEntry<T> -> predicate.test(re.key.map { it.value }.orElse("minecraft:air".simpleId()), re) } as Predicate<RegistryEntry<*>>)))
+                val pId = key.identifier().withSuffix(predicateId)
+                filteredDynamicRegistrySyncsNeeded.add(Triple((key as ResourceKey<Registry<*>>), pId, (Predicate { re: Holder<T> -> predicate.test(re.unwrapKey()
+                    .map { it.identifier() }.orElse("minecraft:air".simpleId()), re) } as Predicate<Holder<*>>)))
                 val predicate3: Predicate<Identifier> = Predicate { id -> dynamicIds[pId]?.contains(id) == true }
                 val supplier3: Supplier<List<Identifier>> = Supplier { dynamicIds[pId] ?: emptyList() }
                 return ValidatedIdentifier("minecraft:air".simpleId(), AllowableIdentifiers(predicate3, supplier3, false)).withFlag(EntryFlag.Flag.REQUIRES_WORLD)
@@ -890,8 +901,8 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * @author fzzyhmstrs
          * @since 0.2.0, added dynamic registry lookup and caching 0.5.0
          */
-        fun <T: Any> ofRegistryTags(key: RegistryKey<out Registry<T>>): ValidatedIdentifier {
-            val maybeRegistry = Registries.REGISTRIES.optional(key.value)
+        fun <T: Any> ofRegistryTags(key: ResourceKey<out Registry<T>>): ValidatedIdentifier {
+            val maybeRegistry = BuiltInRegistries.REGISTRY.optional(key.identifier())
             if (maybeRegistry.isPresent) {
                 //memoize to cache the predicate test get also
                 val supplier: Supplier<List<Identifier>> = Suppliers.memoize { maybeRegistry.get().tagIdList() }
@@ -920,8 +931,8 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * @author fzzyhmstrs
          * @since 0.2.0, added dynamic registry lookup and caching 0.5.0
          */
-        fun <T: Any> ofRegistryTags(key: RegistryKey<out Registry<T>>, predicate: Predicate<Identifier>): ValidatedIdentifier {
-            val maybeRegistry = Registries.REGISTRIES.optional(key.value)
+        fun <T: Any> ofRegistryTags(key: ResourceKey<out Registry<T>>, predicate: Predicate<Identifier>): ValidatedIdentifier {
+            val maybeRegistry = BuiltInRegistries.REGISTRY.optional(key.identifier())
             if (maybeRegistry.isPresent) {
                 //memoize to cache the predicate test get also
                 val supplier: Supplier<List<Identifier>> = Suppliers.memoize { maybeRegistry.get().tagIdList(predicate) }
@@ -948,20 +959,20 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * @author fzzyhmstrs
          * @since 0.2.0, added dynamic registry lookup and caching 0.5.0
          */
-        fun <T: Any> ofRegistryTags(default: TagKey<T>, key: RegistryKey<out Registry<T>>): ValidatedIdentifier {
-            val maybeRegistry = Registries.REGISTRIES.optional(key.value)
+        fun <T: Any> ofRegistryTags(default: TagKey<T>, key: ResourceKey<out Registry<T>>): ValidatedIdentifier {
+            val maybeRegistry = BuiltInRegistries.REGISTRY.optional(key.identifier())
             if (maybeRegistry.isPresent) {
                 //memoize to cache the predicate test get also
                 val supplier: Supplier<List<Identifier>> = Suppliers.memoize { maybeRegistry.get().tagIdList() }
                 val ids = AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier, false)
-                return ValidatedIdentifier(default.id, ids)
+                return ValidatedIdentifier(default.location, ids)
             } else {
                 val maybeRegistry2 = ConfigApiImpl.getWrapperLookup().optional(key)
                 if (maybeRegistry2.isEmpty) throw IllegalStateException("Couldn't find registry based on passed key")
                 //no memoization, this registry is dynamic
                 val supplier: Supplier<List<Identifier>> = Supplier { maybeRegistry2.get().tagIdList() }
                 val ids = AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier, false)
-                return ValidatedIdentifier(default.id, ids)
+                return ValidatedIdentifier(default.location, ids)
             }
         }
 
@@ -977,20 +988,20 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * @author fzzyhmstrs
          * @since 0.2.0, added dynamic registry lookup and caching 0.5.0
          */
-        fun <T: Any> ofRegistryTags(default: TagKey<T>, key: RegistryKey<out Registry<T>>, predicate: Predicate<Identifier>): ValidatedIdentifier {
-            val maybeRegistry = Registries.REGISTRIES.optional(key.value)
+        fun <T: Any> ofRegistryTags(default: TagKey<T>, key: ResourceKey<out Registry<T>>, predicate: Predicate<Identifier>): ValidatedIdentifier {
+            val maybeRegistry = BuiltInRegistries.REGISTRY.optional(key.identifier())
             if (maybeRegistry.isPresent) {
                 //memoize to cache the predicate test get also
                 val supplier: Supplier<List<Identifier>> = Suppliers.memoize { maybeRegistry.get().tagIdList(predicate) }
                 val ids = AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier, false)
-                return ValidatedIdentifier(default.id, ids)
+                return ValidatedIdentifier(default.location, ids)
             } else {
                 val maybeRegistry2 = ConfigApiImpl.getWrapperLookup().optional(key)
                 if (maybeRegistry2.isEmpty) throw IllegalStateException("Couldn't find registry based on passed key")
                 //no memoization, this registry is dynamic
                 val supplier: Supplier<List<Identifier>> = Supplier { maybeRegistry2.get().tagIdList(predicate) }
                 val ids = AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier, false)
-                return ValidatedIdentifier(default.id, ids)
+                return ValidatedIdentifier(default.location, ids)
             }
         }
 
@@ -1090,7 +1101,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
         private val choiceValidator: ChoiceValidator<Identifier>,
         private val validatedIdentifier: ValidatedIdentifier)
         :
-        TextFieldWidget(MinecraftClient.getInstance().textRenderer, 0, 0, width, height, FcText.EMPTY),
+        EditBox(Minecraft.getInstance().font, 0, 0, width, height, FcText.EMPTY),
         SuggestionWindowProvider
     {
 
@@ -1112,12 +1123,12 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
 
         private fun isValidTest(s: String): Boolean {
             if (s != lastSuggestionText) {
-                pendingSuggestions = validatedIdentifier.allowableIds.getSuggestions(s, this.cursor, choiceValidator)
+                pendingSuggestions = validatedIdentifier.allowableIds.getSuggestions(s, this.cursorPosition, choiceValidator)
                 lastSuggestionText = s
             }
             val id = Identifier.tryParse(s)
             if (id == null || !s.contains(":")) {
-                setEditableColor(ColorHelper.fullAlpha(Formatting.RED.colorValue ?: 0xFFFFFF))
+                setTextColor(ARGB.opaque(ChatFormatting.RED.color ?: 0xFFFFFF))
                 return false
             }
             return if (validatedIdentifier.validateEntry(id, EntryValidator.ValidationType.STRONG).isValid()) {
@@ -1125,14 +1136,14 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
                 if (result.isValid()) {
                     storedValue = result.get()
                     lastChangedTime = System.currentTimeMillis()
-                    setEditableColor(-1)
+                    setTextColor(-1)
                     true
                 } else {
-                    setEditableColor(ColorHelper.fullAlpha(Formatting.RED.colorValue ?: 0xFFFFFF))
+                    setTextColor(ARGB.opaque(ChatFormatting.RED.color ?: 0xFFFFFF))
                     false
                 }
             } else {
-                setEditableColor(ColorHelper.fullAlpha(Formatting.RED.colorValue ?: 0xFFFFFF))
+                setTextColor(ARGB.opaque(ChatFormatting.RED.color ?: 0xFFFFFF))
                 false
             }
         }
@@ -1155,19 +1166,19 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
             }
         }
 
-        override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+        override fun extractWidgetRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
             val testValue = validatedIdentifier.get()
             if (cachedWrappedValue != testValue || needsUpdating) {
                 needsUpdating = false
                 this.storedValue = testValue
                 this.cachedWrappedValue = testValue
-                this.text = this.storedValue.toString()
+                this.setValue(this.storedValue.toString())
             }
             if(isChanged()) {
                 if (lastChangedTime != 0L && !ongoingChanges() && isValid)
                     validatedIdentifier.accept(storedValue)
             }
-            super.renderWidget(context, mouseX, mouseY, delta)
+            super.extractWidgetRenderState(context, mouseX, mouseY, delta)
             if(isValid) {
                 if (ongoingChanges())
                     context.drawTex(TextureIds.ENTRY_ONGOING, x + width - 20, y, 20, 20)
@@ -1184,10 +1195,10 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
                 }
             }
             if (window != null)
-                MinecraftClient.getInstance().currentScreen?.nullCast<PopupController>()?.suggestionWindow = window
+                Minecraft.getInstance().screen?.nullCast<PopupController>()?.suggestionWindow = window
         }
 
-        override fun mouseClicked(click: Click, doubled: Boolean): Boolean {
+        override fun mouseClicked(click: MouseButtonEvent, doubled: Boolean): Boolean {
             val bl = window?.mouseClicked(click.x.toInt(), click.y.toInt(), click.button()) ?: super.mouseClicked(click, doubled)
             if (closeWindow) {
                 pendingSuggestions = null
@@ -1206,16 +1217,16 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
             return super.isMouseOver(mouseX, mouseY) || window?.isMouseOver(mouseX.toInt(), mouseY.toInt()) == true
         }
 
-        override fun keyPressed(input: KeyInput): Boolean {
-            val bl = window?.keyPressed(input.keycode, input.scancode, input.modifiers) ?: super.keyPressed(input)
+        override fun keyPressed(input: KeyEvent): Boolean {
+            val bl = window?.keyPressed(input.input(), input.scancode, input.modifiers) ?: super.keyPressed(input)
             if (closeWindow) {
                 pendingSuggestions = null
                 window = null
-                MinecraftClient.getInstance().currentScreen?.nullCast<PopupController>()?.suggestionWindow = null
+                Minecraft.getInstance().screen?.nullCast<PopupController>()?.suggestionWindow = null
                 suggestionWindowListener?.setSuggestionWindowElement(null)
                 closeWindow = false
             }
-            if (input.isEnter) {
+            if (input.isConfirmation) {
                 pushChanges()
                 PopupWidget.pop()
             }
@@ -1224,8 +1235,8 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
 
         init {
             setMaxLength(1000)
-            text = validatedIdentifier.get().toString()
-            setChangedListener { s -> isValid = isValidTest(s) }
+            setValue(validatedIdentifier.get().toString())
+            setResponder { s -> isValid = isValidTest(s) }
         }
 
         private fun addSuggestionWindow(suggestions: Suggestions) {
@@ -1238,7 +1249,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
                 }
             }
             val closer: Consumer<SuggestionWindow> = Consumer { closeWindow = true }
-            this.window = SuggestionWindow.createSuggestionWindow(this.x, this.y, suggestions, this.text, this.cursor, applier, closer)
+            this.window = SuggestionWindow.createSuggestionWindow(this.x, this.y, suggestions, this.value, this.cursorPosition, applier, closer)
             suggestionWindowListener?.setSuggestionWindowElement(this)
         }
     }

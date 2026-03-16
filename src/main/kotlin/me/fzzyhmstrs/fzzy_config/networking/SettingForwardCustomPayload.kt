@@ -11,30 +11,30 @@
 package me.fzzyhmstrs.fzzy_config.networking
 
 import me.fzzyhmstrs.fzzy_config.fcId
-import net.minecraft.network.PacketByteBuf
-import net.minecraft.network.codec.PacketCodec
-import net.minecraft.network.packet.CustomPayload
-import net.minecraft.network.packet.CustomPayload.Id
+import net.minecraft.network.FriendlyByteBuf
+import net.minecraft.network.codec.StreamCodec
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload.Type
 import java.util.*
 
-internal class SettingForwardCustomPayload(val update: String, val player: UUID, val scope: String, val summary: String): CustomPayload {
+internal class SettingForwardCustomPayload(val update: String, val player: UUID, val scope: String, val summary: String): CustomPacketPayload {
 
-    constructor(buf: PacketByteBuf): this(buf.readString(), buf.readUuid(), buf.readString(), buf.readString())
+    constructor(buf: FriendlyByteBuf): this(buf.readUtf(), buf.readUUID(), buf.readUtf(), buf.readUtf())
 
-    fun write(buf: PacketByteBuf) {
-        buf.writeString(update)
-        buf.writeUuid(player)
-        buf.writeString(scope)
-        buf.writeString(summary)
+    fun write(buf: FriendlyByteBuf) {
+        buf.writeUtf(update)
+        buf.writeUUID(player)
+        buf.writeUtf(scope)
+        buf.writeUtf(summary)
     }
 
-    override fun getId(): Id<out CustomPayload> {
+    override fun type(): Type<out CustomPacketPayload> {
         return type
     }
 
     companion object {
-        val type: Id<SettingForwardCustomPayload> = Id("setting_forward".fcId())
-        val codec: PacketCodec<PacketByteBuf, SettingForwardCustomPayload> = CustomPayload.codecOf({ c, b -> c.write(b) }, { b -> SettingForwardCustomPayload(b)})
+        val type: Type<SettingForwardCustomPayload> = Type("setting_forward".fcId())
+        val codec: StreamCodec<FriendlyByteBuf, SettingForwardCustomPayload> = CustomPacketPayload.codec({ c, b -> c.write(b) }, { b -> SettingForwardCustomPayload(b)})
 
     }
 }

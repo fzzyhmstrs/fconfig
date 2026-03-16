@@ -31,7 +31,7 @@ import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.map
 import me.fzzyhmstrs.fzzy_config.util.platform.impl.PlatformApiImpl
-import net.minecraft.util.Identifier
+import net.minecraft.resources.Identifier
 import net.peanuuutz.tomlkt.*
 import java.io.File
 import java.io.Reader

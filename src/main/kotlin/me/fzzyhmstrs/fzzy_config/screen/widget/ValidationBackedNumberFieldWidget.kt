@@ -17,17 +17,17 @@ import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
-import net.minecraft.client.gui.screen.narration.NarrationPart
-import net.minecraft.client.gui.widget.TextFieldWidget
-import net.minecraft.client.input.CharInput
-import net.minecraft.client.input.KeyInput
-import net.minecraft.text.MutableText
-import net.minecraft.text.Text
-import net.minecraft.util.Formatting
-import net.minecraft.util.math.ColorHelper
+import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.gui.narration.NarrationElementOutput
+import net.minecraft.client.gui.narration.NarratedElementType
+import net.minecraft.client.gui.components.EditBox
+import net.minecraft.client.input.CharacterEvent
+import net.minecraft.client.input.KeyEvent
+import net.minecraft.network.chat.MutableComponent
+import net.minecraft.network.chat.Component
+import net.minecraft.ChatFormatting
+import net.minecraft.util.ARGB
 import org.lwjgl.glfw.GLFW
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
@@ -59,7 +59,7 @@ open class ValidationBackedNumberFieldWidget<T: Number>(
     private val renderStatus: Boolean = true,
     private val increment: Double = 0.0)
     :
-    TextFieldWidget(MinecraftClient.getInstance().textRenderer, 0, 0, width, height, FcText.EMPTY), TooltipChild
+    EditBox(Minecraft.getInstance().font, 0, 0, width, height, FcText.EMPTY), TooltipChild
 {
 
     private var cachedWrappedValue: T = wrappedValue.get()
@@ -67,7 +67,7 @@ open class ValidationBackedNumberFieldWidget<T: Number>(
     private var lastChangedTime: Long = 0L
     private var isValid = true
     private var confirmActive = false
-    private var error: List<Text> = emptyList()
+    private var error: List<Component> = emptyList()
 
     private var format = run {
         val f = DecimalFormat("0")
@@ -91,7 +91,7 @@ open class ValidationBackedNumberFieldWidget<T: Number>(
         }
     }
 
-    override fun charTyped(input: CharInput): Boolean {
+    override fun charTyped(input: CharacterEvent): Boolean {
         if (!isValidChar(Char(input.codepoint()))) return false
         return super.charTyped(input)
     }
@@ -100,12 +100,12 @@ open class ValidationBackedNumberFieldWidget<T: Number>(
         return System.currentTimeMillis() - lastChangedTime <= 350L
     }
 
-    override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun extractWidgetRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
         val testValue = wrappedValue.get()
         if (cachedWrappedValue != testValue) {
             this.storedValue = testValue
             this.cachedWrappedValue = testValue
-            this.text = if (isIntType()) format.format(this.storedValue.toLong()) else format.format(this.storedValue.toDouble())
+            this.setValue(if (isIntType()) format.format(this.storedValue.toLong()) else format.format(this.storedValue.toDouble()))
         }
         if(isChanged()) {
             if (lastChangedTime != 0L && !ongoingChanges()) {
@@ -113,7 +113,7 @@ open class ValidationBackedNumberFieldWidget<T: Number>(
                 applier.accept(storedValue)
             }
         }
-        super.renderWidget(context, mouseX, mouseY, delta)
+        super.extractWidgetRenderState(context, mouseX, mouseY, delta)
         if (renderStatus) {
             val id = if (isValid) {
                 if (ongoingChanges())
@@ -138,33 +138,33 @@ open class ValidationBackedNumberFieldWidget<T: Number>(
         val test = s.toDoubleOrNull()
         if (test == null) {
             this.error = listOf("fc.validated_field.number.textbox.invalid".translate())
-            setEditableColor(-43691)
+            setTextColor(-43691)
             return false
         }
         val result = validationProvider.apply(test)
         return if(result.isError()) {
             this.error = mutableListOf<String>().apply { result.logPlain{ s, _ -> this.add(s) } }.map { it.lit() }
-            setEditableColor(-43691)
+            setTextColor(-43691)
             false
         } else {
             this.error = emptyList()
             val result2 = choiceValidator.validateEntry(result.get(), EntryValidator.ValidationType.STRONG)
             if (result2.isError()) {
                 this.error = mutableListOf<String>().apply { result2.logPlain{ s, _ -> this.add(s) } }.map { it.lit() }
-                setEditableColor(-43691)
+                setTextColor(-43691)
                 false
             } else {
                 this.storedValue = result.get()
                 lastChangedTime = System.currentTimeMillis()
                 confirmActive = isChanged()
-                setEditableColor(-1)
+                setTextColor(-1)
                 true
             }
         }
     }
 
-    override fun keyPressed(input: KeyInput): Boolean {
-        val inc = when (input.keycode) {
+    override fun keyPressed(input: KeyEvent): Boolean {
+        val inc = when (input.input()) {
             GLFW.GLFW_KEY_RIGHT -> increment
             GLFW.GLFW_KEY_LEFT -> -increment
             else -> 0.0
@@ -195,44 +195,46 @@ open class ValidationBackedNumberFieldWidget<T: Number>(
     /**
      * @suppress
      */
-    final override fun setChangedListener(changedListener: Consumer<String>?) {
-        super.setChangedListener(changedListener)
+    final override fun setResponder(changedListener: Consumer<String>) {
+        super.setResponder(changedListener)
     }
 
     /**
      * @suppress
      */
-    override fun getNarrationMessage(): MutableText {
+    override fun createNarrationMessage(): MutableComponent {
         return "gui.narrate.editBox".translate("", "")
     }
 
-    override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
-        builder.put(NarrationPart.TITLE, this.narrationMessage)
-        builder.nextMessage().put(NarrationPart.TITLE, "${this.text}. ")
+    override fun updateWidgetNarration(builder: NarrationElementOutput) {
+        builder.add(NarratedElementType.TITLE, this.createNarrationMessage())
+        builder.nest().add(NarratedElementType.TITLE, "${this.value}. ")
         if (increment != 0.0) {
             if (isFocused) {
-                builder.nextMessage().put(NarrationPart.USAGE,
+                builder.nest().add(
+                    NarratedElementType.USAGE,
                     "fc.validated_field.number.editBox.usage".translate(),
                     "fc.validated_field.number.slider.usage".translate())
             } else {
-                builder.nextMessage().put(NarrationPart.USAGE,
+                builder.nest().add(
+                    NarratedElementType.USAGE,
                     "fc.validated_field.number.editBox.usage".translate())
             }
         }
     }
 
-    fun appendValueNarrations(builder: NarrationMessageBuilder) {
-        builder.nextMessage().put(NarrationPart.TITLE, "fc.validated_field.current".translate(""))
-        builder.nextMessage().nextMessage().put(NarrationPart.TITLE, "${this.text}. ")
+    fun appendValueNarrations(builder: NarrationElementOutput) {
+        builder.nest().add(NarratedElementType.TITLE, "fc.validated_field.current".translate(""))
+        builder.nest().nest().add(NarratedElementType.TITLE, "${this.value}. ")
     }
 
-    override fun provideTooltipLines(mouseX: Int, mouseY: Int, parentSelected: Boolean, keyboardFocused: Boolean): List<Text> {
+    override fun provideTooltipLines(mouseX: Int, mouseY: Int, parentSelected: Boolean, keyboardFocused: Boolean): List<Component> {
         if (!parentSelected) return TooltipChild.EMPTY
         return error
     }
 
     init {
-        text = wrappedValue.get().toString()
-        setChangedListener { s -> isValid = isValidTest(s) }
+        setValue(wrappedValue.get().toString())
+        setResponder { s -> isValid = isValidTest(s) }
     }
 }

@@ -15,11 +15,11 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomWidget
 import me.fzzyhmstrs.fzzy_config.simpleId
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawNineSlice
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.font.Alignment
-import net.minecraft.client.font.DrawnTextConsumer
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.tooltip.Tooltip
+import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.TextAlignment
+import net.minecraft.client.gui.ActiveTextCollector
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.gui.components.Tooltip
 import org.lwjgl.glfw.GLFW
 import java.util.function.Consumer
 import java.util.function.Supplier
@@ -34,23 +34,23 @@ import java.util.function.Supplier
 //client
 class OnClickTextFieldWidget(private val textSupplier: Supplier<String>, private val onClick: OnInteractAction)
     :
-    CustomTextWidget( 0, 0, 110, 20, FcText.EMPTY, MinecraftClient.getInstance().textRenderer)
+    CustomTextWidget( 0, 0, 110, 20, FcText.EMPTY, Minecraft.getInstance().font)
 {
 
     private val textures: TextureProvider = TextureSet("widget/text_field".simpleId(), "widget/text_field".simpleId(), "widget/text_field_highlighted".simpleId())
 
-    override fun draw(textConsumer: DrawnTextConsumer) {
+    override fun visitLines(textConsumer: ActiveTextCollector) {
         val text = FcText.literal(textSupplier.get())
         val i = getWidth() - 8
-        val j = textRenderer.getWidth(text)
+        val j = font.width(text)
         val k = x + 4
-        val l = y + (getHeight() - textRenderer.fontHeight + 1) / 2
-        val orderedText = if (j > i) FcText.trim(text, i, textRenderer) else text.asOrderedText()
-        textConsumer.text(Alignment.LEFT, k, l, orderedText)
+        val l = y + (getHeight() - font.lineHeight + 1) / 2
+        val orderedText = if (j > i) FcText.trim(text, i, font) else text.visualOrderText
+        textConsumer.accept(TextAlignment.LEFT, k, l, orderedText)
     }
 
-    override fun renderCustom(context: DrawContext, mouseX: Int, mouseY: Int, deltaTicks: Float) {
-        context.drawNineSlice(textures.get(this.active, this.isSelected), x, y, width, height, alpha)
+    override fun renderCustom(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, deltaTicks: Float) {
+        context.drawNineSlice(textures.get(this.active, this.isHoveredOrFocused), x, y, width, height, alpha)
     }
 
     override fun onPress(event: CustomWidget.MouseEvent): Boolean {

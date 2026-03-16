@@ -10,19 +10,19 @@
 
 package me.fzzyhmstrs.fzzy_config.networking.api
 
-import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.network.NetworkPhase
-import net.minecraft.network.NetworkSide
-import net.minecraft.network.packet.CustomPayload
-import net.minecraft.text.Text
-import net.minecraft.util.Identifier
+import net.minecraft.world.entity.player.Player
+import net.minecraft.network.ConnectionProtocol
+import net.minecraft.network.protocol.PacketFlow
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload
+import net.minecraft.network.chat.Component
+import net.minecraft.resources.Identifier
 
-interface NetworkContext<T: PlayerEntity> {
+interface NetworkContext<T: Player> {
     fun execute(runnable: Runnable)
-    fun disconnect(reason: Text)
+    fun disconnect(reason: Component)
     fun canReply(id: Identifier): Boolean
-    fun reply(payload: CustomPayload)
+    fun reply(payload: CustomPacketPayload)
     fun player(): T
-    fun networkPhase(): NetworkPhase
-    fun networkSide(): NetworkSide
+    fun networkPhase(): ConnectionProtocol
+    fun networkSide(): PacketFlow
 }

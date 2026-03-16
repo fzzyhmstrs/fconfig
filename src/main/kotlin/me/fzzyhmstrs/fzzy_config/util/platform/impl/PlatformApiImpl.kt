@@ -18,8 +18,8 @@ import me.fzzyhmstrs.fzzy_config.util.platform.RegistryBuilder
 import me.fzzyhmstrs.fzzy_config.util.platform.RegistrySupplier
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.api.Version
-import net.minecraft.registry.Registry
-import net.minecraft.util.Identifier
+import net.minecraft.core.Registry
+import net.minecraft.resources.Identifier
 import net.minecraft.util.Util
 import org.slf4j.Logger
 import java.io.File
@@ -54,7 +54,7 @@ internal object PlatformApiImpl: PlatformApi {
         return DevLogger(name)
     }
 
-    override fun <T> createRegistrar(namespace: String, registry: Registry<T>): Registrar<T> {
+    override fun <T: Any> createRegistrar(namespace: String, registry: Registry<T>): Registrar<T> {
         return RegistrarImpl(namespace, registry)
     }
 
@@ -102,7 +102,7 @@ internal object PlatformApiImpl: PlatformApi {
                     }
 
                     val annotations = prop.annotations
-                    val key = Util.createTranslationKey(prefix, id)
+                    val key = Util.makeDescriptionId(prefix, id)
                     annotations.filterIsInstance<Translatable.Name>().firstOrNull { it.lang == lang }.also {
                         if (it == null) FC.LOGGER.error("  No $lang name entry for $key")
                     }?.apply {

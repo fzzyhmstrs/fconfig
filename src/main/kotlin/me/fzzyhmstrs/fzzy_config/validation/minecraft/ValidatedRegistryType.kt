@@ -11,10 +11,10 @@
 package me.fzzyhmstrs.fzzy_config.validation.minecraft
 
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
-import net.minecraft.registry.DefaultedRegistry
-import net.minecraft.registry.Registry
-import net.minecraft.registry.entry.RegistryEntry
-import net.minecraft.util.Identifier
+import net.minecraft.core.DefaultedRegistry
+import net.minecraft.core.Registry
+import net.minecraft.core.Holder
+import net.minecraft.resources.Identifier
 import java.util.function.BiPredicate
 import java.util.function.Predicate
 
@@ -43,9 +43,9 @@ object ValidatedRegistryType {
      */
     @JvmStatic
     fun <T: Any> of(registry: DefaultedRegistry<T>): ValidatedField<T> {
-        return ValidatedIdentifier.ofRegistry(registry.defaultId, registry).map(
-            { id -> registry.get(id) },
-            { t -> registry.getId(t) }
+        return ValidatedIdentifier.ofRegistry(registry.defaultKey, registry).map(
+            { id -> registry.getValue(id) },
+            { t -> registry.getKey(t) }
         )
     }
 
@@ -68,8 +68,8 @@ object ValidatedRegistryType {
         @Suppress("DEPRECATION")
         return ValidatedIdentifier.ofRegistry(registry).map(
             defaultValue,
-            { id -> registry.get(id) ?: defaultValue },
-            { t -> registry.getId(t) ?: registry.getId(defaultValue) ?: throw IllegalStateException("Entry $t not in registry ${registry.key}") }
+            { id -> registry.getValue(id) ?: defaultValue },
+            { t -> registry.getKey(t) ?: registry.getKey(defaultValue) ?: throw IllegalStateException("Entry $t not in registry ${registry.key()}") }
         )
     }
 
@@ -87,12 +87,12 @@ object ValidatedRegistryType {
      * @since 0.5.0
      */
     @JvmStatic
-    fun <T: Any> of(defaultValue: T, registry: Registry<T>, predicate: Predicate<RegistryEntry<T>>): ValidatedField<T> {
+    fun <T: Any> of(defaultValue: T, registry: Registry<T>, predicate: Predicate<Holder<T>>): ValidatedField<T> {
         @Suppress("DEPRECATION")
         return ValidatedIdentifier.ofRegistry(registry, predicate).map(
             defaultValue,
-            { id -> registry.get(id) ?: defaultValue },
-            { t -> registry.getId(t) ?: registry.getId(defaultValue) ?: throw IllegalStateException("Entry $t not in registry ${registry.key}") }
+            { id -> registry.getValue(id) ?: defaultValue },
+            { t -> registry.getKey(t) ?: registry.getKey(defaultValue) ?: throw IllegalStateException("Entry $t not in registry ${registry.key()}") }
         )
     }
 
@@ -112,12 +112,12 @@ object ValidatedRegistryType {
      * @since 0.5.0
      */
     @JvmStatic
-    fun <T: Any> of(defaultValue: T, registry: Registry<T>, predicate: BiPredicate<Identifier, RegistryEntry<T>>): ValidatedField<T> {
+    fun <T: Any> of(defaultValue: T, registry: Registry<T>, predicate: BiPredicate<Identifier, Holder<T>>): ValidatedField<T> {
         @Suppress("DEPRECATION")
         return ValidatedIdentifier.ofRegistry(registry, predicate).map(
             defaultValue,
-            { id -> registry.get(id) ?: defaultValue },
-            { t -> registry.getId(t) ?: registry.getId(defaultValue) ?: throw IllegalStateException("Entry $t not in registry ${registry.key}") }
+            { id -> registry.getValue(id) ?: defaultValue },
+            { t -> registry.getKey(t) ?: registry.getKey(defaultValue) ?: throw IllegalStateException("Entry $t not in registry ${registry.key()}") }
         )
     }
 

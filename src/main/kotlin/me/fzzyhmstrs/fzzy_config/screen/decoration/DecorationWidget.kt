@@ -10,7 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.decoration
 
-import net.minecraft.client.gui.DrawContext
+import net.minecraft.client.gui.GuiGraphicsExtractor
 
 /**
  * Basic widget class for rendering a Decoration. This will consider a 20x20 region for positioning and rendering the decoration.
@@ -36,7 +36,7 @@ class DecorationWidget @JvmOverloads constructor(private var decoration: Decorat
         return if (decoration == null) 0 else 20
     }
 
-    override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun extractRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
         decoration?.renderDecoration(context, x + offsetX, y + offsetY, delta, enabled = true, selected = false)
     }
 

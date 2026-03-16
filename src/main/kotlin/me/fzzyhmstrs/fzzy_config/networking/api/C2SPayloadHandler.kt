@@ -10,8 +10,8 @@
 
 package me.fzzyhmstrs.fzzy_config.networking.api
 
-import net.minecraft.network.packet.CustomPayload
-import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload
+import net.minecraft.server.level.ServerPlayer
 
 /**
  * Handler for a server receiving a payload sent from a client
@@ -20,7 +20,7 @@ import net.minecraft.server.network.ServerPlayerEntity
  * @since 0.4.1
  */
 @FunctionalInterface
-fun interface C2SPayloadHandler<T: CustomPayload>: PayloadHandler<T, ServerPlayerEntity, ServerPlayNetworkContext> {
+fun interface C2SPayloadHandler<T: CustomPacketPayload>: PayloadHandler<T, ServerPlayer, ServerPlayNetworkContext> {
     /**
      * Handles a payload sent from a client
      * @param payload the [CustomPayload] for handling

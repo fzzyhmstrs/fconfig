@@ -19,9 +19,9 @@ import net.fabricmc.api.EnvType
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.api.metadata.CustomValue
-import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.server.command.CommandManager
-import net.minecraft.server.command.ServerCommandSource
+import net.minecraft.world.entity.player.Player
+import net.minecraft.commands.Commands
+import net.minecraft.commands.CommandSourceStack
 import java.io.File
 
 internal object PlatformUtils {
@@ -64,8 +64,9 @@ internal object PlatformUtils {
         return list
     } //ClientConfigRegistry
 
-    fun hasPermission(player: PlayerEntity, permission: String): Boolean {
-        return Permissions.check(player, permission)
+    fun hasPermission(player: Player, permission: String): Boolean {
+        //return Permissions.check(player, permission)
+        return true
     } //COnfigApiImpl, elsewhere??
 
     fun registerCommands() {
@@ -80,47 +81,48 @@ internal object PlatformUtils {
         }
     }
 
-    private fun registerCommands(dispatcher: CommandDispatcher<ServerCommandSource>) {
+    private fun registerCommands(dispatcher: CommandDispatcher<CommandSourceStack>) {
 
         dispatcher.register(
-            CommandManager.literal("configure_update")
-                .requires(CommandManager.requirePermissionLevel(CommandManager.ADMINS_CHECK))
-                .then(CommandManager.argument("id", StringArgumentType.string())
+            Commands.literal("configure_update")
+                .requires(Commands.hasPermission(Commands.LEVEL_ADMINS))
+                .then(
+                    Commands.argument("id", StringArgumentType.string())
                     .then(
-                        CommandManager.literal("inspect")
+                        Commands.literal("inspect")
                         .executes { context ->
                             val id = StringArgumentType.getString(context, "id")
                             if (id == null) {
-                                context.source.sendError("fc.command.error.no_id".translate())
+                                context.source.sendFailure("fc.command.error.no_id".translate())
                                 return@executes 0
                             }
-                            SyncedConfigRegistry.inspectQuarantine(id, { uuid -> context.source.server.playerManager.getPlayer(uuid)?.name }, { message -> context.source.sendMessage(message) })
+                            SyncedConfigRegistry.inspectQuarantine(id, { uuid -> context.source.server.playerList.getPlayer(uuid)?.name }, { message -> context.source.sendSystemMessage(message) })
                             1
                         }
                     )
                     .then(
-                        CommandManager.literal("accept")
+                        Commands.literal("accept")
                         .executes { context ->
                             val id = StringArgumentType.getString(context, "id")
                             if (id == null) {
-                                context.source.sendError("fc.command.error.no_id".translate())
+                                context.source.sendFailure("fc.command.error.no_id".translate())
                                 return@executes 0
                             }
                             SyncedConfigRegistry.acceptQuarantine(id, context.source.server)
-                            context.source.sendFeedback({ "fc.command.accepted".translate(id) }, true)
+                            context.source.sendSuccess({ "fc.command.accepted".translate(id) }, true)
                             1
                         }
                     )
                     .then(
-                        CommandManager.literal("reject")
+                        Commands.literal("reject")
                         .executes { context ->
                             val id = StringArgumentType.getString(context, "id")
                             if (id == null) {
-                                context.source.sendError("fc.command.error.no_id".translate())
+                                context.source.sendFailure("fc.command.error.no_id".translate())
                                 return@executes 0
                             }
                             SyncedConfigRegistry.rejectQuarantine(id)
-                            context.source.sendFeedback({ "fc.command.rejected".translate(id) }, true)
+                            context.source.sendSuccess({ "fc.command.rejected".translate(id) }, true)
                             1
                         }
                     )

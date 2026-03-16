@@ -10,8 +10,8 @@
 
 package me.fzzyhmstrs.fzzy_config.screen
 
-import net.minecraft.client.gui.Element
+import net.minecraft.client.gui.components.events.GuiEventListener
 
 interface SuggestionWindowListener {
-    fun setSuggestionWindowElement(element: Element?)
+    fun setSuggestionWindowElement(element: GuiEventListener?)
 }

@@ -2,7 +2,7 @@ package me.fzzyhmstrs.fzzy_config.screen.decoration
 
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureProvider
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureSet
-import net.minecraft.util.Identifier
+import net.minecraft.resources.Identifier
 
 /**
  * A [SpriteDecoration] that uses a 10x10 footprint

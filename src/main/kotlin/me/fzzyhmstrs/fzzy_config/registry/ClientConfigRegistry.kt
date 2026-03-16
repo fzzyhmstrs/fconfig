@@ -32,10 +32,10 @@ import me.fzzyhmstrs.fzzy_config.util.ThreadingUtils
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.reportTo
 import me.fzzyhmstrs.fzzy_config.util.platform.impl.PlatformUtils
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.screen.Screen
-import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.text.Text
+import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.world.entity.player.Player
+import net.minecraft.network.chat.Component
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
@@ -83,11 +83,11 @@ internal object ClientConfigRegistry {
     }
 
     //client
-    internal fun receiveSync(id: String, configString: String, disconnector: Consumer<Text>) {
+    internal fun receiveSync(id: String, configString: String, disconnector: Consumer<Component>) {
         if (SyncedConfigRegistry.syncedConfigs().containsKey(id)) {
             val configEntry = SyncedConfigRegistry.syncedConfigs()[id] ?: return
             val result = ConfigApiImpl.deserializeConfigSafe(configEntry.config, configString, "Error(s) encountered receiving sync for $id from server", ConfigApiImpl.CHECK_ACTIONS_AND_RECORD_RESTARTS).log(ValidationResult.ErrorEntry.ENTRY_ERROR_LOGGER) //0: Don't ignore NonSync on a synchronization action, 2: Watch for RequiresRestart
-            MinecraftClient.getInstance().execute {
+            Minecraft.getInstance().execute {
                 getValidScope(id)?.let { //invalidate screen manager to refresh the state of widgets there. Should upgrade this functionality in the future.
                     configScreenManagers.remove(it)
                 }
@@ -125,12 +125,12 @@ internal object ClientConfigRegistry {
 
     //client
     @Suppress("UNUSED_PARAMETER")
-    internal fun receiveUpdate(serializedConfigs: Map<String, String>, player: PlayerEntity) {
+    internal fun receiveUpdate(serializedConfigs: Map<String, String>, player: Player) {
         for ((id, configString) in serializedConfigs) {
             if (SyncedConfigRegistry.syncedConfigs().containsKey(id)) {
                 val configEntry = SyncedConfigRegistry.syncedConfigs()[id] ?: return
                 val result = ConfigApiImpl.deserializeUpdate(configEntry.config, configString, "Error(s) encountered receiving update for $id from server", ConfigApiImpl.CHECK_ACTIONS).log(ValidationResult.ErrorEntry.ENTRY_ERROR_LOGGER)
-                MinecraftClient.getInstance().execute {
+                Minecraft.getInstance().execute {
                     getValidScope(id)?.let { //invalidate screen manager to refresh the state of widgets there. Should upgrade this functionality in the future.
                         configScreenManagers.remove(it)
                     }
@@ -138,7 +138,7 @@ internal object ClientConfigRegistry {
                     if (saveType == SaveType.OVERWRITE)
                         result.get().save()
                     for (action in result.iterate(ValidationResult.Errors.ACTION)) {
-                        MinecraftClient.getInstance().player?.sendChat(action.content.clientPrompt)
+                        Minecraft.getInstance().player?.sendChat(action.content.clientPrompt)
                     }
                     try {
                         configEntry.config.onUpdateClient()
@@ -266,12 +266,12 @@ internal object ClientConfigRegistry {
         val updates: ConcurrentHashMap<String, String> = ConcurrentHashMap()
         val serverActions: Vector<Action> = Vector(2)
         val clientActions: Vector<Action> = Vector(2)
-        ThreadingUtils.start(11, MinecraftClient.getInstance(), { entry, result ->
+        ThreadingUtils.start(11, Minecraft.getInstance(), { entry, result ->
             if (result.isError()) {
                 result.reportTo(ValidationResult.ErrorEntry.ENTRY_ERROR_LOGGER)
             } else {
                 val config = entry.config
-                val id = config.getId().toTranslationKey()
+                val id = config.getId().toLanguageKey()
                 val update = config.fileType().encode(result.get())
                 if (update.isError()) {
                     update.reportTo(ValidationResult.ErrorEntry.ENTRY_ERROR_LOGGER)
@@ -299,13 +299,13 @@ internal object ClientConfigRegistry {
             val finalServerActions = serverActions.toSet()
             val finalClientActions = clientActions.toSet()
             for (action in finalServerActions) {
-                if (MinecraftClient.getInstance().isInSingleplayer)
-                    MinecraftClient.getInstance().player?.sendChat(action.clientUpdateMessage)
+                if (Minecraft.getInstance().isLocalServer)
+                    Minecraft.getInstance().player?.sendChat(action.clientUpdateMessage)
                 else
-                    MinecraftClient.getInstance().player?.sendChat(action.serverUpdateMessage)
+                    Minecraft.getInstance().player?.sendChat(action.serverUpdateMessage)
             }
             for (action in finalClientActions) {
-                MinecraftClient.getInstance().player?.sendChat(action.clientUpdateMessage)
+                Minecraft.getInstance().player?.sendChat(action.clientUpdateMessage)
             }
             if (updates.isNotEmpty()) {
                 NetworkEventsClient.updateServer(updates, emptyList(), ConfigApiImplClient.getPlayerPermissionLevel())
@@ -373,7 +373,7 @@ internal object ClientConfigRegistry {
                 configScreenManagers.remove(namespace)
             }
         }
-        val id = config.getId().toTranslationKey()
+        val id = config.getId().toLanguageKey()
         SyncedConfigRegistry.notServerOnly(id)
         val entry = ClientConfigEntry(config, baseConfig, configCreator)
         clientConfigs[id] = entry
@@ -386,7 +386,7 @@ internal object ClientConfigRegistry {
         override val client: Boolean = true
 
         override fun skipSync(): Boolean {
-            return base.saveType() == SaveType.SEPARATE || !SyncedConfigRegistry.hasConfig(base.getId().toTranslationKey())
+            return base.saveType() == SaveType.SEPARATE || !SyncedConfigRegistry.hasConfig(base.getId().toLanguageKey())
         }
 
         override val config: T

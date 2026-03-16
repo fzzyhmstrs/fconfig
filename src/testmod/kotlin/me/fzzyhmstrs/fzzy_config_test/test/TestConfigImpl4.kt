@@ -29,23 +29,24 @@ import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedInt
 import me.fzzyhmstrs.fzzy_config_test.FC
 import me.fzzyhmstrs.fzzy_config_test.FC.TEST_PERMISSION_BAD
 import net.fabricmc.loader.api.FabricLoader
-import net.minecraft.client.MinecraftClient
-import net.minecraft.item.ItemStack
-import net.minecraft.item.Items
-import net.minecraft.loot.LootTables
-import net.minecraft.loot.context.LootContextTypes
-import net.minecraft.registry.Registries
-import net.minecraft.registry.RegistryKeys
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.text.HoverEvent
-import net.minecraft.util.Identifier
+import net.minecraft.client.Minecraft
+import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.Items
+import net.minecraft.world.level.storage.loot.BuiltInLootTables
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets
+import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.core.registries.Registries
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.network.chat.HoverEvent
+import net.minecraft.resources.Identifier
+import net.minecraft.world.item.ItemStackTemplate
 import org.lwjgl.glfw.GLFW
 
 @RequiresRestart
-class TestConfigImpl4: Config(Identifier.of("fzzy_config_test","test_config4")) {
+class TestConfigImpl4: Config(Identifier.fromNamespaceAndPath("fzzy_config_test","test_config4")) {
 
     override fun onUpdateClient() {
-        MinecraftClient.getInstance().debugHudEntryList.toggleF3Enabled()
+        Minecraft.getInstance().debugEntries.toggleDebugOverlay()
     }
 
     override fun onSyncClient() {
@@ -56,9 +57,9 @@ class TestConfigImpl4: Config(Identifier.of("fzzy_config_test","test_config4")) 
         println("I synced on the server :>")
     }
 
-    override fun onUpdateServer(playerEntity: ServerPlayerEntity) {
+    override fun onUpdateServer(playerEntity: ServerPlayer) {
         println("Boo?")
-        playerEntity.sendMessage("BOO".lit())
+        playerEntity.sendSystemMessage("BOO".lit())
     }
 
     @WithCustomPerms([TEST_PERMISSION_BAD])
@@ -83,27 +84,27 @@ class TestConfigImpl4: Config(Identifier.of("fzzy_config_test","test_config4")) 
 
     var testSimpleIdentifier = ValidatedIdentifier("minecraft:stick")
 
-    var testDynamicIdentifier = ValidatedIdentifier.ofRegistryKey(RegistryKeys.BIOME)
+    var testDynamicIdentifier = ValidatedIdentifier.ofRegistryKey(Registries.BIOME)
 
-    var testLootIdentifier = ValidatedIdentifier.ofRegistryKey(RegistryKeys.LOOT_TABLE)
+    var testLootIdentifier = ValidatedIdentifier.ofRegistryKey(Registries.LOOT_TABLE)
 
-    var testLootIdentifier2 = ValidatedIdentifier.ofDynamicKey(RegistryKeys.LOOT_TABLE, "test_loot_2") { id, _ -> id.path.contains("gameplay") }
+    var testLootIdentifier2 = ValidatedIdentifier.ofDynamicKey(Registries.LOOT_TABLE, "test_loot_2") { id, _ -> id.path.contains("gameplay") }
 
-    var testLootIdentifierPredicated = ValidatedIdentifier.ofRegistryKey(LootTables.IGLOO_CHEST_CHEST.value, RegistryKeys.LOOT_TABLE) { entry -> entry.value().type == LootContextTypes.CHEST }
+    var testLootIdentifierPredicated = ValidatedIdentifier.ofRegistryKey(BuiltInLootTables.IGLOO_CHEST.identifier(), Registries.LOOT_TABLE) { entry -> entry.value().paramSet == LootContextParamSets.CHEST }
 
-    var validatedItem = ValidatedIdentifier.ofRegistry(Registries.ITEM).map(
+    var validatedItem = ValidatedIdentifier.ofRegistry(BuiltInRegistries.ITEM).map(
         Items.EGG,
-        { id -> Registries.ITEM.get(id) },
-        { item -> Registries.ITEM.getId(item) }
+        { id -> BuiltInRegistries.ITEM.getValue(id) },
+        { item -> BuiltInRegistries.ITEM.getKey(item) }
     )
 
     var itemButton = ConfigAction.Builder().title("Give the Item".lit()).build(Runnable {
-        val item = ItemStack(validatedItem.get())
-        MinecraftClient.getInstance().player?.sendChat("This is the current item".lit().styled { s -> s.withHoverEvent(
+        val item = ItemStackTemplate(validatedItem.get())
+        Minecraft.getInstance().player?.sendChat("This is the current item".lit().withStyle { s -> s.withHoverEvent(
         HoverEvent.ShowItem(item)) })
     })
 
-    var validatedBlock = ValidatedRegistryType.of(Registries.BLOCK)
+    var validatedBlock = ValidatedRegistryType.of(BuiltInRegistries.BLOCK)
 
     class MyTestAny {
         var test: Int = 5

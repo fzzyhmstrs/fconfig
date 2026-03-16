@@ -30,12 +30,12 @@ import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.map
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.reportTo
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier
-import net.minecraft.network.packet.CustomPayload
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload
 import net.minecraft.server.MinecraftServer
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.text.ClickEvent
-import net.minecraft.text.Text
-import net.minecraft.util.Identifier
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.network.chat.ClickEvent
+import net.minecraft.network.chat.Component
+import net.minecraft.resources.Identifier
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -62,12 +62,12 @@ internal object SyncedConfigRegistry {
     }
 
     internal fun manualSync(config: Config, server: MinecraftServer) {
-        val id = config.getId().toTranslationKey()
+        val id = config.getId().toLanguageKey()
         val configEntry = syncedConfigs[id] ?: return
         if (configEntry.skipSync()) {
             FC.LOGGER.error("syncConfig called on a non-syncing config [${id}]")
         }
-        for (player in server.playerManager.playerList) {
+        for (player in server.playerList.players) {
             if (!ConfigApi.network().canSend(ConfigSyncS2CCustomPayload.type.id, player)) continue
             if (configEntry.skipSync()) continue
             val payloadResult = ConfigApiImpl.serializeConfigSafe(configEntry.config, "Error(s) encountered serializing config for S2C configuration sync.", 0).map {
@@ -87,7 +87,7 @@ internal object SyncedConfigRegistry {
         }
     }
 
-    internal fun onConfigure(canSender: Predicate<CustomPayload.Id<*>>, sender: Consumer<CustomPayload>) {
+    internal fun onConfigure(canSender: Predicate<CustomPacketPayload.Type<*>>, sender: Consumer<CustomPacketPayload>) {
         if (!canSender.test(ConfigSyncS2CCustomPayload.type)) return
         for ((id, configEntry) in syncedConfigs) {
             if (configEntry.skipSync()) continue
@@ -108,7 +108,7 @@ internal object SyncedConfigRegistry {
         }
     }
 
-    internal fun onJoin(player: ServerPlayerEntity, server: MinecraftServer, canSender: BiPredicate<ServerPlayerEntity, CustomPayload.Id<*>>, sender: BiConsumer<ServerPlayerEntity, CustomPayload>) {
+    internal fun onJoin(player: ServerPlayer, server: MinecraftServer, canSender: BiPredicate<ServerPlayer, CustomPacketPayload.Type<*>>, sender: BiConsumer<ServerPlayer, CustomPacketPayload>) {
         if (server.isSingleplayer) {
             ValidatedIdentifier.createSpSyncs(PortingUtils.getDynamicManager(player)) //for the registries that still need the data in SP
             return
@@ -129,9 +129,9 @@ internal object SyncedConfigRegistry {
         }
     }
 
-    internal fun onEndDataReload(players: List<ServerPlayerEntity>, canSender: BiPredicate<ServerPlayerEntity, CustomPayload.Id<*>>, sender: BiConsumer<ServerPlayerEntity, CustomPayload>) {
+    internal fun onEndDataReload(players: List<ServerPlayer>, canSender: BiPredicate<ServerPlayer, CustomPacketPayload.Type<*>>, sender: BiConsumer<ServerPlayer, CustomPacketPayload>) {
         for (player in players) {
-            if (player.entityWorld.server?.isSingleplayer == true) {
+            if (player.level().server?.isSingleplayer == true) {
                 ValidatedIdentifier.createSpSyncs(PortingUtils.getDynamicManager(player))
                 continue
             }
@@ -165,7 +165,7 @@ internal object SyncedConfigRegistry {
         }
     }
 
-    internal fun receiveConfigUpdate(serializedConfigs: Map<String, String>, server: MinecraftServer, serverPlayer: ServerPlayerEntity, clientPerm: Int, changes: List<String>, canSender: BiPredicate<ServerPlayerEntity, CustomPayload.Id<*>>, sender: BiConsumer<ServerPlayerEntity, CustomPayload>) {
+    internal fun receiveConfigUpdate(serializedConfigs: Map<String, String>, server: MinecraftServer, serverPlayer: ServerPlayer, clientPerm: Int, changes: List<String>, canSender: BiPredicate<ServerPlayer, CustomPacketPayload.Type<*>>, sender: BiConsumer<ServerPlayer, CustomPacketPayload>) {
         val successfulUpdates: MutableMap<String, String> = mutableMapOf()
         val formatter = DateTimeFormatter.ofPattern("HH:mm:ss")
 
@@ -194,12 +194,12 @@ internal object SyncedConfigRegistry {
                         quarantinedUpdates.pollFirstEntry()
                     }
 
-                    for (player in server.playerManager.playerList) {
+                    for (player in server.playerList.players) {
                         if(ConfigApiImpl.isConfigAdmin(player, configEntry.config))
-                            player.sendMessageToClient("fc.networking.permission.cheat".translate(serverPlayer.name), false)
-                        player.sendMessageToClient("fc.command.accept".translate().styled { s -> s.withClickEvent(ClickEvent.RunCommand("/configure_update \"$id\" inspect")) }, false)
-                        player.sendMessageToClient("fc.command.accept".translate().styled { s -> s.withClickEvent(ClickEvent.RunCommand("/configure_update \"$id\" accept")) }, false)
-                        player.sendMessageToClient("fc.command.accept".translate().styled { s -> s.withClickEvent(ClickEvent.RunCommand("/configure_update \"$id\" reject")) }, false)
+                            player.sendSystemMessage("fc.networking.permission.cheat".translate(serverPlayer.name), false)
+                        player.sendSystemMessage("fc.command.accept".translate().withStyle { s -> s.withClickEvent(ClickEvent.RunCommand("/configure_update \"$id\" inspect")) }, false)
+                        player.sendSystemMessage("fc.command.accept".translate().withStyle { s -> s.withClickEvent(ClickEvent.RunCommand("/configure_update \"$id\" accept")) }, false)
+                        player.sendSystemMessage("fc.command.accept".translate().withStyle { s -> s.withClickEvent(ClickEvent.RunCommand("/configure_update \"$id\" reject")) }, false)
                     }
                     continue
                 }
@@ -232,7 +232,7 @@ internal object SyncedConfigRegistry {
             }
         }
         if (!server.isSingleplayer) {
-            for (player in server.playerManager.playerList) {
+            for (player in server.playerList.players) {
                 if (player == serverPlayer) continue // don't push back to the player that just sent the update
                 if (!canSender.test(player, ConfigUpdateS2CCustomPayload.type)) continue
                 val newPayload = ConfigUpdateS2CCustomPayload(successfulUpdates)
@@ -242,10 +242,10 @@ internal object SyncedConfigRegistry {
         ConfigApiImpl.printChangeHistory(changes, serializedConfigs.keys.toString(), serverPlayer)
     }
 
-    internal fun receiveSettingForward(uuid: UUID, player: ServerPlayerEntity, scope: String, update: String, summary: String, canSender: BiPredicate<ServerPlayerEntity, CustomPayload.Id<*>>, sender: BiConsumer<ServerPlayerEntity, CustomPayload>) {
-        val receivingPlayer = player.entityWorld.server?.playerManager?.getPlayer(uuid) ?: return
+    internal fun receiveSettingForward(uuid: UUID, player: ServerPlayer, scope: String, update: String, summary: String, canSender: BiPredicate<ServerPlayer, CustomPacketPayload.Type<*>>, sender: BiConsumer<ServerPlayer, CustomPacketPayload>) {
+        val receivingPlayer = player.level().server?.playerList?.getPlayer(uuid) ?: return
         if (!canSender.test(receivingPlayer, SettingForwardCustomPayload.type)) {
-            player.sendMessage("fc.config.forwarded_error.s2c".translate())
+            player.sendSystemMessage("fc.config.forwarded_error.s2c".translate())
             return
         }
         sender.accept(receivingPlayer, SettingForwardCustomPayload(update, player.uuid, scope, summary))
@@ -255,7 +255,7 @@ internal object SyncedConfigRegistry {
         return quarantinedUpdates.keys
     }
 
-    internal fun inspectQuarantine(id: String, nameFinder: Function<UUID, Text?>, messageSender: Consumer<Text>) {
+    internal fun inspectQuarantine(id: String, nameFinder: Function<UUID, Component?>, messageSender: Consumer<Component>) {
         val quarantinedUpdate = quarantinedUpdates[id] ?: return
         messageSender.accept("fc.command.config".translate())
         messageSender.accept(quarantinedUpdate.configId.translate())
@@ -268,14 +268,14 @@ internal object SyncedConfigRegistry {
         for (str in quarantinedUpdate.changeHistory) {
             messageSender.accept(str.lit())
         }
-        messageSender.accept("fc.command.accept".translate().styled { s -> s.withClickEvent(ClickEvent.RunCommand("/configure_update \"$id\" accept")) })
-        messageSender.accept("fc.command.reject".translate().styled { s -> s.withClickEvent(ClickEvent.RunCommand("/configure_update \"$id\" reject")) })
+        messageSender.accept("fc.command.accept".translate().withStyle { s -> s.withClickEvent(ClickEvent.RunCommand("/configure_update \"$id\" accept")) })
+        messageSender.accept("fc.command.reject".translate().withStyle { s -> s.withClickEvent(ClickEvent.RunCommand("/configure_update \"$id\" reject")) })
     }
 
     internal fun acceptQuarantine(id: String, server: MinecraftServer) {
         val quarantinedUpdate = quarantinedUpdates[id] ?: return
         val configEntry = syncedConfigs[quarantinedUpdate.configId]
-        val player = server.playerManager.getPlayer(quarantinedUpdate.playerUuid)
+        val player = server.playerList.getPlayer(quarantinedUpdate.playerUuid)
         if (configEntry != null) {
             val result = ConfigApiImpl.deserializeUpdate(configEntry.config, quarantinedUpdate.configString, "Error(s) encountered while receiving config update for $id", ConfigApiImpl.CHECK_ACTIONS_AND_RECORD_RESTARTS).log(ValidationResult.ErrorEntry.ENTRY_ERROR_LOGGER)
             result.get().save()
@@ -289,7 +289,7 @@ internal object SyncedConfigRegistry {
                     }
                 }
             }
-            for (p in server.playerManager.playerList) {
+            for (p in server.playerList.players) {
                 if (p == player) continue // don't push back to the player that just sent the update
                 if (!NetworkEvents.canSend(p, ConfigUpdateS2CCustomPayload.type)) continue
                 val newPayload = ConfigUpdateS2CCustomPayload(mapOf(quarantinedUpdate.configId to quarantinedUpdate.configString))
@@ -319,7 +319,7 @@ internal object SyncedConfigRegistry {
                 result.reportTo(ValidationResult.ErrorEntry.ENTRY_ERROR_LOGGER)
             } else {
                 val config = entry.config
-                val id = config.getId().toTranslationKey()
+                val id = config.getId().toLanguageKey()
                 val update = config.fileType().encode(result.get())
                 if (update.isError()) {
                     update.reportTo(ValidationResult.ErrorEntry.ENTRY_ERROR_LOGGER)
@@ -327,7 +327,7 @@ internal object SyncedConfigRegistry {
                     if (!entry.skipSync()) {
                         updates[id] = update.get()
                     }
-                    val player = server.playerManager.playerList.getOrNull(0)
+                    val player = server.playerList.players.getOrNull(0)
                     val context = ServerUpdateContext(server, player)
                     try {
 
@@ -345,7 +345,7 @@ internal object SyncedConfigRegistry {
         }, {
             val canSender = ConfigApi.network()::canSend
             val sender = ConfigApi.network()::send
-            for (player in server.playerManager.playerList) {
+            for (player in server.playerList.players) {
                 if (!canSender(ConfigUpdateS2CCustomPayload.type.id, player)) continue
                 val newPayload = ConfigUpdateS2CCustomPayload(updates)
                 sender(newPayload, player)
@@ -369,7 +369,7 @@ internal object SyncedConfigRegistry {
 
     @Synchronized
     internal fun <T: Config> registerConfig(config: T, registerType: RegisterType, configCreator: () -> T) {
-        val scope = config.getId().toTranslationKey()
+        val scope = config.getId().toLanguageKey()
         val existingEntry = syncedConfigs[scope]
         val server = (registerType == RegisterType.SERVER) && (existingEntry?.server != false)
         val entry = SyncedConfigEntry(config, server, configCreator)

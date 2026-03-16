@@ -25,17 +25,17 @@ import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.map
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIngredient.IngredientProvider
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.client.gui.widget.TextWidget
-import net.minecraft.item.Item
-import net.minecraft.item.Items
-import net.minecraft.recipe.Ingredient
-import net.minecraft.registry.Registries
-import net.minecraft.registry.RegistryKeys
-import net.minecraft.registry.tag.TagKey
-import net.minecraft.util.Formatting
-import net.minecraft.util.Identifier
+import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.components.AbstractWidget
+import net.minecraft.client.gui.components.StringWidget
+import net.minecraft.world.item.Item
+import net.minecraft.world.item.Items
+import net.minecraft.world.item.crafting.Ingredient
+import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.core.registries.Registries
+import net.minecraft.tags.TagKey
+import net.minecraft.ChatFormatting
+import net.minecraft.resources.Identifier
 import net.peanuuutz.tomlkt.*
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.function.Predicate
@@ -102,12 +102,14 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
      */
     @JvmOverloads
     constructor(tag: TagKey<Item>, itemPredicate: Predicate<Identifier>? = null, tagPredicate: Predicate<Identifier>? = null): this(
-        TagProvider(tag.id), itemPredicate, tagPredicate)
+        TagProvider(tag.location), itemPredicate, tagPredicate)
 
 
-    private val tagValidator = if(tagPredicate == null) ValidatedIdentifier.ofRegistryTags(RegistryKeys.ITEM) else ValidatedIdentifier.ofRegistryTags(RegistryKeys.ITEM, tagPredicate)
+    private val tagValidator = if(tagPredicate == null) ValidatedIdentifier.ofRegistryTags(Registries.ITEM) else ValidatedIdentifier.ofRegistryTags(
+        Registries.ITEM, tagPredicate)
     @Suppress("DEPRECATION")
-    private val itemValidator = if(itemPredicate == null) ValidatedIdentifier.ofRegistry(Registries.ITEM) else ValidatedIdentifier.ofRegistry(Registries.ITEM) { id, _ -> itemPredicate.test(id) }
+    private val itemValidator = if(itemPredicate == null) ValidatedIdentifier.ofRegistry(BuiltInRegistries.ITEM) else ValidatedIdentifier.ofRegistry(
+        BuiltInRegistries.ITEM) { id, _ -> itemPredicate.test(id) }
     private val listTagValidator = tagValidator.toSet()
     private val listItemValidator = itemValidator.toSet()
 
@@ -196,7 +198,7 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
      * @since 0.3.2
      */
     fun validateAndSet(tag: TagKey<Item>): ValidatedIngredient {
-        val provider = TagProvider(tag.id)
+        val provider = TagProvider(tag.location)
         validateAndSet(provider)
         return this
     }
@@ -285,7 +287,7 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
 
     @Internal
     //client
-    override fun widgetEntry(choicePredicate: ChoiceValidator<IngredientProvider>): ClickableWidget {
+    override fun widgetEntry(choicePredicate: ChoiceValidator<IngredientProvider>): AbstractWidget {
         return CustomButtonWidget
             .builder { openIngredientPopup(it) }
             .size(110, 20)
@@ -299,20 +301,20 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
     }
 
     //client
-    private fun openIngredientPopup(b: ClickableWidget) {
-        val textRenderer = MinecraftClient.getInstance().textRenderer
+    private fun openIngredientPopup(b: AbstractWidget) {
+        val textRenderer = Minecraft.getInstance().font
 
         val popupNew = PopupWidget.Builder(translation())
             .addDivider()
-            .add("items_label", TextWidget(110, 13, "fc.validated_field.ingredient.items".translate(), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
+            .add("items_label", StringWidget(110, 13, "fc.validated_field.ingredient.items".translate(), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
             .add("items", listItemValidator.widgetAndTooltipEntry(ChoiceValidator.any()), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
             .add("items_clear", CustomButtonWidget.builder("fc.validated_field.ingredient.clear".translate()){ _ -> listItemValidator.validateAndSet(setOf()) }.size(60, 20).build(), "items", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
-            .add("items_textbox", SuppliedTextWidget({ listItemValidator.get().toString().lit().formatted(Formatting.GRAY) }, textRenderer, 110, 20).supplyTooltipOnOverflow { listItemValidator.get().joinToString("\n").lit() }, "items", LayoutWidget.Position.ALIGN_JUSTIFY, LayoutWidget.Position.BELOW)
+            .add("items_textbox", SuppliedTextWidget({ listItemValidator.get().toString().lit().withStyle(ChatFormatting.GRAY) }, textRenderer, 110, 20).supplyTooltipOnOverflow { listItemValidator.get().joinToString("\n").lit() }, "items", LayoutWidget.Position.ALIGN_JUSTIFY, LayoutWidget.Position.BELOW)
             .addDivider()
-            .add("tags_label", TextWidget(110, 13, "fc.validated_field.ingredient.tags".translate(), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
+            .add("tags_label", StringWidget(110, 13, "fc.validated_field.ingredient.tags".translate(), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
             .add("tags", listTagValidator.widgetAndTooltipEntry(ChoiceValidator.any()), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
             .add("tags_clear", CustomButtonWidget.builder("fc.validated_field.ingredient.clear".translate()){ _ -> listTagValidator.validateAndSet(setOf()) }.size(60, 20).build(), "tags", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
-            .add("tags_textbox", SuppliedTextWidget({ listTagValidator.get().toString().lit().formatted(Formatting.GRAY) }, textRenderer, 110, 20).supplyTooltipOnOverflow { listTagValidator.get().joinToString("\n").lit() }, "tags", LayoutWidget.Position.ALIGN_JUSTIFY, LayoutWidget.Position.BELOW)
+            .add("tags_textbox", SuppliedTextWidget({ listTagValidator.get().toString().lit().withStyle(ChatFormatting.GRAY) }, textRenderer, 110, 20).supplyTooltipOnOverflow { listTagValidator.get().joinToString("\n").lit() }, "tags", LayoutWidget.Position.ALIGN_JUSTIFY, LayoutWidget.Position.BELOW)
             .addDoneWidget()
             .positionX(PopupWidget.Builder.popupContext { w -> b.x + b.width/2 - w/2 })
             .positionY(PopupWidget.Builder.popupContext { h -> b.y + b.height/2 - h/2 })
@@ -379,7 +381,7 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
             return ProviderType.STACK
         }
         override fun provide(): Ingredient {
-            val item = Registries.ITEM.get(id)
+            val item = BuiltInRegistries.ITEM.getValue(id)
             return if (item == Items.AIR) {
                 PortingUtils.emptyIngredient(id.toString())
             } else {
@@ -409,7 +411,8 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
 
     class ListProvider(val ids: Set<Identifier>, val tags: Set<Identifier>): IngredientProvider {
 
-        constructor(input: Set<Any>):this(input.mapNotNull { it as? Identifier }.toSet(), input.mapNotNull { try { (it as? TagKey<*>)?.id } catch (e: Throwable){ null } }.toSet())
+        constructor(input: Set<Any>):this(input.mapNotNull { it as? Identifier }.toSet(), input.mapNotNull { try { (it as? TagKey<*>)?.location
+        } catch (e: Throwable){ null } }.toSet())
 
         override fun type(): ProviderType {
             return ProviderType.LIST
@@ -417,10 +420,10 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
         override fun provide(): Ingredient {
             if (ids.isEmpty() && tags.isEmpty())
                 throw UnsupportedOperationException("Ingredients can't be empty; no item ids nor tags provided")
-            val items = ids.map { Registries.ITEM.get(it) }.filter { it != Items.AIR }
+            val items = ids.map { BuiltInRegistries.ITEM.getValue(it) }.filter { it != Items.AIR }
             val tagItems: MutableList<Item> = mutableListOf()
             for (tag in tags) {
-                Registries.ITEM.iterateEntries(TagKey.of(RegistryKeys.ITEM, tag)).forEach {
+                BuiltInRegistries.ITEM.getTagOrEmpty(TagKey.create(Registries.ITEM, tag)).forEach {
                     tagItems.add(it.value())
                 }
             }
@@ -479,12 +482,12 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
         }
     }
 
-    class TagProvider(val tag: Identifier):IngredientProvider {
+    class TagProvider(val tag: Identifier): IngredientProvider {
         override fun type(): ProviderType {
             return ProviderType.TAG
         }
         override fun provide(): Ingredient {
-            return PortingUtils.tagIngredient(TagKey.of(RegistryKeys.ITEM, tag))
+            return PortingUtils.tagIngredient(TagKey.create(Registries.ITEM, tag))
         }
         override fun deserialize(toml: TomlElement): IngredientProvider {
             return TagProvider(toml.asTomlLiteral().toString().replace("#", "").simpleId())

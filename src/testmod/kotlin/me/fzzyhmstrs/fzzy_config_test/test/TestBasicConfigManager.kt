@@ -12,7 +12,7 @@ package me.fzzyhmstrs.fzzy_config_test.test
 
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
-import net.minecraft.text.Text
+import net.minecraft.network.chat.Component
 
 
 class TestBasicConfigManager: UpdateManager {
@@ -42,7 +42,7 @@ class TestBasicConfigManager: UpdateManager {
         changeHistory.add("Restoring default change count")
     }
 
-    override fun update(updatable: Updatable, updateMessage: Text) {
+    override fun update(updatable: Updatable, updateMessage: Component) {
     }
 
     override fun hasUpdate(scope: String): Boolean {
@@ -53,7 +53,7 @@ class TestBasicConfigManager: UpdateManager {
         return null
     }
 
-    override fun addUpdateMessage(key: Updatable, text: Text) {
+    override fun addUpdateMessage(key: Updatable, text: Component) {
     }
 
     override fun hasChangeHistory(): Boolean {

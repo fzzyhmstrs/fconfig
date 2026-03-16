@@ -11,14 +11,14 @@
 package me.fzzyhmstrs.fzzy_config.event.api
 
 import net.minecraft.server.MinecraftServer
-import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.server.level.ServerPlayer
 
-class ServerUpdateContext(private val server: MinecraftServer, private val player: ServerPlayerEntity?) {
+class ServerUpdateContext(private val server: MinecraftServer, private val player: ServerPlayer?) {
     fun getServer(): MinecraftServer {
         return server
     }
 
-    fun getPlayer(): ServerPlayerEntity? {
+    fun getPlayer(): ServerPlayer? {
         return player
     }
 }

@@ -10,9 +10,9 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.decoration
 
-import net.minecraft.client.gui.Drawable
-import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.client.gui.widget.Widget
+import net.minecraft.client.gui.components.Renderable
+import net.minecraft.client.gui.components.AbstractWidget
+import net.minecraft.client.gui.layouts.LayoutElement
 import java.util.function.Consumer
 
 /**
@@ -22,7 +22,7 @@ import java.util.function.Consumer
  * @author fzzyhmstrs
  * @since 0.6.0
  */
-abstract class AbstractDecorationWidget: Widget, Drawable {
+abstract class AbstractDecorationWidget: LayoutElement, Renderable {
 
     private var x: Int = 0
     private var y: Int = 0
@@ -72,6 +72,6 @@ abstract class AbstractDecorationWidget: Widget, Drawable {
     /**
      * @suppress
      */
-    override fun forEachChild(consumer: Consumer<ClickableWidget>?) {
+    override fun visitWidgets(consumer: Consumer<AbstractWidget>) {
     }
 }

@@ -11,7 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.util
 
 import me.fzzyhmstrs.fzzy_config.util.Searcher.SearchContent
-import net.minecraft.client.search.SuffixArray
+import net.minecraft.client.searchtree.SuffixArray
 import java.util.*
 
 /**
@@ -36,7 +36,7 @@ class Searcher<C: SearchContent>(private val searchEntries: List<C>) {
         for (entry in searchEntries) {
             array.add(entry, entry.content.name.string.lowercase(Locale.ROOT))
         }
-        array.build()
+        array.generate()
         array
     }
 
@@ -62,7 +62,7 @@ class Searcher<C: SearchContent>(private val searchEntries: List<C>) {
             }
             array.add(entry, str)
         }
-        array.build()
+        array.generate()
         array
     }
 
@@ -138,14 +138,14 @@ class Searcher<C: SearchContent>(private val searchEntries: List<C>) {
         val list: List<C>
         when (type) {
             SearchType.DESCRIPTION -> {
-                list = searchDesc.findAll(trimmedSearchInput.lowercase(Locale.ROOT)).filter { !it.skip }
+                list = searchDesc.search(trimmedSearchInput.lowercase(Locale.ROOT)).filter { !it.skip }
             }
             SearchType.NEGATION -> {
-                val results = search.findAll(trimmedSearchInput.lowercase(Locale.ROOT))
+                val results = search.search(trimmedSearchInput.lowercase(Locale.ROOT))
                 list = searchEntries.filter { e -> !results.contains(e) && !e.skip }
             }
             SearchType.NEGATE_DESCRIPTION -> {
-                val results = searchDesc.findAll(trimmedSearchInput.lowercase(Locale.ROOT))
+                val results = searchDesc.search(trimmedSearchInput.lowercase(Locale.ROOT))
                 list = searchEntries.filter { e -> !results.contains(e) && !e.skip }
             }
             SearchType.EXACT -> {
@@ -165,7 +165,7 @@ class Searcher<C: SearchContent>(private val searchEntries: List<C>) {
                 list = searchEntries.filter { !regex.containsMatchIn(it.content.name.string.lowercase(Locale.ROOT)) }
             }
             SearchType.NORMAL -> {
-                list = search.findAll(trimmedSearchInput.lowercase(Locale.ROOT)).filter { !it.skip }
+                list = search.search(trimmedSearchInput.lowercase(Locale.ROOT)).filter { !it.skip }
             }
         }
         return list

@@ -20,7 +20,7 @@ import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.wrap
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedString.Builder
-import net.minecraft.client.gui.widget.ClickableWidget
+import net.minecraft.client.gui.components.AbstractWidget
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
 import net.peanuuutz.tomlkt.asTomlLiteral
@@ -116,7 +116,7 @@ open class ValidatedString(defaultValue: String, private val checker: EntryCheck
 
     @Internal
     //client
-    override fun widgetEntry(choicePredicate: ChoiceValidator<String>): ClickableWidget {
+    override fun widgetEntry(choicePredicate: ChoiceValidator<String>): AbstractWidget {
         return if (checker !is AllowableStrings)
             ValidationBackedTextFieldWidget(110, 20, this, choicePredicate, this, this)
         else

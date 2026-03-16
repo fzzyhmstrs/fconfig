@@ -19,16 +19,15 @@ import org.jetbrains.dokka.base.DokkaBaseConfiguration
 import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.dokka.versioning.VersioningConfiguration
 import org.jetbrains.dokka.versioning.VersioningPlugin
-import org.jetbrains.kotlin.cli.common.toBooleanLenient
 import java.net.URI
 
 plugins {
-    id("fabric-loom")
+    id("net.fabricmc.fabric-loom")
     val kotlinVersion: String by System.getProperties()
     kotlin("jvm").version(kotlinVersion)
-    kotlin("plugin.serialization") version "1.9.22"
+    kotlin("plugin.serialization") version "2.3.20"
     id("com.modrinth.minotaur") version "2.+"
-    id("org.jetbrains.dokka") version "1.9.20"
+    id("org.jetbrains.dokka") version "2.1.0"
     id("com.matthewprenger.cursegradle") version "1.4.0"
     id("org.moddedmc.wiki.toolkit") version "0.4.+"
     `maven-publish`
@@ -71,7 +70,7 @@ sourceSets {
     main {
         kotlin {
             val includeExamples: String by project
-            if (includeExamples.toBooleanLenient() != true) {
+            if (includeExamples.toBooleanStrictOrNull() != true) {
                 exclude("me/fzzyhmstrs/fzzy_config/examples/**")
             }
         }
@@ -95,14 +94,12 @@ val testmodImplementation by configurations.getting {
 
 dependencies {
     minecraft("com.mojang:minecraft:$minecraftVersion")
-    val yarnMappings: String by project
-    mappings("net.fabricmc:yarn:$yarnMappings:v2")
     val loaderVersion: String by project
-    modImplementation("net.fabricmc:fabric-loader:$loaderVersion")
+    implementation("net.fabricmc:fabric-loader:$loaderVersion")
     val fabricVersion: String by project
-    modImplementation("net.fabricmc.fabric-api:fabric-api:$fabricVersion")
+    implementation("net.fabricmc.fabric-api:fabric-api:$fabricVersion")
     val fabricKotlinVersion: String by project
-    modImplementation("net.fabricmc:fabric-language-kotlin:$fabricKotlinVersion")
+    implementation("net.fabricmc:fabric-language-kotlin:$fabricKotlinVersion")
 
     val tomlktVersion: String by project
     implementation("net.peanuuutz.tomlkt:tomlkt:$tomlktVersion")
@@ -113,14 +110,14 @@ dependencies {
     include("blue.endless:jankson:$janksonVersion")
 
     val fabricPermsVersion: String by project
-    modImplementation("me.lucko:fabric-permissions-api:$fabricPermsVersion")
-    include("me.lucko:fabric-permissions-api:$fabricPermsVersion")
+    implementation("me.lucko:fabric-permissions-api:$fabricPermsVersion")
+    //include("me.lucko:fabric-permissions-api:$fabricPermsVersion")
 
     val modmenuVersion: String by project
-    modCompileOnly("com.terraformersmc:modmenu:$modmenuVersion") {
+    compileOnly("com.terraformersmc:modmenu:$modmenuVersion") {
         isTransitive = false
     }
-    modLocalRuntime("com.terraformersmc:modmenu:$modmenuVersion") {
+    runtimeOnly("com.terraformersmc:modmenu:$modmenuVersion") {
         isTransitive = false
     }
 
@@ -142,21 +139,19 @@ loom {
     }
 }
 
+kotlin {
+    compilerOptions {
+        freeCompilerArgs = listOf("-Xjvm-default=all", "-jvm-default=enable")
+    }
+}
+
 tasks {
-    val javaVersion = JavaVersion.VERSION_21
+    val javaVersion = JavaVersion.VERSION_25
     withType<JavaCompile> {
         options.encoding = "UTF-8"
-        sourceCompatibility = javaVersion.toString()
+        sourceCompatibility = JavaVersion.VERSION_25.toString()
         targetCompatibility = javaVersion.toString()
         options.release.set(javaVersion.toString().toInt())
-    }
-    withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-        kotlinOptions {
-            jvmTarget = javaVersion.toString()
-            freeCompilerArgs = listOf("-Xjvm-default=all")
-        }
-        //java.sourceCompatibility = javaVersion
-        //targetCompatibility = javaVersion.toString()
     }
     jar {
         exclude("me/fzzyhmstrs/fzzy_config/examples/**")
@@ -192,20 +187,12 @@ tasks {
 
 val testmodJar =  tasks.register("testmodJar", Jar::class) {
     from(sourceSets["testmod"].output)
-    destinationDirectory =  File(project.layout.buildDirectory.get().asFile, "testmod")
-    archiveClassifier = "testmod"
-}
-
-val remapTestmodJar =  tasks.register("remapTestmodJar", RemapJarTask::class) {
-    dependsOn(testmodJar.get())
-    input.set(testmodJar.get().archiveFile)
-    archiveClassifier = "testmod"
-    addNestedDependencies = false
     //destinationDirectory =  File(project.layout.buildDirectory.get().asFile, "testmod")
+    archiveClassifier = "testmod"
 }
 
 tasks.build {
-    dependsOn(remapTestmodJar.get())
+    dependsOn(testmodJar.get())
 }
 
 wiki {
@@ -284,8 +271,7 @@ if (System.getenv("MODRINTH_TOKEN") != null) {
         versionNumber.set("${project.version}")
         versionName.set("${base.archivesName.get()}-${project.version}")
         versionType.set(releaseType)
-        uploadFile.set(tasks.remapJar.get())
-        additionalFiles.add(tasks.remapSourcesJar.get().archiveFile)
+        uploadFile.set(tasks.jar.get())
         gameVersions.addAll(mcVersions.split(","))
         loaders.addAll("fabric", "quilt")
         detectLoaders.set(false)
@@ -294,7 +280,7 @@ if (System.getenv("MODRINTH_TOKEN") != null) {
             required.project("fabric-api")
             required.project("fabric-language-kotlin")
         }
-        debugMode.set(uploadDebugMode.toBooleanLenient() ?: true)
+        debugMode.set(uploadDebugMode.toBooleanStrictOrNull() ?: true)
     }
 }
 
@@ -317,16 +303,12 @@ if (System.getenv("CURSEFORGE_TOKEN") != null) {
             }
             addGameVersion("Fabric")
             addGameVersion("Quilt")
-            mainArtifact(tasks.remapJar.get().archiveFile.get(), closureOf<CurseArtifact> {
+            mainArtifact(tasks.jar.get().archiveFile.get(), closureOf<CurseArtifact> {
                 displayName = "${base.archivesName.get()}-${project.version}"
                 relations(closureOf<CurseRelation>{
                     this.requiredDependency("fabric-api")
                     this.requiredDependency("fabric-language-kotlin")
                 })
-            })
-            addArtifact(tasks.remapSourcesJar.get().archiveFile, closureOf<CurseArtifact> {
-                changelogType = "markdown"
-                changelog = "Source files for ${base.archivesName.get()}-${project.version}"
             })
             relations(closureOf<CurseRelation>{
                 this.requiredDependency("fabric-api")
@@ -337,7 +319,7 @@ if (System.getenv("CURSEFORGE_TOKEN") != null) {
             javaIntegration = false
             forgeGradleIntegration = false
             javaVersionAutoDetect = false
-            debug = uploadDebugMode.toBooleanLenient() ?: true
+            debug = uploadDebugMode.toBooleanStrictOrNull() ?: true
         })
     }
 }

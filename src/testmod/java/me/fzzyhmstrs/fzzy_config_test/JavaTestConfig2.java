@@ -15,10 +15,10 @@ import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedList;
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedRegistryType;
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedDouble;
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedFloat;
-import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
-import net.minecraft.registry.Registries;
-import net.minecraft.util.Identifier;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -26,7 +26,7 @@ import java.util.List;
 
 public class JavaTestConfig2 extends JavaTestConfig {
 
-	public JavaTestConfig2() {super(Identifier.of("fzzy_config_test","java_config_2"));}
+	public JavaTestConfig2() {super(Identifier.fromNamespaceAndPath("fzzy_config_test","java_config_2"));}
 
 	@NotNull
 	@Override
@@ -36,7 +36,7 @@ public class JavaTestConfig2 extends JavaTestConfig {
 
 	public int intFrom2 = 2;
 
-	public ValidatedList<Block> blocks = new ValidatedList<>(getList(), ValidatedRegistryType.of(Registries.BLOCK));
+	public ValidatedList<Block> blocks = new ValidatedList<>(getList(), ValidatedRegistryType.of(BuiltInRegistries.BLOCK));
 
 	private List<Block> getList() {
 		List<Block> list = new ArrayList<>();
