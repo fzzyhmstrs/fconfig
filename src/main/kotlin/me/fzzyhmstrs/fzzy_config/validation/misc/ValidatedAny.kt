@@ -44,11 +44,11 @@ import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.Walkable
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.tooltip.Tooltip
-import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.text.MutableText
-import net.minecraft.text.Text
+import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.components.Tooltip
+import net.minecraft.client.gui.components.AbstractWidget
+import net.minecraft.network.chat.MutableComponent
+import net.minecraft.network.chat.Component
 import net.peanuuutz.tomlkt.TomlElement
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.*
@@ -141,7 +141,7 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
 
     @Internal
     //client
-    override fun widgetEntry(choicePredicate: ChoiceValidator<T>): ClickableWidget {
+    override fun widgetEntry(choicePredicate: ChoiceValidator<T>): AbstractWidget {
         val defaultTitle = "fc.validated_field.object".translate()
         return CustomButtonWidget
             .builder { openObjectPopup() }
@@ -300,23 +300,23 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
         }
         manager.pushUpdatableStates()
         val spec = DynamicListWidget.ListSpec(leftPadding = 21, rightPadding = 15, verticalFirstPadding = 2)
-        val entryList = DynamicListWidget(MinecraftClient.getInstance(), entries.map { it.entry }, 0, 0, 288, 160, spec)
-        val searchField = NavigableTextFieldWidget(MinecraftClient.getInstance().textRenderer, 94, 20, FcText.EMPTY)
+        val entryList = DynamicListWidget(Minecraft.getInstance(), entries.map { it.entry }, 0, 0, 288, 160, spec)
+        val searchField = NavigableTextFieldWidget(Minecraft.getInstance().font, 94, 20, FcText.EMPTY)
         fun setColor(entries: Int) {
             if(entries > 0)
-                searchField.setEditableColor(-1)
+                searchField.setTextColor(-1)
             else
-                searchField.setEditableColor(-43691)
+                searchField.setTextColor(-43691)
         }
         searchField.setMaxLength(100)
         val searchText = if (SearchConfig.INSTANCE.willPassSearch()) {
-            MinecraftClient.getInstance().currentScreen.nullCast<ConfigScreen>()?.getCurrentSearch() ?: ""
+            Minecraft.getInstance().screen.nullCast<ConfigScreen>()?.getCurrentSearch() ?: ""
         } else {
             ""
         }
-        searchField.setChangedListener { s -> setColor(entryList.search(s)) }
-        searchField.text = searchText
-        searchField.setTooltip(Tooltip.of("fc.config.search.desc".translate()))
+        searchField.setResponder { s -> setColor(entryList.search(s)) }
+        searchField.setValue(searchText)
+        searchField.setTooltip(Tooltip.create("fc.config.search.desc".translate()))
         val popup = PopupWidget.Builder(translation())
             .add("list", entryList, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
             .add("search", searchField, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
@@ -344,21 +344,21 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
     }
 
     @Internal
-    override fun provideTranslation(fallback: String?): MutableText {
+    override fun provideTranslation(fallback: String?): MutableComponent {
         return  Translatable.getScopedResult(this.getEntryKey())?.name?.nullCast()
             ?: storedValue.nullCast<Translatable>()?.translationOrNull(fallback)
             ?: FcText.translatableWithFallback(translationKey(), fallback ?: this.translationKey().substringAfterLast('.').split(FcText.regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })
     }
 
     @Internal
-    override fun provideDescription(fallback: String?): MutableText {
+    override fun provideDescription(fallback: String?): MutableComponent {
         return Translatable.getScopedResult(this.getEntryKey())?.desc?.nullCast()
             ?: storedValue.nullCast<Translatable>()?.descriptionOrNull(fallback)
             ?: FcText.translatableWithFallback(descriptionKey(), fallback ?: "")
     }
 
     @Internal
-    override fun providePrefix(fallback: String?): MutableText {
+    override fun providePrefix(fallback: String?): MutableComponent {
         return Translatable.getScopedResult(this.getEntryKey())?.prefix?.nullCast()
             ?: storedValue.nullCast<Translatable>()?.prefixOrNull(fallback)
             ?: FcText.translatableWithFallback(prefixKey(), fallback ?: "")

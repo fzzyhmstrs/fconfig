@@ -23,7 +23,6 @@ import net.peanuuutz.tomlkt.TomlElement
  * @since 0.2.0, added [deserializedChanged] 0.6.0
  */
 @FunctionalInterface
-@JvmDefaultWithCompatibility
 fun interface EntryDeserializer<T> {
     /**
      * Deserializes the provided [TomlElement]. This deserialization should store the result within this deserializer (deserialize "in-place") as well as returning the result. The return has to have a fallback value.

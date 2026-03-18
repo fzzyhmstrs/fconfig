@@ -5,11 +5,11 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureSet
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.util.Ref
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.font.TextRenderer
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
-import net.minecraft.client.gui.screen.narration.NarrationPart
+import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.Font
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.gui.narration.NarrationElementOutput
+import net.minecraft.client.gui.narration.NarratedElementType
 import java.util.function.Consumer
 
 internal class ContextActionWidget(
@@ -37,7 +37,7 @@ internal class ContextActionWidget(
 
 
     override fun renderCustom(
-        context: DrawContext,
+        context: GuiGraphicsExtractor,
         x: Int,
         y: Int,
         width: Int,
@@ -48,15 +48,15 @@ internal class ContextActionWidget(
     ) {
         if (action.icon != null) {
             super.renderCustom(context, x + 12, y, width - 12, height, mouseX, mouseY, delta)
-            action.icon.renderDecoration(context, x + 1, y + 2, delta, this.active, this.isSelected)
+            action.icon.renderDecoration(context, x + 1, y + 2, delta, this.active, this.isHoveredOrFocused)
         } else {
             super.renderCustom(context, x + 12, y, width - 12, height, mouseX, mouseY, delta)
         }
     }
 
     override fun drawScrollableText(
-        context: DrawContext,
-        textRenderer: TextRenderer,
+        context: GuiGraphicsExtractor,
+        textRenderer: Font,
         x: Int,
         y: Int,
         width: Int,
@@ -68,26 +68,26 @@ internal class ContextActionWidget(
         val j = x + width - xMargin
         val k = y + ((height - 9 + 1) / 2)
         val text = message
-        val w1 = textRenderer.getWidth(text)
+        val w1 = textRenderer.width(text)
         val w2 = j - i
         if (w2 > w1) {
             super.drawScrollableText(context, textRenderer, (i + j) / 2, i, y, j, y + height, color)
         } else {
-            context.drawTextWithShadow(textRenderer, text, i, k, color)
+            context.text(textRenderer, text, i, k, color)
         }
     }
 
-    override fun appendClickableNarrations(builder: NarrationMessageBuilder?) {
-        super.appendClickableNarrations(builder)
+    override fun updateWidgetNarration(builder: NarrationElementOutput) {
+        super.updateWidgetNarration(builder)
         if (action.texts.desc != null) {
-            builder?.put(NarrationPart.HINT, action.texts.desc)
+            builder.add(NarratedElementType.HINT, action.texts.desc!!)
         }
     }
 
     companion object {
 
         fun getNeededWidth(action: ContextAction): Int {
-            return 11 + MinecraftClient.getInstance().textRenderer.getWidth(action.texts.name) + 4
+            return 11 + Minecraft.getInstance().font.width(action.texts.name) + 4
 /*            return if (action.icon != null) {
                 11 + MinecraftClient.getInstance().textRenderer.getWidth(action.texts.name) + 4
             } else {

@@ -11,13 +11,13 @@
 package me.fzzyhmstrs.fzzy_config.networking.api
 
 import me.fzzyhmstrs.fzzy_config.cast
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.network.ClientPlayerEntity
-import net.minecraft.network.NetworkPhase
-import net.minecraft.network.NetworkSide
-import net.minecraft.network.packet.CustomPayload
-import net.minecraft.text.Text
-import net.minecraft.util.Identifier
+import net.minecraft.client.Minecraft
+import net.minecraft.client.player.LocalPlayer
+import net.minecraft.network.ConnectionProtocol
+import net.minecraft.network.protocol.PacketFlow
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload
+import net.minecraft.network.chat.Component
+import net.minecraft.resources.Identifier
 import net.neoforged.neoforge.network.handling.IPayloadContext
 import net.neoforged.neoforge.network.registration.NetworkRegistry
 
@@ -26,7 +26,7 @@ import net.neoforged.neoforge.network.registration.NetworkRegistry
  * @author fzzyhmstrs
  * @since 0.4.1
  */
-class ClientPlayNetworkContext(private val context: IPayloadContext): NetworkContext<ClientPlayerEntity> {
+class ClientPlayNetworkContext(private val context: IPayloadContext): NetworkContext<LocalPlayer> {
 
     /**
      * Executes a task on the main thread. This should be used for anything interacting with game state outside the network loop
@@ -35,7 +35,7 @@ class ClientPlayNetworkContext(private val context: IPayloadContext): NetworkCon
      * @since 0.4.1
      */
     override fun execute(runnable: Runnable) {
-        MinecraftClient.getInstance().execute(runnable)
+        Minecraft.getInstance().execute(runnable)
     }
 
     /**
@@ -44,7 +44,7 @@ class ClientPlayNetworkContext(private val context: IPayloadContext): NetworkCon
      * @author fzzyhmstrs
      * @since 0.4.1
      */
-    override fun disconnect(reason: Text) {
+    override fun disconnect(reason: Component) {
         context.disconnect(reason)
     }
 
@@ -56,7 +56,7 @@ class ClientPlayNetworkContext(private val context: IPayloadContext): NetworkCon
      * @since 0.4.1
      */
     override fun canReply(id: Identifier): Boolean {
-        val handler = MinecraftClient.getInstance().networkHandler ?: return false
+        val handler = Minecraft.getInstance().connection ?: return false
         return NetworkRegistry.hasChannel(handler, id)
     }
 
@@ -66,7 +66,7 @@ class ClientPlayNetworkContext(private val context: IPayloadContext): NetworkCon
      * @author fzzyhmstrs
      * @since 0.4.1
      */
-    override fun reply(payload: CustomPayload) {
+    override fun reply(payload: CustomPacketPayload) {
         context.reply(payload)
     }
 
@@ -76,8 +76,8 @@ class ClientPlayNetworkContext(private val context: IPayloadContext): NetworkCon
      * @author fzzyhmstrs
      * @since 0.4.1
      */
-    override fun player(): ClientPlayerEntity {
-        return context.player().cast<ClientPlayerEntity>()
+    override fun player(): LocalPlayer {
+        return context.player().cast<LocalPlayer>()
     }
 
     /**
@@ -85,8 +85,8 @@ class ClientPlayNetworkContext(private val context: IPayloadContext): NetworkCon
      * @author fzzyhmstrs
      * @since 0.4.1
      */
-    override fun networkPhase(): NetworkPhase {
-        return NetworkPhase.PLAY
+    override fun networkPhase(): ConnectionProtocol {
+        return ConnectionProtocol.PLAY
     }
 
     /**
@@ -94,7 +94,7 @@ class ClientPlayNetworkContext(private val context: IPayloadContext): NetworkCon
      * @author fzzyhmstrs
      * @since 0.4.1
      */
-    override fun networkSide(): NetworkSide {
-        return NetworkSide.SERVERBOUND
+    override fun networkSide(): PacketFlow {
+        return PacketFlow.SERVERBOUND
     }
 }

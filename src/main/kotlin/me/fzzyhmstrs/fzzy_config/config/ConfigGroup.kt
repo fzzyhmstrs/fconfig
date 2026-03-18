@@ -25,13 +25,13 @@ import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import me.fzzyhmstrs.fzzy_config.util.TranslatableEntry
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
-import net.minecraft.client.gui.screen.narration.NarrationPart
-import net.minecraft.client.gui.tooltip.Tooltip
-import net.minecraft.text.Text
-import net.minecraft.util.Identifier
+import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.gui.narration.NarrationElementOutput
+import net.minecraft.client.gui.narration.NarratedElementType
+import net.minecraft.client.gui.components.Tooltip
+import net.minecraft.network.chat.Component
+import net.minecraft.resources.Identifier
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.*
 
@@ -142,7 +142,7 @@ class ConfigGroup constructor(
         }
     }
 
-    internal class GroupButtonWidget(private val list: DynamicListWidget, private val group: String, private val title: Text)
+    internal class GroupButtonWidget(private val list: DynamicListWidget, private val group: String, private val title: Component)
     :
     CustomPressableWidget(0, 0, 110, 20, FcText.EMPTY) {
 
@@ -150,19 +150,19 @@ class ConfigGroup constructor(
             list.toggleGroup(group)
         }
 
-        override fun appendClickableNarrations(builder: NarrationMessageBuilder?) {
+        override fun updateWidgetNarration(builder: NarrationElementOutput) {
             if (this.active) {
                 if (list.groupIsVisible(group)) {
                     if (this.isFocused) {
-                        builder?.put(NarrationPart.USAGE, collapseUsageFocused)
+                        builder?.add(NarratedElementType.USAGE, collapseUsageFocused)
                     } else {
-                        builder?.put(NarrationPart.USAGE, collapseUsageHovered)
+                        builder?.add(NarratedElementType.USAGE, collapseUsageHovered)
                     }
                 } else {
                     if (this.isFocused) {
-                        builder?.put(NarrationPart.USAGE, expandUsageFocused)
+                        builder?.add(NarratedElementType.USAGE, expandUsageFocused)
                     } else {
-                        builder?.put(NarrationPart.USAGE, expandUsageHovered)
+                        builder?.add(NarratedElementType.USAGE, expandUsageHovered)
                     }
                 }
             }
@@ -184,18 +184,18 @@ class ConfigGroup constructor(
                 TextureIds.GROUP_EXPAND
         }
 
-        override fun renderCustom(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
+        override fun renderCustom(context: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
             val bl = list.groupIsVisible(group)
             val bl2 = isMouseOver(mouseX.toDouble(), mouseY.toDouble())
-            val t = if (bl2) title.copy().styled { s -> s.withUnderline(true) } else title
-            val trimmed = FcText.trim(t, width - 17, MinecraftClient.getInstance().textRenderer)
-            context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, trimmed, x + 17, y + (getHeight() - (MinecraftClient.getInstance().textRenderer.fontHeight) + 1) / 2, -1)
+            val t = if (bl2) title.copy().withStyle { s -> s.withUnderlined(true) } else title
+            val trimmed = FcText.trim(t, width - 17, Minecraft.getInstance().font)
+            context.text(Minecraft.getInstance().font, trimmed, x + 17, y + (getHeight() - (Minecraft.getInstance().font.lineHeight) + 1) / 2, -1)
             val h2 = y + height/2
             if (bl) { //vertical line
                 context.fill(x, h2, x + 1, y + height, -1)
                 context.fill(x + 1, h2, x + 2, y + height, -12698050)
             } else { //horizontal line
-                val x1 = x + 17 + MinecraftClient.getInstance().textRenderer.getWidth(trimmed) + 7
+                val x1 = x + 17 + Minecraft.getInstance().font.width(trimmed) + 7
                 val x2 = x + width - 7
                 if (x2 - 2 > x1) {
                     context.fill(x1, h2 - 1, x2, h2, -1)
@@ -205,9 +205,9 @@ class ConfigGroup constructor(
             context.drawTex(getTex(bl, bl2), x, y, 20, 20)
         }
 
-        override fun renderBackground(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {}
+        override fun renderBackground(context: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {}
 
-        override fun provideTooltipLines(mouseX: Int, mouseY: Int, parentSelected: Boolean, keyboardFocused: Boolean): List<Text> {
+        override fun provideTooltipLines(mouseX: Int, mouseY: Int, parentSelected: Boolean, keyboardFocused: Boolean): List<Component> {
             if (!parentSelected) return TooltipChild.EMPTY
             return if (list.groupIsVisible(group)) {
                 listOf(expanded)

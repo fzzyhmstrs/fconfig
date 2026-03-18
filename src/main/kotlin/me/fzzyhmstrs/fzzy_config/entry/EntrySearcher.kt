@@ -66,7 +66,7 @@ fun interface EntrySearcher {
                     thing,
                     ConfigApiImplClient.getPlayerPermissionLevel(),
                     config,
-                    config.nullCast<Config>()?.getId()?.toTranslationKey() ?: "",
+                    config.nullCast<Config>()?.getId()?.toLanguageKey() ?: "",
                     new,
                     annotations,
                     client,

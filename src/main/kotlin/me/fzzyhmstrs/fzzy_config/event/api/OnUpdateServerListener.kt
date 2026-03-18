@@ -11,8 +11,8 @@
 package me.fzzyhmstrs.fzzy_config.event.api
 
 import me.fzzyhmstrs.fzzy_config.config.Config
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.util.Identifier
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.resources.Identifier
 
 /**
  * USE THE V2 VERSION INSTEAD
@@ -36,5 +36,5 @@ fun interface OnUpdateServerListener {
      * @since 0.5.0, deprecated 0.7.4, soft-removal by 0.8.0, removal by 0.9.0
      */
     @Deprecated("Scheduled for removal 0.9.0. Will stop functioning by 0.8.0. Will not crash in 0.8.0, but will not be wired in any more. Replace with the v2 version. This may not be called in all cases, potentially skipping needed events")
-    fun onChanged(id: Identifier, config: Config, player: ServerPlayerEntity)
+    fun onChanged(id: Identifier, config: Config, player: ServerPlayer)
 }

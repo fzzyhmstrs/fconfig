@@ -26,8 +26,8 @@ import me.fzzyhmstrs.fzzy_config.validation.ValidatedLazyField
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedStringMap.Builder
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedMapped
-import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.util.Identifier
+import net.minecraft.client.gui.components.AbstractWidget
+import net.minecraft.resources.Identifier
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
 import net.peanuuutz.tomlkt.TomlTableBuilder
@@ -191,7 +191,7 @@ open class ValidatedStringMap<V>(defaultValue: Map<String, V>, private val keyHa
     }
 
     @Internal
-    override fun widgetEntry(choicePredicate: ChoiceValidator<Map<String, V>>): ClickableWidget {
+    override fun widgetEntry(choicePredicate: ChoiceValidator<Map<String, V>>): AbstractWidget {
         return CustomButtonWidget.builder { b: CustomButtonWidget ->
             openMapEditPopup(PopupWidget.Builder.popupContext { w -> b.x + b.width/2 - w/2 }, PopupWidget.Builder.popupContext { h -> b.y + b.height/2 - h/2 })
         }.size(110, 20).messageSupplier { provideAttachedValue(Translatable.Provider.WIDGET_TITLE, TextureIds.MAP_LANG) }.build()

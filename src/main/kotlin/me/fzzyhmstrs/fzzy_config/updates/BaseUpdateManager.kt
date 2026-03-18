@@ -16,7 +16,7 @@ import me.fzzyhmstrs.fzzy_config.entry.EntryKeyed
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
 import me.fzzyhmstrs.fzzy_config.nullCast
-import net.minecraft.text.Text
+import net.minecraft.network.chat.Component
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -52,9 +52,9 @@ open class BaseUpdateManager: UpdateManager, BasicValidationProvider {
     //   ex. 'mymod.items.dropRates.oceanChests'
 
     protected var updateMap: LinkedHashMap<String, Updatable> = LinkedHashMap()
-    protected var changeHistory: MutableMap<Updatable, SortedMap<Long, Text>> = mutableMapOf()
+    protected var changeHistory: MutableMap<Updatable, SortedMap<Long, Component>> = mutableMapOf()
 
-    override fun update(updatable: Updatable, updateMessage: Text) {
+    override fun update(updatable: Updatable, updateMessage: Component) {
         updateMap.computeIfAbsent(updatable.getEntryKey()) { updatable }
         addUpdateMessage(updatable, updateMessage)
     }
@@ -67,7 +67,7 @@ open class BaseUpdateManager: UpdateManager, BasicValidationProvider {
         return updateMap[scope]
     }
 
-    override fun addUpdateMessage(key: Updatable, text: Text) {
+    override fun addUpdateMessage(key: Updatable, text: Component) {
         val updateLog = changeHistory.computeIfAbsent(key){ sortedMapOf() }
         var baseTime = System.currentTimeMillis()
         while(updateLog.containsKey(baseTime)) {
@@ -76,7 +76,7 @@ open class BaseUpdateManager: UpdateManager, BasicValidationProvider {
         updateLog[baseTime] = text
     }
 
-    fun getHistory(): Map<Updatable, SortedMap<Long, Text>> {
+    fun getHistory(): Map<Updatable, SortedMap<Long, Component>> {
         return changeHistory
     }
 
@@ -150,11 +150,11 @@ open class BaseUpdateManager: UpdateManager, BasicValidationProvider {
     }
 
     fun applyKeys(config: Config) {
-        ConfigApiImpl.walk(config, config.getId().toTranslationKey(), 1) { _, _, str, v, _, _, _, _ -> if (v is EntryKeyed) v.setEntryKey(str)}
+        ConfigApiImpl.walk(config, config.getId().toLanguageKey(), 1) { _, _, str, v, _, _, _, _ -> if (v is EntryKeyed) v.setEntryKey(str)}
     }
 
     fun pushStates(config: Config) {
-        ConfigApiImpl.walk(config, config.getId().toTranslationKey(), 1) { _, _, _, v, _, _, _, _ -> if (v is Updatable) v.pushState()}
+        ConfigApiImpl.walk(config, config.getId().toLanguageKey(), 1) { _, _, _, v, _, _, _, _ -> if (v is Updatable) v.pushState()}
     }
 
     fun getValidation(input: Any?, inputType: KCallable<*>, fieldName: String, configScope: String, isClient: Boolean): Entry<*, *>? {

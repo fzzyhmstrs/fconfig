@@ -27,8 +27,8 @@ import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedIdentifierMap.Bu
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedMapped
-import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.util.Identifier
+import net.minecraft.client.gui.components.AbstractWidget
+import net.minecraft.resources.Identifier
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlTableBuilder
 import net.peanuuutz.tomlkt.asTomlTable
@@ -201,7 +201,7 @@ open class ValidatedIdentifierMap<V>(defaultValue: Map<Identifier, V>, private v
 
     @Internal
     //client
-    override fun widgetEntry(choicePredicate: ChoiceValidator<Map<Identifier, V>>): ClickableWidget {
+    override fun widgetEntry(choicePredicate: ChoiceValidator<Map<Identifier, V>>): AbstractWidget {
         return CustomButtonWidget.builder(TextureIds.MAP_LANG) { b: CustomButtonWidget ->
             openMapEditPopup(PopupWidget.Builder.popupContext { w -> b.x + b.width/2 - w/2 }, PopupWidget.Builder.popupContext { h -> b.y + b.height/2 - h/2 })
         }.size(110, 20).messageSupplier { provideAttachedValue(Translatable.Provider.WIDGET_TITLE, TextureIds.MAP_LANG) }.build()

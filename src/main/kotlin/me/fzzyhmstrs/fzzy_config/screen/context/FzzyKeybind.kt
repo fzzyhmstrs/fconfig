@@ -11,8 +11,8 @@
 package me.fzzyhmstrs.fzzy_config.screen.context
 
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextType.Relevant
-import net.minecraft.text.MutableText
-import net.minecraft.text.Text
+import net.minecraft.network.chat.MutableComponent
+import net.minecraft.network.chat.Component
 
 /**
  * Representation of a keybind in Fzzy Config, based on [ContextType] handling with the [Relevant] interface. These keybinds are not "linked" into anything by default, handling of the context input has be handled by you as introduced on the wiki [https://moddedmc.wiki/en/project/fzzy-config/docs/features/Context-Actions](https://moddedmc.wiki/en/project/fzzy-config/docs/features/Context-Actions)
@@ -34,7 +34,7 @@ sealed interface FzzyKeybind: Relevant {
      * @author fzzyhmstrs
      * @since 0.6.5
      */
-    fun keybind(): MutableText
+    fun keybind(): MutableComponent
 
     /**
      * Copies the current keybind object where possible.

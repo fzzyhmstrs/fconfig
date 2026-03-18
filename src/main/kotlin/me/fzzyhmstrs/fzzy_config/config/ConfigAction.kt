@@ -28,16 +28,16 @@ import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.TranslatableEntry
 import me.fzzyhmstrs.fzzy_config.util.function.ConstSupplier
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.screen.ConfirmLinkScreen
-import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.client.network.ClientPlayerEntity
-import net.minecraft.network.packet.c2s.common.CustomClickActionC2SPacket
-import net.minecraft.network.packet.c2s.play.CommandExecutionC2SPacket
-import net.minecraft.text.ClickEvent
-import net.minecraft.text.MutableText
-import net.minecraft.text.Text
-import net.minecraft.util.Identifier
+import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.screens.ConfirmLinkScreen
+import net.minecraft.client.gui.components.AbstractWidget
+import net.minecraft.client.player.LocalPlayer
+import net.minecraft.network.protocol.common.ServerboundCustomClickActionPacket
+import net.minecraft.network.protocol.game.ServerboundChatCommandPacket
+import net.minecraft.network.chat.ClickEvent
+import net.minecraft.network.chat.MutableComponent
+import net.minecraft.network.chat.Component
+import net.minecraft.resources.Identifier
 import net.minecraft.util.Util
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.net.URISyntaxException
@@ -58,11 +58,11 @@ import kotlin.experimental.and
  * @since 0.5.0, Decorated and TextureSet incorporated 0.6.0
  */
 class ConfigAction @JvmOverloads constructor(
-    private val titleSupplier: Supplier<Text>,
+    private val titleSupplier: Supplier<Component>,
     private val activeSupplier: Supplier<Boolean>,
     private val pressAction: Runnable,
     private val decoration: Decorated?,
-    private val description: Text? = null,
+    private val description: Component? = null,
     private val background: TextureProvider? = null)
 :
     EntryWidget<Any>,
@@ -73,11 +73,11 @@ class ConfigAction @JvmOverloads constructor(
 {
 
     constructor(
-        titleSupplier: Supplier<Text>,
+        titleSupplier: Supplier<Component>,
         activeSupplier: Supplier<Boolean>,
         pressAction: Runnable,
         decoration: Identifier?,
-        description: Text? = null,
+        description: Component? = null,
         background: Identifier? = null)
             :
             this(titleSupplier, activeSupplier, pressAction, decoration?.let{ SpriteDecoration(it) }, description, background?.let { TextureSet.Single(it) })
@@ -87,7 +87,7 @@ class ConfigAction @JvmOverloads constructor(
     override var translatableEntryKey = "fc.config.generic.action"
 
     @Internal
-    override fun widgetEntry(choicePredicate: ChoiceValidator<Any>): ClickableWidget {
+    override fun widgetEntry(choicePredicate: ChoiceValidator<Any>): AbstractWidget {
         val button = CustomButtonWidget.builder { _ -> pressAction.run() }
             .size(110, 20)
             .messageSupplier(titleSupplier)
@@ -126,7 +126,7 @@ class ConfigAction @JvmOverloads constructor(
     }
 
     @Internal
-    override fun description(fallback: String?): MutableText {
+    override fun description(fallback: String?): MutableComponent {
         return description?.copy() ?: super.description(fallback)
     }
 
@@ -136,9 +136,9 @@ class ConfigAction @JvmOverloads constructor(
      * @since 0.5.0
      */
     class Builder {
-        private var titleSupplier: Supplier<Text> = ConstSupplier(FcText.EMPTY)
+        private var titleSupplier: Supplier<Component> = ConstSupplier(FcText.EMPTY)
         private var activeSupplier: Supplier<Boolean> = ConstSupplier(true)
-        private var desc: Text? = null
+        private var desc: Component? = null
         private var background: TextureProvider? = null
         private var decoration: Decorated? = null
         private var flags: Byte = 0
@@ -150,7 +150,7 @@ class ConfigAction @JvmOverloads constructor(
          * @author fzzyhmstrs
          * @since 0.5.0
          */
-        fun title(title: Text): Builder {
+        fun title(title: Component): Builder {
             this.titleSupplier = ConstSupplier(title)
             return this
         }
@@ -162,7 +162,7 @@ class ConfigAction @JvmOverloads constructor(
          * @author fzzyhmstrs
          * @since 0.5.0
          */
-        fun title(titleSupplier: Supplier<Text>): Builder {
+        fun title(titleSupplier: Supplier<Component>): Builder {
             this.titleSupplier = titleSupplier
             return this
         }
@@ -237,7 +237,7 @@ class ConfigAction @JvmOverloads constructor(
          * @author fzzyhmstrs
          * @since 0.5.6
          */
-        fun desc(desc: Text): Builder {
+        fun desc(desc: Component): Builder {
             this.desc = desc
             return this
         }
@@ -278,7 +278,7 @@ class ConfigAction @JvmOverloads constructor(
             val runnable = Runnable {
                 handleClickEvent(clickEvent)
             }
-            val action = clickEvent.action
+            val action = clickEvent.action()
             if (desc == null && action != null) {
                 desc = when(clickEvent) {
                     is ClickEvent.OpenUrl -> "fc.button.click.open_url".translate(clickEvent.uri().toString())
@@ -314,24 +314,24 @@ class ConfigAction @JvmOverloads constructor(
 
     companion object {
         internal fun handleClickEvent(clickEvent: ClickEvent): Boolean {
-            val client = MinecraftClient.getInstance()
+            val client = Minecraft.getInstance()
             if (clickEvent is ClickEvent.OpenUrl) {
-                if (!client.options.chatLinks.value) {
+                if (!client.options.chatLinks().get()) {
                     return false
                 }
                 try {
                     val uRI = clickEvent.uri()
-                    if (!client.options.chatLinksPrompt.value) return false
-                    if (client.options.chatLinksPrompt.value) {
-                        val screen = client.currentScreen
+                    if (!client.options.chatLinksPrompt().get()) return false
+                    if (client.options.chatLinksPrompt().get()) {
+                        val screen = client.screen
                         client.setScreen(ConfirmLinkScreen({ confirmed: Boolean ->
                             if (confirmed) {
-                                Util.getOperatingSystem().open(uRI)
+                                Util.getPlatform().openUri(uRI)
                             }
                             client.setScreen(screen)
                         }, uRI.toString(), false))
                     } else {
-                        Util.getOperatingSystem().open(uRI)
+                        Util.getPlatform().openUri(uRI)
                     }
                     return true
                 } catch (var4: URISyntaxException) {
@@ -339,27 +339,27 @@ class ConfigAction @JvmOverloads constructor(
                     return false
                 }
             } else if (clickEvent is ClickEvent.OpenFile) {
-                Util.getOperatingSystem().open(clickEvent.file())
+                Util.getPlatform().openFile(clickEvent.file())
                 return true
-            } else if (clickEvent.action == ClickEvent.Action.SUGGEST_COMMAND) {
+            } else if (clickEvent.action() == ClickEvent.Action.SUGGEST_COMMAND) {
                 FC.LOGGER.error("Can't suggest a command from a config action")
                 return false
             } else if (clickEvent is ClickEvent.RunCommand) {
                 val string = clickEvent.command().let { if (it.startsWith("/")) it.substring(1) else it }
                 // (ender) It should be fine just running this
                 val player = client.player ?: return false
-                client.player?.networkHandler?.send(CommandExecutionC2SPacket(string))
+                client.player?.connection?.send(ServerboundChatCommandPacket(string))
                 return true
             } else if (clickEvent is ClickEvent.CopyToClipboard) {
-                client.keyboard.clipboard = clickEvent.value()
+                client.keyboardHandler.clipboard = clickEvent.value()
                 return true
             } else if (clickEvent is ClickEvent.ShowDialog) {
                 val player = client.player ?: return false
-                player.networkHandler.showDialog(clickEvent.dialog(), client.currentScreen)
+                player.connection.showDialog(clickEvent.dialog(), client.screen)
                 return true
             } else if (clickEvent is ClickEvent.Custom) {
                 val player = client.player ?: return false
-                player.networkHandler.send(CustomClickActionC2SPacket(clickEvent.id(), clickEvent.payload()))
+                player.connection.send(ServerboundCustomClickActionPacket(clickEvent.id(), clickEvent.payload()))
                 return true
             } else {
                 FC.LOGGER.error("Don't know how to handle {}", clickEvent)

@@ -10,17 +10,16 @@
 
 package me.fzzyhmstrs.fzzy_config.updates
 
-import net.minecraft.text.Text
+import net.minecraft.network.chat.Component
 import org.jetbrains.annotations.ApiStatus.Internal
 
 @Internal
-@JvmDefaultWithCompatibility
 interface UpdateManager {
     companion object Base: BaseUpdateManager()
-    fun update(updatable: Updatable, updateMessage: Text)
+    fun update(updatable: Updatable, updateMessage: Component)
     fun hasUpdate(scope: String): Boolean
     fun getUpdate(scope: String): Updatable?
-    fun addUpdateMessage(key: Updatable, text: Text)
+    fun addUpdateMessage(key: Updatable, text: Component)
     fun hasChangeHistory(): Boolean
     fun changeHistory(): List<String>
     fun hasChanges(): Boolean {

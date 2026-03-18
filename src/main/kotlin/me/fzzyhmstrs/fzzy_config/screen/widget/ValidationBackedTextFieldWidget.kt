@@ -16,14 +16,14 @@ import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
-import net.minecraft.client.gui.screen.narration.NarrationPart
-import net.minecraft.client.gui.tooltip.Tooltip
-import net.minecraft.client.gui.widget.TextFieldWidget
-import net.minecraft.text.MutableText
-import net.minecraft.util.math.ColorHelper
+import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.gui.narration.NarrationElementOutput
+import net.minecraft.client.gui.narration.NarratedElementType
+import net.minecraft.client.gui.components.Tooltip
+import net.minecraft.client.gui.components.EditBox
+import net.minecraft.network.chat.MutableComponent
+import net.minecraft.util.ARGB
 import java.util.function.Consumer
 import java.util.function.Supplier
 
@@ -40,7 +40,7 @@ import java.util.function.Supplier
  */
 //client
 open class ValidationBackedTextFieldWidget(width: Int, height: Int, protected val wrappedValue: Supplier<String>, protected val choiceValidator: ChoiceValidator<String>, private val validator: EntryValidator<String>, protected val applier: Consumer<String>):
-    TextFieldWidget(MinecraftClient.getInstance().textRenderer, 0, 0, width, height, FcText.EMPTY)
+    EditBox(Minecraft.getInstance().font, 0, 0, width, height, FcText.EMPTY)
 {
 
     protected var cachedWrappedValue: String = wrappedValue.get()
@@ -48,7 +48,7 @@ open class ValidationBackedTextFieldWidget(width: Int, height: Int, protected va
     protected var lastChangedTime: Long = 0L
     protected var isValid = true
 
-    fun getValue(): String {
+    fun storeValue(): String {
         return storedValue
     }
 
@@ -56,12 +56,12 @@ open class ValidationBackedTextFieldWidget(width: Int, height: Int, protected va
         return System.currentTimeMillis() - lastChangedTime <= 350L
     }
 
-    override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun extractWidgetRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
         val testValue = wrappedValue.get()
         if (cachedWrappedValue != testValue) {
             this.storedValue = testValue
             this.cachedWrappedValue = testValue
-            this.text = this.storedValue
+            this.setValue(this.storedValue)
         }
         if(isChanged()) {
             if (lastChangedTime != 0L && !ongoingChanges()) {
@@ -69,7 +69,7 @@ open class ValidationBackedTextFieldWidget(width: Int, height: Int, protected va
                 cachedWrappedValue = storedValue
             }
         }
-        super.renderWidget(context, mouseX, mouseY, delta)
+        super.extractWidgetRenderState(context, mouseX, mouseY, delta)
         val id = if(isValid) {
             if (ongoingChanges())
                 TextureIds.ENTRY_ONGOING
@@ -84,20 +84,20 @@ open class ValidationBackedTextFieldWidget(width: Int, height: Int, protected va
     protected open fun isValidTest(s: String): Boolean {
         val result = validator.validateEntry(s, EntryValidator.ValidationType.STRONG)
         return if(result.isError()) {
-            this.setTooltip(Tooltip.of(FcText.toLinebreakText(mutableListOf<String>().apply { result.logPlain{ s, _ -> this.add(s) } }.map { it.lit() })))
-            setEditableColor(-43691)
+            this.setTooltip(Tooltip.create(FcText.toLinebreakText(mutableListOf<String>().apply { result.logPlain{ s, _ -> this.add(s) } }.map { it.lit() })))
+            setTextColor(-43691)
             false
         } else {
             this.setTooltip(null)
             val result2 = choiceValidator.validateEntry(result.get(), EntryValidator.ValidationType.STRONG)
             if (result2.isError()) {
-                this.setTooltip(Tooltip.of(FcText.toLinebreakText(mutableListOf<String>().apply { result2.logPlain{ s, _ -> this.add(s) } }.map { it.lit() })))
-                setEditableColor(-43691)
+                this.setTooltip(Tooltip.create(FcText.toLinebreakText(mutableListOf<String>().apply { result2.logPlain{ s, _ -> this.add(s) } }.map { it.lit() })))
+                setTextColor(-43691)
                 false
             } else {
                 this.storedValue = result.get()
                 lastChangedTime = System.currentTimeMillis()
-                setEditableColor(-1)
+                setTextColor(-1)
                 true
             }
         }
@@ -117,8 +117,8 @@ open class ValidationBackedTextFieldWidget(width: Int, height: Int, protected va
     /**
      * @suppress
      */
-    final override fun setChangedListener(changedListener: Consumer<String>?) {
-        super.setChangedListener(changedListener)
+    final override fun setResponder(changedListener: Consumer<String>) {
+        super.setResponder(changedListener)
     }
 
     /**
@@ -130,25 +130,25 @@ open class ValidationBackedTextFieldWidget(width: Int, height: Int, protected va
 
     init {
         setMaxLength(1000)
-        text = wrappedValue.get()
-        setChangedListener { s -> isValid = isValidTest(s) }
+        setValue(wrappedValue.get())
+        setResponder { s -> isValid = isValidTest(s) }
     }
 
     /**
      * @suppress
      */
-    override fun getNarrationMessage(): MutableText {
+    override fun createNarrationMessage(): MutableComponent {
         return "gui.narrate.editBox".translate("", "")
     }
 
-    override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
-        builder.put(NarrationPart.TITLE, this.narrationMessage)
-        builder.nextMessage().put(NarrationPart.TITLE, "${this.text}. ")
+    override fun updateWidgetNarration(builder: NarrationElementOutput) {
+        builder.add(NarratedElementType.TITLE, this.createNarrationMessage())
+        builder.nest().add(NarratedElementType.TITLE, "${this.value}. ")
         //builder.nextMessage().put(NarrationPart.USAGE, "fc.validated_field.number.editBox.usage".translate())
     }
 
-    fun appendValueNarrations(builder: NarrationMessageBuilder) {
-        builder.nextMessage().put(NarrationPart.TITLE, "fc.validated_field.current".translate(""))
-        builder.nextMessage().nextMessage().put(NarrationPart.TITLE, "${this.text}. ")
+    fun appendValueNarrations(builder: NarrationElementOutput) {
+        builder.nest().add(NarratedElementType.TITLE, "fc.validated_field.current".translate(""))
+        builder.nest().nest().add(NarratedElementType.TITLE, "${this.value}. ")
     }
 }

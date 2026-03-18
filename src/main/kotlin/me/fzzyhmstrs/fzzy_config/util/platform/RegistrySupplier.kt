@@ -1,11 +1,11 @@
 package me.fzzyhmstrs.fzzy_config.util.platform
 
 import com.mojang.datafixers.util.Either
-import net.minecraft.registry.RegistryKey
-import net.minecraft.registry.entry.RegistryEntry
-import net.minecraft.registry.entry.RegistryEntryOwner
-import net.minecraft.registry.tag.TagKey
-import net.minecraft.util.Identifier
+import net.minecraft.resources.ResourceKey
+import net.minecraft.core.Holder
+import net.minecraft.core.HolderOwner
+import net.minecraft.tags.TagKey
+import net.minecraft.resources.Identifier
 import java.util.*
 import java.util.function.Predicate
 import java.util.function.Supplier
@@ -19,7 +19,7 @@ import java.util.stream.Stream
  * @author fzzyhmstrs
  * @since 0.5.9, implements RegistryEntry itself as of 0.6.5, no longer experimental 0.7.0
  */
-interface RegistrySupplier<T>: Supplier<T>, RegistryEntry<T> {
+interface RegistrySupplier<T: Any>: Supplier<T>, Holder<T> {
 
     /**
      * The objects [RegistryKey]
@@ -27,7 +27,7 @@ interface RegistrySupplier<T>: Supplier<T>, RegistryEntry<T> {
      * @author fzzyhmstrs
      * @since 0.5.9, changed signature to getRegistryKey 0.6.5 to avoid conflict with new implementation of RegistryEntry
      */
-    fun getRegistryKey(): RegistryKey<T>
+    fun getRegistryKey(): ResourceKey<T>
 
     /**
      * The objects [Identifier]
@@ -43,54 +43,54 @@ interface RegistrySupplier<T>: Supplier<T>, RegistryEntry<T> {
      * @author fzzyhmstrs
      * @since 0.5.9
      */
-    fun getEntry(): RegistryEntry<T>
+    fun getEntry(): Holder<T>
 
     /////// Implementation of RegistryEntry ///////
 
-    override fun hasKeyAndValue(): Boolean {
-        return getEntry().hasKeyAndValue()
+    override fun isBound(): Boolean {
+        return getEntry().isBound
     }
 
-    override fun matchesId(id: Identifier?): Boolean {
-        return getEntry().matchesId(id)
+    override fun `is`(id: Identifier): Boolean {
+        return getEntry().`is`(id)
     }
 
-    override fun matchesKey(key: RegistryKey<T>?): Boolean {
-        return getEntry().matchesKey(key)
+    override fun `is`(key: ResourceKey<T>): Boolean {
+        return getEntry().`is`(key)
     }
 
-    override fun matches(predicate: Predicate<RegistryKey<T>>?): Boolean {
-        return getEntry().matches(predicate)
+    override fun `is`(predicate: Predicate<ResourceKey<T>>): Boolean {
+        return getEntry().`is`(predicate)
     }
 
-    override fun isIn(tag: TagKey<T>?): Boolean {
-        return getEntry().isIn(tag)
+    override fun `is`(tag: TagKey<T>): Boolean {
+        return getEntry().`is`(tag)
     }
 
-    override fun streamTags(): Stream<TagKey<T>> {
-        return getEntry().streamTags()
+    override fun tags(): Stream<TagKey<T>> {
+        return getEntry().tags()
     }
 
-    override fun getKeyOrValue(): Either<RegistryKey<T>, T> {
-        return getEntry().keyOrValue
+    override fun unwrap(): Either<ResourceKey<T>, T> {
+        return getEntry().unwrap()
     }
 
-    override fun getKey(): Optional<RegistryKey<T>> {
+    override fun getKey(): ResourceKey<T> {
         return getEntry().key!!
     }
 
-    override fun getType(): RegistryEntry.Type {
-        return getEntry().type
+    override fun kind(): Holder.Kind {
+        return getEntry().kind()
     }
 
-    override fun ownerEquals(owner: RegistryEntryOwner<T>?): Boolean {
-        return getEntry().ownerEquals(owner)
+    override fun canSerializeIn(owner: HolderOwner<T>): Boolean {
+        return getEntry().canSerializeIn(owner)
     }
 
     @Suppress("DeprecatedCallableAddReplaceWith")
     @Deprecated("Deprecated in Java")
-    override fun matches(entry: RegistryEntry<T>?): Boolean {
-        return getEntry().matches(entry)
+    override fun `is`(entry: Holder<T>): Boolean {
+        return getEntry().`is`(entry)
     }
 
     override fun value(): T {

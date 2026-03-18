@@ -14,10 +14,10 @@ import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.cast
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
 import me.fzzyhmstrs.fzzy_config.util.ThreadingUtils
-import net.minecraft.network.packet.CustomPayload
-import net.minecraft.network.packet.Packet
-import net.minecraft.server.network.ServerPlayerConfigurationTask
-import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload
+import net.minecraft.network.protocol.Packet
+import net.minecraft.server.network.ConfigurationTask
+import net.minecraft.server.level.ServerPlayer
 import net.neoforged.neoforge.event.GameShuttingDownEvent
 import net.neoforged.neoforge.event.OnDatapackSyncEvent
 import net.neoforged.neoforge.event.server.ServerStartedEvent
@@ -31,18 +31,18 @@ import java.util.function.Consumer
 
 internal object NetworkEvents {
 
-    fun canSend(playerEntity: ServerPlayerEntity, id: CustomPayload.Id<*>): Boolean {
-        return NetworkRegistry.hasChannel(playerEntity.networkHandler, id.id())
+    fun canSend(playerEntity: ServerPlayer, id: CustomPacketPayload.Type<*>): Boolean {
+        return NetworkRegistry.hasChannel(playerEntity.connection, id.id())
     }
 
-    fun send(playerEntity: ServerPlayerEntity, payload: CustomPayload) {
+    fun send(playerEntity: ServerPlayer, payload: CustomPacketPayload) {
         PacketDistributor.sendToPlayer(playerEntity, payload)
     }
 
     private fun handleUpdate(payload: ConfigUpdateC2SCustomPayload, context: IPayloadContext) {
         SyncedConfigRegistry.receiveConfigUpdate(
             payload.updates,
-            context.player().cast<ServerPlayerEntity>().entityWorld.server!!,
+            context.player().cast<ServerPlayer>().level().server!!,
             context.player().cast(),
             payload.playerPerm,
             payload.changeHistory,
@@ -84,7 +84,7 @@ internal object NetworkEvents {
         } else {
             SyncedConfigRegistry.onJoin(
                 serverPlayer,
-                serverPlayer.entityWorld.server!!,
+                serverPlayer.level().server!!,
                 { player, id -> this.canSend(player, id) },
                 { player, payload -> this.send(player, payload) }
             )
@@ -92,17 +92,17 @@ internal object NetworkEvents {
     }
 
     fun registerConfigurations(event: RegisterConfigurationTasksEvent) {
-        event.register(object: ServerPlayerConfigurationTask {
-            private val key = ServerPlayerConfigurationTask.Key(ConfigSyncS2CCustomPayload.type.id)
-            override fun sendPacket(sender: Consumer<Packet<*>>) {
+        event.register(object: ConfigurationTask {
+            private val key = ConfigurationTask.Type(ConfigSyncS2CCustomPayload.type.id)
+            override fun start(sender: Consumer<Packet<*>>) {
                 SyncedConfigRegistry.onConfigure(
                     { _ -> NetworkRegistry.hasChannel(event.listener, ConfigSyncS2CCustomPayload.type.id) },
                     { payload -> sender.accept(payload.toVanillaClientbound()) }
                 )
-                event.listener.onTaskFinished(key)
+                event.listener.finishCurrentTask(key)
             }
 
-            override fun getKey(): ServerPlayerConfigurationTask.Key {
+            override fun type(): ConfigurationTask.Type {
                 return key
             }
 
@@ -128,7 +128,7 @@ internal object NetworkEvents {
     }
 
     fun serverStarted(event: ServerStartedEvent) {
-        if (event.server.isDedicated) {
+        if (event.server.isDedicatedServer) {
             SyncedConfigRegistry.start(event.server)
         }
     }

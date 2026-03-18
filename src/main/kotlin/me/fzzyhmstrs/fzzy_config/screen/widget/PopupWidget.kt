@@ -22,20 +22,29 @@ import me.fzzyhmstrs.fzzy_config.util.PortingUtils.isShiftDown
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawNineSlice
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.renderBlur
 import me.fzzyhmstrs.fzzy_config.util.TriState
-import net.minecraft.client.MinecraftClient
+import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.*
-import net.minecraft.client.gui.navigation.GuiNavigation
-import net.minecraft.client.gui.navigation.GuiNavigation.Arrow
-import net.minecraft.client.gui.navigation.GuiNavigationPath
-import net.minecraft.client.gui.navigation.NavigationDirection
-import net.minecraft.client.gui.screen.Screen
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
-import net.minecraft.client.gui.screen.narration.NarrationPart
-import net.minecraft.client.gui.widget.*
-import net.minecraft.client.input.KeyInput
-import net.minecraft.screen.ScreenTexts
-import net.minecraft.text.Text
-import net.minecraft.util.Identifier
+import net.minecraft.client.gui.navigation.FocusNavigationEvent
+import net.minecraft.client.gui.navigation.FocusNavigationEvent.ArrowNavigation
+import net.minecraft.client.gui.ComponentPath
+import net.minecraft.client.gui.components.AbstractStringWidget
+import net.minecraft.client.gui.components.Button
+import net.minecraft.client.gui.components.Renderable
+import net.minecraft.client.gui.components.StringWidget
+import net.minecraft.client.gui.components.events.ContainerEventHandler
+import net.minecraft.client.gui.components.events.GuiEventListener
+import net.minecraft.client.gui.layouts.LayoutElement
+import net.minecraft.client.gui.narration.NarratableEntry
+import net.minecraft.client.gui.navigation.ScreenDirection
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.client.gui.narration.NarrationElementOutput
+import net.minecraft.client.gui.narration.NarratedElementType
+import net.minecraft.client.gui.narration.NarrationSupplier
+import net.minecraft.client.input.KeyEvent
+import net.minecraft.client.input.MouseButtonEvent
+import net.minecraft.network.chat.CommonComponents
+import net.minecraft.network.chat.Component
+import net.minecraft.resources.Identifier
 import org.lwjgl.glfw.GLFW
 import java.util.*
 import java.util.function.*
@@ -54,23 +63,23 @@ import kotlin.math.min
 //client
 class PopupWidget
     private constructor(
-        private var message: Text,
+        private var message: Component,
         private var width: Int,
         private var height: Int,
         private val context: Context)
     :
-    ParentElement,
-    Narratable,
-    Drawable,
+    ContainerEventHandler,
+    NarrationSupplier,
+    Renderable,
     SuggestionWindowListener
 {
 
     var x: Int = 0
     var y: Int = 0
-    private var focused: Element? = null
-    private var focusedSelectable: Selectable? = null
+    private var focused: GuiEventListener? = null
+    private var focusedSelectable: NarratableEntry? = null
     private var dragging = false
-    private var suggestionWindowElement: Element? = null
+    private var suggestionWindowElement: GuiEventListener? = null
 
     init {
         for (child in context.children) {
@@ -79,7 +88,7 @@ class PopupWidget
         }
     }
 
-    override fun setSuggestionWindowElement(element: Element?) {
+    override fun setSuggestionWindowElement(element: GuiEventListener?) {
         this.suggestionWindowElement
     }
 
@@ -96,8 +105,8 @@ class PopupWidget
     }
 
      fun blur() {
-        val guiNavigationPath = this.focusedPath
-        guiNavigationPath?.setFocused(false)
+        val guiNavigationPath = this.currentFocusPath
+        guiNavigationPath?.applyFocus(false)
     }
 
     fun position(screenWidth: Int, screenHeight: Int) {
@@ -117,7 +126,7 @@ class PopupWidget
         }
     }
 
-    override fun children(): List<Element> {
+    override fun children(): List<GuiEventListener> {
         return context.children
     }
 
@@ -125,7 +134,7 @@ class PopupWidget
         return context.blurBackground
     }
 
-    override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun extractRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
         if (this.context.blurBackground) {
             renderBlur(context, x.toFloat(), y.toFloat(), delta)
         }
@@ -137,11 +146,11 @@ class PopupWidget
             }
         }
         for (drawable in this.context.drawables) {
-            drawable.render(context, mouseX, mouseY, delta)
+            drawable.extractRenderState(context, mouseX, mouseY, delta)
         }
     }
 
-    override fun mouseClicked(click: Click, doubled: Boolean): Boolean {
+    override fun mouseClicked(click: MouseButtonEvent, doubled: Boolean): Boolean {
         return suggestionWindowElement?.mouseClicked(click, doubled)?.takeIf { it } ?: super.mouseClicked(click, doubled).takeIf { it } ?: isMouseOver(click.x, click.y)
     }
 
@@ -149,7 +158,7 @@ class PopupWidget
         return context.onClick.onClick(mouseX, mouseY, isMouseOver(mouseX, mouseY), button)
     }
 
-    override fun mouseReleased(click: Click): Boolean {
+    override fun mouseReleased(click: MouseButtonEvent): Boolean {
         return suggestionWindowElement?.mouseReleased(click) ?: super.mouseReleased(click)
     }
 
@@ -157,7 +166,7 @@ class PopupWidget
         return mouseX >= x.toDouble() && mouseY >= y.toDouble() && mouseX < (x + width).toDouble() && mouseY < (y + height).toDouble()
     }
 
-    override fun mouseDragged(click: Click, offsetX: Double, offsetY: Double): Boolean {
+    override fun mouseDragged(click: MouseButtonEvent, offsetX: Double, offsetY: Double): Boolean {
         return suggestionWindowElement?.mouseDragged(click, offsetX, offsetY) ?: super.mouseDragged(click, offsetX, offsetY)
     }
 
@@ -165,23 +174,23 @@ class PopupWidget
         return suggestionWindowElement?.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount) ?: super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
     }
 
-    override fun keyPressed(input: KeyInput): Boolean {
+    override fun keyPressed(input: KeyEvent): Boolean {
         if (suggestionWindowElement?.keyPressed(input) ?: super.keyPressed(input)) {
             return true
         }
-        val guiNavigation: GuiNavigation? = when(input.keycode) {
-            GLFW.GLFW_KEY_LEFT -> getArrowNavigation(NavigationDirection.LEFT)
-            GLFW.GLFW_KEY_RIGHT -> getArrowNavigation(NavigationDirection.RIGHT)
-            GLFW.GLFW_KEY_UP -> getArrowNavigation(NavigationDirection.UP)
-            GLFW.GLFW_KEY_DOWN -> getArrowNavigation(NavigationDirection.DOWN)
+        val guiNavigation: FocusNavigationEvent? = when(input.input()) {
+            GLFW.GLFW_KEY_LEFT -> getArrowNavigation(ScreenDirection.LEFT)
+            GLFW.GLFW_KEY_RIGHT -> getArrowNavigation(ScreenDirection.RIGHT)
+            GLFW.GLFW_KEY_UP -> getArrowNavigation(ScreenDirection.UP)
+            GLFW.GLFW_KEY_DOWN -> getArrowNavigation(ScreenDirection.DOWN)
             GLFW.GLFW_KEY_TAB ->  getTabNavigation()
             else -> null
         }
         if(guiNavigation != null) {
-            var guiNavigationPath = super.getNavigationPath(guiNavigation)
-            if (guiNavigationPath == null && guiNavigation is GuiNavigation.Tab) {
+            var guiNavigationPath = super.nextFocusPath(guiNavigation)
+            if (guiNavigationPath == null && guiNavigation is FocusNavigationEvent.TabNavigation) {
                 blur()
-                guiNavigationPath = super.getNavigationPath(guiNavigation)
+                guiNavigationPath = super.nextFocusPath(guiNavigation)
             }
             if (guiNavigationPath != null) {
                 this.switchFocus(guiNavigationPath)
@@ -190,24 +199,24 @@ class PopupWidget
         return false
     }
 
-    private fun getTabNavigation(): GuiNavigation.Tab {
+    private fun getTabNavigation(): FocusNavigationEvent.TabNavigation {
         val bl = !isShiftDown()
-        return GuiNavigation.Tab(bl)
+        return FocusNavigationEvent.TabNavigation(bl)
     }
-    private fun getArrowNavigation(direction: NavigationDirection): Arrow {
-        return Arrow(direction)
+    private fun getArrowNavigation(direction: ScreenDirection): ArrowNavigation {
+        return ArrowNavigation(direction)
     }
-    private fun switchFocus(path: GuiNavigationPath) {
+    private fun switchFocus(path: ComponentPath) {
         blur()
-        path.setFocused(true)
+        path.applyFocus(true)
     }
 
-    private fun trySetFocused(focused: Element) {
+    private fun trySetFocused(focused: GuiEventListener) {
         if (!children().contains(focused)) return
         setFocused(focused)
     }
 
-    override fun setFocused(focused: Element?) {
+    override fun setFocused(focused: GuiEventListener?) {
         if (this.focused == focused) return
         context.onSwitchFocus.accept(focused)
         this.focused?.let { it.isFocused = false }
@@ -230,25 +239,25 @@ class PopupWidget
         this.dragging = dragging
     }
 
-    override fun getFocused(): Element? {
+    override fun getFocused(): GuiEventListener? {
         return focused
     }
 
-    override fun appendNarrations(builder: NarrationMessageBuilder) {
-        builder.put(NarrationPart.TITLE, message)
-        val list: List<Selectable> = this.context.selectables.filter { it.isInteractable }
-        val selectedElementNarrationData = Screen.findSelectedElementData(list, focusedSelectable)
+    override fun updateNarration(builder: NarrationElementOutput) {
+        builder.add(NarratedElementType.TITLE, message)
+        val list: List<NarratableEntry> = this.context.selectables.filter { it.isActive }
+        val selectedElementNarrationData = Screen.findNarratableWidget(list, focusedSelectable)
         if (selectedElementNarrationData != null) {
-            if (selectedElementNarrationData.selectType.isFocused) {
-                focusedSelectable = selectedElementNarrationData.selectable
+            if (selectedElementNarrationData.priority.isTerminal) {
+                focusedSelectable = selectedElementNarrationData.entry
             }
             if (list.size > 1) {
-                builder.put(NarrationPart.POSITION, Text.translatable("narrator.position.object_list", selectedElementNarrationData.index + 1, list.size))
-                if (selectedElementNarrationData.selectType.isFocused) {
-                    builder.put(NarrationPart.USAGE, Text.translatable("narration.component_list.usage"))
+                builder.add(NarratedElementType.POSITION, Component.translatable("narrator.position.object_list", selectedElementNarrationData.index + 1, list.size))
+                if (selectedElementNarrationData.priority.isTerminal) {
+                    builder.add(NarratedElementType.USAGE, Component.translatable("narration.component_list.usage"))
                 }
             }
-            selectedElementNarrationData.selectable.appendNarrations(builder.nextMessage())
+            selectedElementNarrationData.entry.updateNarration(builder.nest())
         }
     }
 
@@ -266,7 +275,7 @@ class PopupWidget
          */
         @JvmOverloads
         fun push(popup: PopupWidget?, mouseX: Double? = null, mouseY: Double? = null) {
-            MinecraftClient.getInstance().currentScreen?.nullCast<PopupParentElement>()?.setPopup(popup, mouseX, mouseY)
+            Minecraft.getInstance().screen?.nullCast<PopupParentElement>()?.setPopup(popup, mouseX, mouseY)
         }
 
         /**
@@ -299,7 +308,7 @@ class PopupWidget
          */
         @JvmOverloads
         fun pushImmediate(popup: PopupWidget?, mouseX: Double? = null, mouseY: Double? = null) {
-            MinecraftClient.getInstance().currentScreen?.nullCast<PopupParentElement>()?.setPopupImmediate(popup, mouseX, mouseY)
+            Minecraft.getInstance().screen?.nullCast<PopupParentElement>()?.setPopupImmediate(popup, mouseX, mouseY)
         }
 
         /**
@@ -321,8 +330,8 @@ class PopupWidget
          * @author fzzyhmstrs
          * @since 0.2.0
          */
-        fun focusElement(element: Element) {
-            (MinecraftClient.getInstance().currentScreen as? PopupWidgetScreen)?.popupWidgets?.peek()?.trySetFocused(element)
+        fun focusElement(element: GuiEventListener) {
+            (Minecraft.getInstance().screen as? PopupWidgetScreen)?.popupWidgets?.peek()?.trySetFocused(element)
         }
 
         /**
@@ -333,7 +342,7 @@ class PopupWidget
          * @author fzzyhmstrs
          * @since 0.6.6
          */
-        fun focusElement(popup: PopupWidget, element: Element) {
+        fun focusElement(popup: PopupWidget, element: GuiEventListener) {
             popup.trySetFocused(element)
         }
     }
@@ -351,7 +360,7 @@ class PopupWidget
      */
     @Suppress("UNUSED")
     //client
-    class Builder @JvmOverloads constructor(private val title: Text, spacingW: Int = 4, spacingH: Int = spacingW) {
+    class Builder @JvmOverloads constructor(private val title: Component, spacingW: Int = 4, spacingH: Int = spacingW) {
 
         private val baseLayoutWidget = LayoutWidget.builder().spacingW(spacingW).spacingH(spacingH).build()
         private var positionX: BiFunction<Int, Int, Int> = BiFunction { sw, w -> sw/2 - w/2 }
@@ -364,16 +373,16 @@ class PopupWidget
         private var onClose = Runnable { }
         private var afterClose = Runnable { }
         private var onClick: MouseClickResult = MouseClickResult { _, _, _, _ -> ClickResult.USE }
-        private var onSwitchFocus: Consumer<Element?> = Consumer { _ -> }
+        private var onSwitchFocus: Consumer<GuiEventListener?> = Consumer { _ -> }
         private var blurBackground = true
         private var closeOnOutOfBounds = TriState.DEFAULT
         private var background = "widget/popup/background".fcId()
-        private var additionalTitleNarration: MutableList<Text> = mutableListOf()
+        private var additionalTitleNarration: MutableList<Component> = mutableListOf()
 
-        private val titleElement: TextWidget
+        private val titleElement: StringWidget
 
         init {
-            val tw = TextWidget(title, MinecraftClient.getInstance().textRenderer)
+            val tw = StringWidget(title, Minecraft.getInstance().font)
             if (spacingH < 4) {
                 tw.height += ((4 - spacingH) * 2)
             }
@@ -403,7 +412,7 @@ class PopupWidget
          * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.8.0 (missed removal 0.7.0)
          */
         @Deprecated("Use 'add' and 'push/popSpacing' instead")
-        fun <E> addElementSpacedBoth(id: String, element: E, parent: String, spacingW: Int, spacingH: Int, vararg positions: LayoutWidget.Position): Builder where E: Widget {
+        fun <E> addElementSpacedBoth(id: String, element: E, parent: String, spacingW: Int, spacingH: Int, vararg positions: LayoutWidget.Position): Builder where E: LayoutElement {
             layoutWidget.pushSpacing({ _ -> spacingW }, { _ -> spacingH })
             layoutWidget.add(id, element, parent, *positions)
             layoutWidget.popSpacing()
@@ -424,7 +433,7 @@ class PopupWidget
          * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.8.0 (missed removal 0.7.0)
          */
         @Deprecated("Use 'add' and 'push/popSpacing' instead")
-        fun <E> addElementSpacedW(id: String, element: E, parent: String, spacingW: Int, vararg positions: LayoutWidget.Position): Builder where E: Widget {
+        fun <E> addElementSpacedW(id: String, element: E, parent: String, spacingW: Int, vararg positions: LayoutWidget.Position): Builder where E: LayoutElement {
             layoutWidget.pushSpacing({ _ -> spacingW }, UnaryOperator.identity())
             layoutWidget.add(id, element, parent, *positions)
             layoutWidget.popSpacing()
@@ -445,7 +454,7 @@ class PopupWidget
          * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.8.0 (missed removal 0.7.0)
          */
         @Deprecated("Use 'add' and 'push/popSpacing' instead")
-        fun <E> addElementSpacedH(id: String, element: E, parent: String, spacingH: Int, vararg positions: LayoutWidget.Position): Builder where E: Widget {
+        fun <E> addElementSpacedH(id: String, element: E, parent: String, spacingH: Int, vararg positions: LayoutWidget.Position): Builder where E: LayoutElement {
             layoutWidget.pushSpacing(UnaryOperator.identity()) { _ -> spacingH }
             layoutWidget.add(id, element, parent, *positions)
             layoutWidget.popSpacing()
@@ -466,7 +475,7 @@ class PopupWidget
          * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.8.0 (missed removal 0.7.0)
          */
         @Deprecated("Use 'add' and 'push/popSpacing' instead")
-        fun <E> addElementSpacedBoth(id: String, element: E, spacingW: Int, spacingH: Int, vararg positions: LayoutWidget.Position): Builder where E: Widget {
+        fun <E> addElementSpacedBoth(id: String, element: E, spacingW: Int, spacingH: Int, vararg positions: LayoutWidget.Position): Builder where E: LayoutElement {
             layoutWidget.pushSpacing({ _ -> spacingW }, { _ -> spacingH })
             layoutWidget.add(id, element, *positions)
             layoutWidget.popSpacing()
@@ -486,7 +495,7 @@ class PopupWidget
          * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.8.0 (missed removal 0.7.0)
          */
         @Deprecated("Use 'add' and 'push/popSpacing' instead")
-        fun <E> addElementSpacedW(id: String, element: E, spacingW: Int, vararg positions: LayoutWidget.Position): Builder where E: Widget {
+        fun <E> addElementSpacedW(id: String, element: E, spacingW: Int, vararg positions: LayoutWidget.Position): Builder where E: LayoutElement {
             layoutWidget.pushSpacing({ _ -> spacingW }, UnaryOperator.identity())
             layoutWidget.add(id, element, *positions)
             layoutWidget.popSpacing()
@@ -506,7 +515,7 @@ class PopupWidget
          * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.8.0 (missed removal 0.7.0)
          */
         @Deprecated("Use 'add' and 'push/popSpacing' instead")
-        fun <E> addElementSpacedH(id: String, element: E, spacingH: Int, vararg positions: LayoutWidget.Position): Builder where E: Widget {
+        fun <E> addElementSpacedH(id: String, element: E, spacingH: Int, vararg positions: LayoutWidget.Position): Builder where E: LayoutElement {
             layoutWidget.pushSpacing(UnaryOperator.identity()) { _ -> spacingH }
             layoutWidget.add(id, element, *positions)
             layoutWidget.popSpacing()
@@ -526,7 +535,7 @@ class PopupWidget
          * @since 0.2.0
          */
         @Deprecated("Use 'add' instead")
-        fun <E> addElement(id: String, element: E, parent: String, vararg positions: LayoutWidget.Position): Builder where E: Widget {
+        fun <E> addElement(id: String, element: E, parent: String, vararg positions: LayoutWidget.Position): Builder where E: LayoutElement {
             layoutWidget.add(id, element, parent, *positions)
             return this
         }
@@ -543,7 +552,7 @@ class PopupWidget
          * @since 0.2.0
          */
         @Deprecated("Use 'add' instead")
-        fun <E> addElement(id: String, element: E, vararg positions: LayoutWidget.Position): Builder where E: Widget {
+        fun <E> addElement(id: String, element: E, vararg positions: LayoutWidget.Position): Builder where E: LayoutElement {
             layoutWidget.add(id, element, *positions)
             return this
         }
@@ -560,7 +569,7 @@ class PopupWidget
          * @author fzzyhmstrs
          * @since 0.6.0
          */
-        fun <E> add(id: String, element: E, parent: String, vararg positions: LayoutWidget.Position): Builder where E: Widget {
+        fun <E> add(id: String, element: E, parent: String, vararg positions: LayoutWidget.Position): Builder where E: LayoutElement {
             layoutWidget.add(id, element, parent, *positions)
             return this
         }
@@ -576,7 +585,7 @@ class PopupWidget
          * @author fzzyhmstrs
          * @since 0.6.0
          */
-        fun <E> add(id: String, element: E, vararg positions: LayoutWidget.Position): Builder where E: Widget {
+        fun <E> add(id: String, element: E, vararg positions: LayoutWidget.Position): Builder where E: LayoutElement {
             layoutWidget.add(id, element, *positions)
             return this
         }
@@ -662,20 +671,20 @@ class PopupWidget
          */
         @Deprecated("Use addDoneWidget instead")
         @JvmOverloads
-        fun addDoneButton(pressAction: ButtonWidget.PressAction = ButtonWidget.PressAction{ pop() }, parent: String? = null, spacingH: Int = 4): Builder {
-            val bw = ButtonWidget.builder(ScreenTexts.DONE, pressAction).build()
+        fun addDoneButton(pressAction: Button.OnPress = Button.OnPress { pop() }, parent: String? = null, spacingH: Int = 4): Builder {
+            val bw = Button.builder(CommonComponents.GUI_DONE, pressAction).build()
             val trueParent = parent ?: layoutWidget.lastElement()
             layoutWidget.pushSpacing(UnaryOperator.identity()) { _ -> spacingH }
             add("done_for_$trueParent",
-            CustomButtonWidget.builder(ScreenTexts.DONE) { cbw ->
-                bw.setDimensions(cbw.width, cbw.height)
+            CustomButtonWidget.builder(CommonComponents.GUI_DONE) { cbw ->
+                bw.setSize(cbw.width, cbw.height)
                 bw.setPosition(cbw.x, cbw.y)
 //                bw.tooltip = cbw.tooltip
                 bw.message = cbw.message
                 pressAction.onPress(bw)
 //                cbw.tooltip = bw.tooltip
                 cbw.message = bw.message
-                cbw.setDimensions(bw.width, bw.height)
+                cbw.setSize(bw.width, bw.height)
                 cbw.setPosition(bw.x, bw.y) }
                 .size(50, 20)
                 .build(),
@@ -701,7 +710,7 @@ class PopupWidget
             layoutWidget.pushSpacing(UnaryOperator.identity()) { _ -> spacingH }
             add(
                 "done_for_$trueParent",
-                CustomButtonWidget.builder(ScreenTexts.DONE, pressAction).size(50, 20).build(),
+                CustomButtonWidget.builder(CommonComponents.GUI_DONE, pressAction).size(50, 20).build(),
                 trueParent,
                 LayoutWidget.Position.BELOW,
                 LayoutWidget.Position.ALIGN_JUSTIFY_WEAK
@@ -850,7 +859,7 @@ class PopupWidget
          * @author fzzyhmstrs
          * @since 0.6.0
          */
-        fun onSwitchFocus(consumer: Consumer<Element?>): Builder {
+        fun onSwitchFocus(consumer: Consumer<GuiEventListener?>): Builder {
             this.onSwitchFocus = consumer
             return this
         }
@@ -907,7 +916,7 @@ class PopupWidget
          * @author fzzyhmstrs
          * @since 0.2.0
          */
-        fun additionalNarration(message: Text): Builder {
+        fun additionalNarration(message: Component): Builder {
             additionalTitleNarration.add(message)
             return this
         }
@@ -932,11 +941,11 @@ class PopupWidget
             val totalLayouts = layouts + poppedLayouts
 
             totalLayouts.forEach{ it.compute(true) }
-            val children: MutableList<Element> = mutableListOf()
-            val selectables: MutableList<Selectable> = mutableListOf()
-            val drawables: MutableList<Drawable> = mutableListOf()
+            val children: MutableList<GuiEventListener> = mutableListOf()
+            val selectables: MutableList<NarratableEntry> = mutableListOf()
+            val drawables: MutableList<Renderable> = mutableListOf()
             totalLayouts.forEach{ it.categorize(children, drawables, selectables) { el ->
-                    if (el is AbstractTextWidget) {
+                    if (el is AbstractStringWidget) {
                         val msg = el.message
                         if (msg != title) {
                             narratedTitle.append(", ".lit()).append(msg)
@@ -1162,11 +1171,11 @@ class PopupWidget
         val onClose: Runnable,
         val afterClose: Runnable,
         val onClick: MouseClickResult,
-        val onSwitchFocus: Consumer<Element?>,
-        val children: List<Element>,
-        val selectables: List<Selectable>,
-        val drawables: List<Drawable>,
-        val drawAreas: List<Widget>
+        val onSwitchFocus: Consumer<GuiEventListener?>,
+        val children: List<GuiEventListener>,
+        val selectables: List<NarratableEntry>,
+        val drawables: List<Renderable>,
+        val drawAreas: List<LayoutElement>
     )
 
     /**

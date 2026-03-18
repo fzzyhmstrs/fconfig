@@ -11,17 +11,17 @@
 package me.fzzyhmstrs.fzzy_config.networking
 
 import me.fzzyhmstrs.fzzy_config.fcId
-import net.minecraft.network.PacketByteBuf
-import net.minecraft.network.codec.PacketCodec
-import net.minecraft.network.packet.CustomPayload
-import net.minecraft.network.packet.CustomPayload.Id
-import net.minecraft.util.Identifier
+import net.minecraft.network.FriendlyByteBuf
+import net.minecraft.network.codec.StreamCodec
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload.Type
+import net.minecraft.resources.Identifier
 
-internal class DynamicIdsS2CCustomPayload(val key: Identifier, val ids: List<Identifier>): CustomPayload {
+internal class DynamicIdsS2CCustomPayload(val key: Identifier, val ids: List<Identifier>): CustomPacketPayload {
 
-    constructor(buf: PacketByteBuf): this(buf.readIdentifier(), readList(buf))
+    constructor(buf: FriendlyByteBuf): this(buf.readIdentifier(), readList(buf))
 
-    fun write(buf: PacketByteBuf) {
+    fun write(buf: FriendlyByteBuf) {
         buf.writeIdentifier(key)
         buf.writeVarInt(ids.size)
         for (id in ids) {
@@ -29,13 +29,13 @@ internal class DynamicIdsS2CCustomPayload(val key: Identifier, val ids: List<Ide
         }
     }
 
-    override fun getId(): Id<out CustomPayload> {
+    override fun type(): Type<out CustomPacketPayload> {
         return type
     }
 
     companion object {
 
-        private fun readList(buf: PacketByteBuf): List<Identifier> {
+        private fun readList(buf: FriendlyByteBuf): List<Identifier> {
             val size = buf.readVarInt()
             val list: MutableList<Identifier> = mutableListOf()
             for (i in 1..size) {
@@ -44,7 +44,7 @@ internal class DynamicIdsS2CCustomPayload(val key: Identifier, val ids: List<Ide
             return list
         }
 
-        val type: Id<DynamicIdsS2CCustomPayload> = Id("dynamic_id_s2c".fcId())
-        val codec: PacketCodec<PacketByteBuf, DynamicIdsS2CCustomPayload> = CustomPayload.codecOf({ c, b -> c.write(b) }, { b -> DynamicIdsS2CCustomPayload(b)})
+        val type: Type<DynamicIdsS2CCustomPayload> = Type("dynamic_id_s2c".fcId())
+        val codec: StreamCodec<FriendlyByteBuf, DynamicIdsS2CCustomPayload> = CustomPacketPayload.codec({ c, b -> c.write(b) }, { b -> DynamicIdsS2CCustomPayload(b)})
     }
 }

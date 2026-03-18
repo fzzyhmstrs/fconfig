@@ -13,11 +13,11 @@ package me.fzzyhmstrs.fzzy_config.screen.entry
 import me.fzzyhmstrs.fzzy_config.cast
 import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget
 import me.fzzyhmstrs.fzzy_config.util.Translatable
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.Drawable
-import net.minecraft.client.gui.Element
-import net.minecraft.client.gui.Selectable
-import net.minecraft.client.gui.widget.Widget
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.gui.components.Renderable
+import net.minecraft.client.gui.components.events.GuiEventListener
+import net.minecraft.client.gui.narration.NarratableEntry
+import net.minecraft.client.gui.layouts.LayoutElement
 
 /**
  * Basic [DynamicListWidget.Entry] that wraps a single widget with no other bells and whistles.
@@ -31,7 +31,7 @@ import net.minecraft.client.gui.widget.Widget
  * @since 0.6.5
  */
 open class WidgetEntry<T>(parentElement: DynamicListWidget, scope: String, texts: Translatable.Result, height: Int, private val widget: T):
-        DynamicListWidget.Entry(parentElement, texts, DynamicListWidget.Scope(scope)) where T: Selectable, T: Element, T: Drawable, T: Widget {
+        DynamicListWidget.Entry(parentElement, texts, DynamicListWidget.Scope(scope)) where T: NarratableEntry, T: GuiEventListener, T: Renderable, T: LayoutElement {
 
         override var h: Int = height
         private val selectables: List<SelectableElement> = listOf(widget).cast()
@@ -41,12 +41,12 @@ open class WidgetEntry<T>(parentElement: DynamicListWidget, scope: String, texts
             return selectables
         }
 
-        override fun children(): MutableList<out Element> {
+        override fun children(): MutableList<out GuiEventListener> {
             return children
         }
 
-        override fun renderEntry(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {
+        override fun renderEntry(context: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {
             widget.setPosition(x, y)
-            widget.render(context, mouseX, mouseY, delta)
+            widget.extractRenderState(context, mouseX, mouseY, delta)
         }
     }

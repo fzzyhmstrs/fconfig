@@ -18,16 +18,16 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.TooltipChild
 import me.fzzyhmstrs.fzzy_config.simpleId
 import me.fzzyhmstrs.fzzy_config.util.PortingUtils
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawNineSlice
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.font.TextRenderer
-import net.minecraft.client.gui.Click
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
-import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.client.input.CharInput
-import net.minecraft.client.input.KeyInput
-import net.minecraft.text.Text
-import net.minecraft.util.math.MathHelper
+import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.Font
+import net.minecraft.client.input.MouseButtonEvent
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.gui.narration.NarrationElementOutput
+import net.minecraft.client.gui.components.AbstractWidget
+import net.minecraft.client.input.CharacterEvent
+import net.minecraft.client.input.KeyEvent
+import net.minecraft.network.chat.Component
+import net.minecraft.util.Mth
 import org.jetbrains.annotations.ApiStatus.Internal
 
 /**
@@ -40,7 +40,7 @@ import org.jetbrains.annotations.ApiStatus.Internal
  * @author fzzyhmstrs
  * @since 0.5.?
  */
-open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, message: Text) : ClickableWidget(x, y, width, height, message), CustomWidget, TooltipChild {
+open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, message: Component) : AbstractWidget(x, y, width, height, message), CustomWidget, TooltipChild {
 
     protected open val textures: TextureProvider = DEFAULT_TEXTURES
 
@@ -64,10 +64,10 @@ open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, messag
      * @author fzzyhmstrs
      * @since 0.6.0
      */
-    open fun renderCustom(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
-        val minecraftClient = MinecraftClient.getInstance()
+    open fun renderCustom(context: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
+        val minecraftClient = Minecraft.getInstance()
         val i = if (this.active) 16777215 else 10526880
-        this.drawMessage(context, minecraftClient.textRenderer, x, y, width, height, PortingUtils.fullAlpha(i))
+        this.drawMessage(context, minecraftClient.font, x, y, width, height, PortingUtils.fullAlpha(i))
     }
 
     /**
@@ -83,11 +83,11 @@ open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, messag
      * @author fzzyhmstrs
      * @since 0.6.0
      */
-    open fun renderBackground(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
-        context.drawNineSlice(textures.get(active, this.isSelected), x, y, width, height, this.alpha)
+    open fun renderBackground(context: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
+        context.drawNineSlice(textures.get(active, this.isHoveredOrFocused), x, y, width, height, this.alpha)
     }
 
-    override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun extractWidgetRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
         renderBackground(context, x, y, width, height, mouseX, mouseY, delta)
         renderCustom(context, x, y, width, height, mouseX, mouseY, delta)
     }
@@ -104,7 +104,7 @@ open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, messag
      * @author fzzyhmstrs
      * @since 0.6.0
      */
-    open fun drawMessage(context: DrawContext, textRenderer: TextRenderer, x: Int, y: Int, width: Int, height: Int, color: Int) {
+    open fun drawMessage(context: GuiGraphicsExtractor, textRenderer: Font, x: Int, y: Int, width: Int, height: Int, color: Int) {
         this.drawScrollableText(context, textRenderer, x, y, width, height, 2, color)
     }
 
@@ -121,23 +121,23 @@ open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, messag
      * @author fzzyhmstrs
      * @since 0.6.0
      */
-    protected open fun drawScrollableText(context: DrawContext, textRenderer: TextRenderer, x: Int, y: Int, width: Int, height: Int, xMargin: Int, color: Int) {
+    protected open fun drawScrollableText(context: GuiGraphicsExtractor, textRenderer: Font, x: Int, y: Int, width: Int, height: Int, xMargin: Int, color: Int) {
         val i = x + xMargin
         val j = x + width - xMargin
-        val drawer = context.getHoverListener(this, DrawContext.HoverType.NONE)
-        val text = if (color == -1) this.getMessage() else this.getMessage().copy().styled { s -> s.withColor(color) }
-        drawer.text(text, i, j, y, y + height)
+        val drawer = context.textRendererForWidget(this, GuiGraphicsExtractor.HoveredTextEffects.NONE)
+        val text = if (color == -1) this.getMessage() else this.getMessage().copy().withStyle { s -> s.withColor(color) }
+        drawer.acceptScrollingWithDefaultCenter(text, i, j, y, y + height)
     }
 
     @Internal
     @Deprecated("Will be marked final in 0.8.0. Use onMouse instead")
-    override fun mouseClicked(click: Click, doubled: Boolean): Boolean {
+    override fun mouseClicked(click: MouseButtonEvent, doubled: Boolean): Boolean {
         return onMouse(CustomWidget.OnClick(click, doubled))
     }
 
     @Internal
     @Deprecated("Won't work as intended, CustomPressableWidget calls onPress directly. Will be marked final in 0.8.0. Use onMouse instead.")
-    override fun onClick(click: Click, doubled: Boolean) {
+    override fun onClick(click: MouseButtonEvent, doubled: Boolean) {
         if (ConfigApi.platform().isDev()) {
             throw IllegalStateException("CustomPressableWidget onClick method called. This is a bug in 0.7.3! See the source for information.")
         }
@@ -147,13 +147,13 @@ open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, messag
 
 
     override fun onMouse(event: CustomWidget.MouseEvent): Boolean {
-        if (!this.isInteractable) {
+        if (!this.isActive) {
             return false
         } else {
             if (this.isMouse(event)) {
                 val bl = this.isMouseOver(event.x(), event.y())
                 if (bl) {
-                    this.playDownSound(MinecraftClient.getInstance().soundManager)
+                    this.playDownSound(Minecraft.getInstance().soundManager)
                     this.onPress()
                     return true
                 }
@@ -164,7 +164,7 @@ open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, messag
 
     @Internal
     @Deprecated("Will be marked final in 0.8.0. Use onMouseDrag instead")
-    override fun mouseDragged(click: Click, offsetX: Double, offsetY: Double): Boolean {
+    override fun mouseDragged(click: MouseButtonEvent, offsetX: Double, offsetY: Double): Boolean {
         return if (this.isValidClickButton(click.buttonInfo())) {
             onMouseDrag(CustomWidget.OnDrag(click, offsetX, offsetY))
         } else {
@@ -174,7 +174,7 @@ open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, messag
 
     @Internal
     @Deprecated("Won't work as intended, CustomPressableWidget calls onMouseDrag instead. Will be marked final in 0.8.0. Use onMouseDrag instead.")
-    override fun onDrag(click: Click, offsetX: Double, offsetY: Double) {
+    override fun onDrag(click: MouseButtonEvent, offsetX: Double, offsetY: Double) {
         if (ConfigApi.platform().isDev()) {
             throw IllegalStateException("CustomPressableWidget onDrag method called. This is a bug in 0.7.3! See the source for information.")
         }
@@ -184,7 +184,7 @@ open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, messag
 
     @Internal
     @Deprecated("Will be marked final in 0.8.0. Use onMouseRelease instead")
-    override fun mouseReleased(click: Click): Boolean {
+    override fun mouseReleased(click: MouseButtonEvent): Boolean {
         return if (this.isValidClickButton(click.buttonInfo())) {
             onMouseRelease(CustomWidget.OnRelease(click))
         } else {
@@ -194,7 +194,7 @@ open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, messag
 
     @Internal
     @Deprecated("Won't work as intended, CustomPressableWidget calls onMouseRelease instead. Will be marked final in 0.8.0. Use onMouseRelease instead.")
-    override fun onRelease(click: Click) {
+    override fun onRelease(click: MouseButtonEvent) {
         if (ConfigApi.platform().isDev()) {
             throw IllegalStateException("CustomPressableWidget onRelease method called. This is a bug in 0.7.3! See the source for information.")
         }
@@ -210,7 +210,7 @@ open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, messag
 
     @Internal
     @Deprecated("Will be marked final in 0.8.0. Use onKey instead")
-    override fun keyPressed(input: KeyInput): Boolean {
+    override fun keyPressed(input: KeyEvent): Boolean {
         return onKey(CustomWidget.KeyEvent(input))
     }
 
@@ -218,7 +218,7 @@ open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, messag
         if (!this.active || !this.visible) {
             return false
         } else if (event.isEnterOrSpace()) {
-            this.playDownSound(MinecraftClient.getInstance().soundManager)
+            this.playDownSound(Minecraft.getInstance().soundManager)
             this.onPress()
             return true
         } else {
@@ -228,19 +228,19 @@ open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, messag
 
     @Internal
     @Deprecated("Will be marked final in 0.8.0. Use onKeyRelease instead")
-    override fun keyReleased(input: KeyInput): Boolean {
+    override fun keyReleased(input: KeyEvent): Boolean {
         return onKeyRelease(CustomWidget.KeyEvent(input))
     }
 
     @Internal
     @Deprecated("Will be marked final in 0.8.0. Use onChar instead")
-    override fun charTyped(input: CharInput): Boolean {
+    override fun charTyped(input: CharacterEvent): Boolean {
         return onChar(CustomWidget.CharEvent(input))
     }
 
     @Internal
-    override fun appendClickableNarrations(builder: NarrationMessageBuilder?) {
-        appendDefaultNarrations(builder)
+    override fun updateWidgetNarration(builder: NarrationElementOutput) {
+        defaultButtonNarrationText(builder)
     }
 
     companion object {

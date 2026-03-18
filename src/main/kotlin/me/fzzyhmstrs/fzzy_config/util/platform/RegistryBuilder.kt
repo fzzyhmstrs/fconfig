@@ -16,16 +16,16 @@ import com.mojang.serialization.Lifecycle
 import me.fzzyhmstrs.fzzy_config.cast
 import me.fzzyhmstrs.fzzy_config.nsId
 import me.fzzyhmstrs.fzzy_config.simpleId
-import net.minecraft.item.ItemGroup
-import net.minecraft.registry.Registry
-import net.minecraft.registry.RegistryKey
-import net.minecraft.registry.entry.RegistryEntry
-import net.minecraft.registry.entry.RegistryEntry.Reference
-import net.minecraft.registry.entry.RegistryEntryInfo
-import net.minecraft.registry.tag.TagKey
-import net.minecraft.text.Text
-import net.minecraft.util.Identifier
-import net.minecraft.util.dynamic.Codecs
+import net.minecraft.world.item.CreativeModeTab
+import net.minecraft.core.Registry
+import net.minecraft.resources.ResourceKey
+import net.minecraft.core.Holder
+import net.minecraft.core.Holder.Reference
+import net.minecraft.core.RegistrationInfo
+import net.minecraft.tags.TagKey
+import net.minecraft.network.chat.Component
+import net.minecraft.resources.Identifier
+import net.minecraft.util.ExtraCodecs
 import java.util.function.Function
 
 /**
@@ -49,7 +49,7 @@ interface RegistryBuilder {
      * @author fzzyhmstrs
      * @since 0.7.4
      */
-    fun <T: Any> build(key: RegistryKey<Registry<T>>): Registry<T>
+    fun <T: Any> build(key: ResourceKey<Registry<T>>): Registry<T>
 
     /**
      * Creates an Intrusive Registry.
@@ -65,7 +65,7 @@ interface RegistryBuilder {
      * @author fzzyhmstrs
      * @since 0.7.4
      */
-    fun <T: Any> buildIntrusive(key: RegistryKey<Registry<T>>): Registry<T>
+    fun <T: Any> buildIntrusive(key: ResourceKey<Registry<T>>): Registry<T>
 
     /**
      * Creates a Defaulted Registry.
@@ -82,7 +82,7 @@ interface RegistryBuilder {
      * @author fzzyhmstrs
      * @since 0.7.4
      */
-    fun <T: Any> buildDefaulted(key: RegistryKey<Registry<T>>, defaultId: Identifier): Registry<T>
+    fun <T: Any> buildDefaulted(key: ResourceKey<Registry<T>>, defaultId: Identifier): Registry<T>
 
     /**
      * Creates a Defaulted Intrusive Registry.
@@ -99,14 +99,14 @@ interface RegistryBuilder {
      * @author fzzyhmstrs
      * @since 0.7.4
      */
-    fun <T: Any> buildDefaultedIntrusive(key: RegistryKey<Registry<T>>, defaultId: Identifier): Registry<T>
+    fun <T: Any> buildDefaultedIntrusive(key: ResourceKey<Registry<T>>, defaultId: Identifier): Registry<T>
 
     /**
      * Makes a blank [ItemGroup.Builder] for creating an item group as needed.
      * @author fzzyhmstrs
      * @since 0.7.4
      */
-    fun itemGroup(): ItemGroup.Builder
+    fun itemGroup(): CreativeModeTab.Builder
 
     /**
      * Returns the translated name for a tag, where available.
@@ -114,7 +114,7 @@ interface RegistryBuilder {
      * @author fzzyhmstrs
      * @since 0.7.4
      */
-    fun getTagName(tagKey: TagKey<*>): Text
+    fun getTagName(tagKey: TagKey<*>): Component
 
     /**
      * Creates a registry value codec that allows for identifier shortcutting based on the namespace used to build this builder. Vanilla will shorten ids for the `minecraft` namespace (`minecraft:thing` to `thing`). This does the same thing but for the namespace provided.
@@ -126,7 +126,7 @@ interface RegistryBuilder {
      * @author fzzyhmstrs
      * @since 0.7.4
      */
-    fun <T> namespaceCodec(registry: Registry<T>): Codec<T>
+    fun <T: Any> namespaceCodec(registry: Registry<T>): Codec<T>
 
     /**
      * Creates a [RegistryEntry] codec that automatically handles [RegistrySupplier] properly
@@ -136,7 +136,7 @@ interface RegistryBuilder {
      * @author fzzyhmstrs
      * @since 0.7.4
      */
-    fun <T> regSupplierCodec(registry: Registry<T>): Codec<RegistryEntry<T>>
+    fun <T: Any> regSupplierCodec(registry: Registry<T>): Codec<Holder<T>>
 
     /**
      * Creates an entry codec for a registry that works with [RegistryEntry.Reference] directly, allowing you to work with the methods of that class directly.
@@ -146,7 +146,7 @@ interface RegistryBuilder {
      * @author fzzyhmstrs
      * @since 0.7.4
      */
-    fun <T> referenceEntryCodec(registry: Registry<T>): Codec<Reference<T>>
+    fun <T: Any> referenceEntryCodec(registry: Registry<T>): Codec<Reference<T>>
 
     /**
      * Helper method for optimally extracting ids out of a [RegistryEntry]
@@ -157,5 +157,5 @@ interface RegistryBuilder {
      * @author fzzyhmstrs
      * @since 0.7.4
      */
-    fun <T> getEntryId(registry: Registry<T>, entry: RegistryEntry<T>): Identifier?
+    fun <T: Any> getEntryId(registry: Registry<T>, entry: Holder<T>): Identifier?
 }

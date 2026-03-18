@@ -10,7 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.screen
 
-import net.minecraft.client.gui.Element
+import net.minecraft.client.gui.components.events.GuiEventListener
 
 /**
  * A parent element marked as LastSelectable will cache the last selected element when a popup or other overlay is rendered, and return to that selection when the popup/overlay is removed.
@@ -27,7 +27,7 @@ interface LastSelectable {
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    var lastSelected: Element?
+    var lastSelected: GuiEventListener?
 
     /**
      * Indicates to the parent element to cache it's current focused element. The current focused element should be stored in [lastSelected]

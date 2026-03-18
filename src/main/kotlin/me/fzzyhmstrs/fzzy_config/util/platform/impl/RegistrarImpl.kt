@@ -3,9 +3,9 @@ package me.fzzyhmstrs.fzzy_config.util.platform.impl
 import me.fzzyhmstrs.fzzy_config.nsId
 import me.fzzyhmstrs.fzzy_config.util.platform.Registrar
 import me.fzzyhmstrs.fzzy_config.util.platform.RegistrySupplier
-import net.minecraft.registry.Registry
-import net.minecraft.registry.tag.TagKey
-import net.minecraft.util.Identifier
+import net.minecraft.core.Registry
+import net.minecraft.tags.TagKey
+import net.minecraft.resources.Identifier
 import net.neoforged.bus.api.IEventBus
 import net.neoforged.fml.ModList
 import net.neoforged.neoforge.registries.DeferredRegister
@@ -44,10 +44,10 @@ internal class RegistrarImpl<T: Any>(private val namespace: String, private val 
     }
 
     override fun createTag(path: String): TagKey<T> {
-        return TagKey.of(registry.key, namespace.nsId(path))
+        return TagKey.create(registry.key(), namespace.nsId(path))
     }
 
     override fun createTag(id: Identifier): TagKey<T> {
-        return TagKey.of(registry.key, id)
+        return TagKey.create(registry.key(), id)
     }
 }

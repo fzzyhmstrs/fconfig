@@ -3,8 +3,8 @@ package me.fzzyhmstrs.fzzy_config.screen.context
 import me.fzzyhmstrs.fzzy_config.impl.config.KeybindsConfig
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.TriState
-import net.minecraft.client.util.InputUtil
-import net.minecraft.text.Text
+import com.mojang.blaze3d.platform.InputConstants
+import net.minecraft.network.chat.Component
 import org.lwjgl.glfw.GLFW
 import java.util.*
 
@@ -52,7 +52,6 @@ class ContextType private constructor(private val id: String, private val releva
      * @since 0.6.0
      */
     @FunctionalInterface
-    @JvmDefaultWithCompatibility
     fun interface Relevant {
         /**
          * Determines whether this is relevant to the user inputs provided. In general, only the state you care about should be checked. For example, if your keybind is "X", check that the inputCode is correct but ignore ctrl/shift/alt entirely, unless it is specifically important that they not be pressed.

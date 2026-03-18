@@ -13,14 +13,14 @@ package me.fzzyhmstrs.fzzy_config.screen.widget
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomTextWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
-import net.minecraft.client.font.Alignment
-import net.minecraft.client.font.DrawnTextConsumer
-import net.minecraft.client.font.TextRenderer
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
-import net.minecraft.client.gui.screen.narration.NarrationPart
-import net.minecraft.client.gui.tooltip.Tooltip
-import net.minecraft.text.Text
+import net.minecraft.client.gui.TextAlignment
+import net.minecraft.client.gui.ActiveTextCollector
+import net.minecraft.client.gui.Font
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.gui.narration.NarrationElementOutput
+import net.minecraft.client.gui.narration.NarratedElementType
+import net.minecraft.client.gui.components.Tooltip
+import net.minecraft.network.chat.Component
 import java.util.function.Supplier
 import kotlin.math.max
 import kotlin.math.roundToInt
@@ -34,12 +34,12 @@ import kotlin.math.roundToInt
  * @author fzzyhmstrs
  * @since 0.3.1, removed align:direction: methods and now implements TooltipChild in 0.6.0, uses java.util.Supplier instead of googles in 0.6.8 and deprecates constructors with google Supplier. Google supplier constructors removed 0.7.0.
  */
-class SuppliedTextWidget(private val messageSupplier: Supplier<Text>, textRenderer: TextRenderer, width: Int, height: Int): CustomTextWidget(0, 0, width, height, messageSupplier.get(), textRenderer), TooltipChild {
+class SuppliedTextWidget(private val messageSupplier: Supplier<Component>, textRenderer: Font, width: Int, height: Int): CustomTextWidget(0, 0, width, height, messageSupplier.get(), textRenderer), TooltipChild {
 
-    constructor(messageSupplier: Supplier<Text>, textRenderer: TextRenderer): this(messageSupplier, textRenderer, textRenderer.getWidth(messageSupplier.get().asOrderedText()), textRenderer.fontHeight)
+    constructor(messageSupplier: Supplier<Component>, textRenderer: Font): this(messageSupplier, textRenderer, textRenderer.width(messageSupplier.get().visualOrderText), textRenderer.lineHeight)
 
     private var horizontalAlignment = 0.5f
-    private var overflowTooltip: Supplier<Text>? = null
+    private var overflowTooltip: Supplier<Component>? = null
 
     /**
      * Aligns the widget text to the alignment fraction provided
@@ -62,32 +62,32 @@ class SuppliedTextWidget(private val messageSupplier: Supplier<Text>, textRender
      * @author fzzyhmstrs
      * @since 0.3.3
      */
-    fun supplyTooltipOnOverflow(tooltipText: Supplier<Text>): SuppliedTextWidget {
+    fun supplyTooltipOnOverflow(tooltipText: Supplier<Component>): SuppliedTextWidget {
         overflowTooltip = tooltipText
         return this
     }
 
-    override fun draw(textConsumer: DrawnTextConsumer) {
+    override fun visitLines(textConsumer: ActiveTextCollector) {
         val text = messageSupplier.get()
         val i = getWidth()
-        val j = textRenderer.getWidth(text)
+        val j = font.width(text)
         val k = x + (horizontalAlignment * (max(i - j, 0)).toFloat()).roundToInt()
-        val l = y + (getHeight() - textRenderer.fontHeight) / 2
-        val orderedText = if (j > i) FcText.trim(text, i, textRenderer) else text.asOrderedText()
-        textConsumer.text(Alignment.LEFT, k, l, orderedText)
+        val l = y + (getHeight() - font.lineHeight) / 2
+        val orderedText = if (j > i) FcText.trim(text, i, font) else text.visualOrderText
+        textConsumer.accept(TextAlignment.LEFT, k, l, orderedText)
     }
 
     override fun onPress(event: CustomWidget.MouseEvent): Boolean {
         return false
     }
 
-    override fun provideTooltipLines(mouseX: Int, mouseY: Int, parentSelected: Boolean, keyboardFocused: Boolean): List<Text> {
+    override fun provideTooltipLines(mouseX: Int, mouseY: Int, parentSelected: Boolean, keyboardFocused: Boolean): List<Component> {
         if (!((parentSelected && isFocused) || isMouseOver(mouseX.toDouble(), mouseY.toDouble()))) return TooltipChild.EMPTY
-        return overflowTooltip?.let { listOf(it.get()) }?.takeIf { textRenderer.getWidth(it[0]) > getWidth() } ?: TooltipChild.EMPTY
+        return overflowTooltip?.let { listOf(it.get()) }?.takeIf { font.width(it[0]) > getWidth() } ?: TooltipChild.EMPTY
     }
 
-    override fun appendClickableNarrations(builder: NarrationMessageBuilder?) {
-        overflowTooltip?.let { builder?.put(NarrationPart.TITLE, it.get()) }
+    override fun updateWidgetNarration(builder: NarrationElementOutput) {
+        overflowTooltip?.let { builder?.add(NarratedElementType.TITLE, it.get()) }
     }
 
 }

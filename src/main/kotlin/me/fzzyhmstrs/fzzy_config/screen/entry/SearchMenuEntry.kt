@@ -22,24 +22,25 @@ import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedKeybind
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.Drawable
-import net.minecraft.client.gui.Element
-import net.minecraft.client.gui.Selectable
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
-import net.minecraft.client.gui.screen.narration.NarrationPart
-import net.minecraft.client.gui.tooltip.Tooltip
-import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.client.gui.widget.Widget
-import net.minecraft.util.Colors
-import net.minecraft.util.Formatting
+import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.gui.components.Renderable
+import net.minecraft.client.gui.components.events.GuiEventListener
+import net.minecraft.client.gui.narration.NarratableEntry
+import net.minecraft.client.gui.narration.NarrationElementOutput
+import net.minecraft.client.gui.narration.NarratedElementType
+import net.minecraft.client.gui.components.Tooltip
+import net.minecraft.client.gui.components.AbstractWidget
+import net.minecraft.client.gui.layouts.LayoutElement
+import net.minecraft.util.CommonColors
+import net.minecraft.ChatFormatting
 import kotlin.math.max
 
-internal class SearchMenuEntry(parentElement: DynamicListWidget, scope: String, private val widget: ClickableWidget):
+internal class SearchMenuEntry(parentElement: DynamicListWidget, scope: String, private val widget: AbstractWidget):
         DynamicListWidget.Entry(
             parentElement,
-            Translatable.createScopedResult("fc.search.id.$scope", "fc.search.$scope".translate(), "fc.search.$scope.desc".translate().formatted(Formatting.ITALIC, Formatting.GRAY)),
+            Translatable.createScopedResult("fc.search.id.$scope", "fc.search.$scope".translate(), "fc.search.$scope.desc".translate().withStyle(
+                ChatFormatting.ITALIC, ChatFormatting.GRAY)),
             DynamicListWidget.Scope(scope))
 {
     private val description = CustomMultilineTextWidget(this.texts.desc ?: FcText.empty(), leftPadding = 10)
@@ -58,25 +59,25 @@ internal class SearchMenuEntry(parentElement: DynamicListWidget, scope: String, 
         return selectables
     }
 
-    override fun children(): MutableList<out Element> {
+    override fun children(): MutableList<out GuiEventListener> {
         return children
     }
 
-    override fun renderEntry(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {
+    override fun renderEntry(context: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {
         widget.setPosition(x + width - 110, y)
-        widget.render(context, mouseX, mouseY, delta)
-        description.setDimensionsAndPosition(width - 120, 0, x, y + 10)
-        description.render(context, mouseX, mouseY, delta)
-        context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, this.texts.name, x, y, if (hovered || focused) -171 else -1)
+        widget.extractRenderState(context, mouseX, mouseY, delta)
+        description.setRectangle(width - 120, 0, x, y + 10)
+        description.extractRenderState(context, mouseX, mouseY, delta)
+        context.text(Minecraft.getInstance().font, this.texts.name, x, y, if (hovered || focused) -171 else -1)
     }
 
-    override fun renderExtras(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {
+    override fun renderExtras(context: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {
         if (hovered || focused)
-            context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, ">", x - 8, y, -171)
+            context.text(Minecraft.getInstance().font, ">", x - 8, y, -171)
     }
 
-    override fun appendNarrations(builder: NarrationMessageBuilder) {
+    override fun appendNarrations(builder: NarrationElementOutput) {
         super.appendNarrations(builder)
-        this.texts.desc?.let { builder.put(NarrationPart.HINT, it.string) }
+        this.texts.desc?.let { builder.add(NarratedElementType.HINT, it.string) }
     }
 }

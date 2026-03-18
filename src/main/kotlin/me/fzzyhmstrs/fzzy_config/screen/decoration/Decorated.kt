@@ -10,8 +10,8 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.decoration
 
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.Drawable
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.gui.components.Renderable
 
 /**
  * A [Drawable]-like interface used to render a icon, alert symbol, or other type of small decoration visual.
@@ -34,7 +34,7 @@ fun interface Decorated {
      * @author fzzyhmstrs
      * @since 0.6.0
      */
-    fun renderDecoration(context: DrawContext, x: Int, y: Int, delta: Float, enabled: Boolean, selected: Boolean)
+    fun renderDecoration(context: GuiGraphicsExtractor, x: Int, y: Int, delta: Float, enabled: Boolean, selected: Boolean)
 
     /**
      * A [decorated] wrapped with rendering position offsets. This is used in several places for the modder to define positional offsets for rendering their decoration in the proper place

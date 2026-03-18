@@ -29,19 +29,19 @@ import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.ofMutable
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType.*
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.font.TextRenderer
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
-import net.minecraft.client.gui.screen.narration.NarrationPart
-import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.client.resource.language.I18n
-import net.minecraft.client.sound.SoundManager
-import net.minecraft.text.MutableText
-import net.minecraft.text.Text
-import net.minecraft.util.Identifier
+import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.Font
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.gui.narration.NarrationElementOutput
+import net.minecraft.client.gui.narration.NarratedElementType
+import net.minecraft.client.gui.components.AbstractWidget
+import net.minecraft.client.resources.language.I18n
+import net.minecraft.client.sounds.SoundManager
+import net.minecraft.network.chat.MutableComponent
+import net.minecraft.network.chat.Component
+import net.minecraft.resources.Identifier
 import net.minecraft.util.Util
-import net.minecraft.util.math.MathHelper
+import net.minecraft.util.Mth
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
@@ -84,7 +84,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
 
     @Internal
     //client
-    override fun widgetEntry(choicePredicate: ChoiceValidator<T>): ClickableWidget {
+    override fun widgetEntry(choicePredicate: ChoiceValidator<T>): AbstractWidget {
         return when(widgetType) {
             SLIDER -> {
                 ConfirmButtonSliderWidget(this, this.increment, this.minValue, this.maxValue, choicePredicate, {d -> convert(d).get() }, { setAndUpdate(it) }).also {
@@ -109,11 +109,11 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
     }
 
     @Internal
-    override fun description(fallback: String?): MutableText {
-        return if(I18n.hasTranslation(descriptionKey())) super.description(fallback) else genericDescription()
+    override fun description(fallback: String?): MutableComponent {
+        return if(I18n.exists(descriptionKey())) super.description(fallback) else genericDescription()
     }
 
-    private fun genericDescription(): MutableText {
+    private fun genericDescription(): MutableComponent {
         return if (minValue.compareTo(minBound()) == 0) {
             if (maxValue.compareTo(maxBound()) == 0) {
                 "fc.validated_field.number.desc.fallback.any".translate()
@@ -206,7 +206,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
         }
     }
 
-    private fun prepareTextboxWithButtons(choicePredicate: ChoiceValidator<T>, incr: T?): ClickableWidget {
+    private fun prepareTextboxWithButtons(choicePredicate: ChoiceValidator<T>, incr: T?): AbstractWidget {
         fun isIntType(): Boolean {
             return maxValue is Int || maxValue is Long || maxValue is Short || maxValue is Byte
         }
@@ -251,7 +251,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
         layout.add(
             "up",
             CustomButtonWidget.builder("fc.button.up".translate()) {
-                val n = this.convert(MathHelper.clamp(this.get().toDouble() + increment, this.minValue.toDouble(), this.maxValue.toDouble())).get()
+                val n = this.convert(Mth.clamp(this.get().toDouble() + increment, this.minValue.toDouble(), this.maxValue.toDouble())).get()
                 this.setAndUpdate(n) }
                 .noMessage()
                 .narrationAppender { builder -> numberWidget.appendValueNarrations(builder) }
@@ -265,7 +265,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
         layout.add(
             "down",
             CustomButtonWidget.builder("fc.button.down".translate()) {
-                val n = this.convert(MathHelper.clamp(this.get().toDouble() - increment, this.minValue.toDouble(), this.maxValue.toDouble())).get()
+                val n = this.convert(Mth.clamp(this.get().toDouble() - increment, this.minValue.toDouble(), this.maxValue.toDouble())).get()
                 this.setAndUpdate(n) }
                 .noMessage()
                 .size(11, 10)
@@ -348,13 +348,13 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
         }
 
         private fun getHandleTexture(): Identifier {
-            return if (hovered || this.isFocused)
+            return if (isHovered || this.isFocused)
                 HANDLE_HIGHLIGHTED_TEXTURE
             else
                 HANDLE_TEXTURE
         }
 
-        override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+        override fun extractWidgetRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
             val testValue = wrappedValue.get()
             if (cachedWrappedValue != testValue) {
                 this.value = testValue
@@ -362,30 +362,31 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
                 this.setMessage(DECIMAL_FORMAT.format(this.value).lit())
             }
             this.confirmActive = isChanged() && isValid
-            val minecraftClient = MinecraftClient.getInstance()
+            val minecraftClient = Minecraft.getInstance()
             context.drawTex(getTexture(), x, y, getWidth(), getHeight(), alpha)
-            val progress = MathHelper.getLerpProgress(value.toDouble(), minValue.toDouble(), maxValue.toDouble())
+            val progress = Mth.inverseLerp(value.toDouble(), minValue.toDouble(), maxValue.toDouble())
             context.drawTex(getHandleTexture(), x + (progress * (width - 8).toDouble()).toInt(), y, 8, getHeight())
-            this.drawScrollableText(context, minecraftClient.textRenderer, 2, -1)
+            this.drawScrollableText(context, minecraftClient.font, 2, -1)
         }
 
-        fun drawScrollableText(context: DrawContext, textRenderer: TextRenderer, xMargin: Int, color: Int) {
+        fun drawScrollableText(context: GuiGraphicsExtractor, textRenderer: Font, xMargin: Int, color: Int) {
             drawScrollableText(context, textRenderer, x, y, width, height, xMargin, color)
         }
 
-        override fun getNarrationMessage(): MutableText {
+        override fun createNarrationMessage(): MutableComponent {
             return FcText.translatable("gui.narrate.slider", message)
         }
 
-        override fun appendClickableNarrations(builder: NarrationMessageBuilder?) {
-            builder?.put(NarrationPart.TITLE, this.narrationMessage as Text?)
+        override fun updateWidgetNarration(builder: NarrationElementOutput) {
+            builder.add(NarratedElementType.TITLE, this.createNarrationMessage() as Component)
             if (active) {
                 if (this.isFocused) {
-                    builder?.put(NarrationPart.USAGE,
+                    builder.add(
+                        NarratedElementType.USAGE,
                         "fc.validated_field.number.slider.usage".translate(),
                         "fc.validated_field.number.slider.usage2".translate())
                 } else {
-                    builder?.put(NarrationPart.USAGE, "fc.validated_field.number.slider.usage.unfocused".translate())
+                    builder.add(NarratedElementType.USAGE, "fc.validated_field.number.slider.usage.unfocused".translate())
                 }
             }
         }
@@ -394,7 +395,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
             val bl = event.isLeft()
             if (bl || event.isRight()) {
                 val f = if (bl) -increment else increment
-                val ff = MathHelper.clamp(value.toDouble() + f, minValue.toDouble(), maxValue.toDouble())
+                val ff = Mth.clamp(value.toDouble() + f, minValue.toDouble(), maxValue.toDouble())
                 this.setValue(ff)
                 this.isValid = validator.validateEntry(this.value, EntryValidator.ValidationType.STRONG).isValid()
                 if(isChanged() && isValid) {
@@ -409,7 +410,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
         }
 
         private fun setValueFromMouse(mouseX: Double) {
-            this.setValue(MathHelper.clampedMap((mouseX - (x + 4).toDouble()) / (width - 8).toDouble(), 0.0, 1.0, minValue.toDouble(), maxValue.toDouble()))
+            this.setValue(Mth.clampedMap((mouseX - (x + 4).toDouble()) / (width - 8).toDouble(), 0.0, 1.0, minValue.toDouble(), maxValue.toDouble()))
         }
 
         private fun setValue(value: Double) {
@@ -427,7 +428,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
             return true
         }
 
-        override fun playDownSound(soundManager: SoundManager?) {}
+        override fun playDownSound(soundManager: SoundManager) {}
 
         override fun onMouseRelease(event: CustomWidget.MouseEvent): Boolean {
             this.isValid = validator.validateEntry(this.value, EntryValidator.ValidationType.STRONG).isValid()
@@ -436,7 +437,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
                 valueApplier.accept(value)
                 this.confirmActive = isChanged() && isValid
             }
-            super.playDownSound(MinecraftClient.getInstance().soundManager)
+            super.playDownSound(Minecraft.getInstance().soundManager)
             return true
         }
     }

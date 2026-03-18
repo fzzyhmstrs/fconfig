@@ -10,17 +10,16 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget.custom
 
-import net.minecraft.client.gui.Click
-import net.minecraft.client.gui.Element
-import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.client.input.CharInput
-import net.minecraft.client.input.KeyInput
-import net.minecraft.client.input.MouseInput
-import net.minecraft.client.util.InputUtil
+import net.minecraft.client.input.MouseButtonEvent
+import net.minecraft.client.gui.components.events.GuiEventListener
+import net.minecraft.client.gui.components.AbstractWidget
+import net.minecraft.client.input.CharacterEvent
+import net.minecraft.client.input.KeyEvent
+import net.minecraft.client.input.MouseButtonInfo
+import com.mojang.blaze3d.platform.InputConstants
 import org.jetbrains.annotations.ApiStatus
 
 @ApiStatus.Experimental
-@JvmDefaultWithCompatibility
 interface CustomWidget {
 
     fun isMouse(event: MouseEvent): Boolean {
@@ -111,47 +110,47 @@ interface CustomWidget {
         fun horizontalAmount(): Double
         fun verticalAmount(): Double
 
-        fun clickWidget(widget: Element): Boolean {
+        fun clickWidget(widget: GuiEventListener): Boolean {
             return clickWidgetOrNull(widget) ?: false
         }
 
-        fun clickWidgetOrNull(widget: Element?): Boolean? {
+        fun clickWidgetOrNull(widget: GuiEventListener?): Boolean? {
             return if (widget is CustomWidget) {
                 widget.onMouse(this)
             } else {
-                widget?.mouseClicked(Click(x(), y(), MouseInput(button(), modifiers())), double())
+                widget?.mouseClicked(MouseButtonEvent(x(), y(), MouseButtonInfo(button(), modifiers())), double())
             }
         }
 
-        fun dragWidget(widget: Element): Boolean {
+        fun dragWidget(widget: GuiEventListener): Boolean {
             return dragWidgetOrNull(widget) ?: false
         }
 
-        fun dragWidgetOrNull(widget: Element?): Boolean? {
+        fun dragWidgetOrNull(widget: GuiEventListener?): Boolean? {
             return if (widget is CustomWidget) {
                 widget.onMouseDrag(this)
             } else {
-                widget?.mouseDragged(Click(x(), y(), MouseInput(button(), modifiers())), deltaX(), deltaY())
+                widget?.mouseDragged(MouseButtonEvent(x(), y(), MouseButtonInfo(button(), modifiers())), deltaX(), deltaY())
             }
         }
 
-        fun releaseWidget(widget: Element): Boolean {
+        fun releaseWidget(widget: GuiEventListener): Boolean {
             return releaseWidgetOrNull(widget) ?: false
         }
 
-        fun releaseWidgetOrNull(widget: Element?): Boolean? {
+        fun releaseWidgetOrNull(widget: GuiEventListener?): Boolean? {
             return if (widget is CustomWidget) {
                 widget.onMouseRelease(this)
             } else {
-                widget?.mouseReleased(Click(x(), y(), MouseInput(button(), modifiers())))
+                widget?.mouseReleased(MouseButtonEvent(x(), y(), MouseButtonInfo(button(), modifiers())))
             }
         }
 
-        fun scrollWidget(widget: Element): Boolean {
+        fun scrollWidget(widget: GuiEventListener): Boolean {
             return scrollWidgetOrNull(widget) ?: false
         }
 
-        fun scrollWidgetOrNull(widget: Element?): Boolean? {
+        fun scrollWidgetOrNull(widget: GuiEventListener?): Boolean? {
             return if (widget is CustomWidget) {
                 widget.onMouseScroll(this)
             } else {
@@ -160,7 +159,7 @@ interface CustomWidget {
         }
     }
 
-    class OnClick(private val click: Click, private val doubled: Boolean): MouseEvent {
+    class OnClick(private val click: MouseButtonEvent, private val doubled: Boolean): MouseEvent {
         override fun x(): Double {
             return click.x
         }
@@ -190,7 +189,7 @@ interface CustomWidget {
         }
     }
 
-    class OnRelease(private val click: Click): MouseEvent {
+    class OnRelease(private val click: MouseButtonEvent): MouseEvent {
         override fun x(): Double {
             return click.x
         }
@@ -220,7 +219,7 @@ interface CustomWidget {
         }
     }
 
-    class OnDrag(private val click: Click, private val offsetX: Double, private val offsetY: Double): MouseEvent {
+    class OnDrag(private val click: MouseButtonEvent, private val offsetX: Double, private val offsetY: Double): MouseEvent {
         override fun x(): Double {
             return click.x
         }
@@ -289,7 +288,7 @@ interface CustomWidget {
         }
     }
 
-    class KeyEvent(private val input: KeyInput) {
+    class KeyEvent(private val input: net.minecraft.client.input.KeyEvent) {
 
         fun key(): Int {
             return input.key
@@ -302,60 +301,60 @@ interface CustomWidget {
         }
 
         fun isEnterOrSpace(): Boolean {
-            return this.key() == InputUtil.GLFW_KEY_ENTER || (this.key() == InputUtil.GLFW_KEY_SPACE) || (this.key() == InputUtil.GLFW_KEY_KP_ENTER)
+            return this.key() == InputConstants.KEY_RETURN || (this.key() == InputConstants.KEY_SPACE) || (this.key() == InputConstants.KEY_NUMPADENTER)
         }
 
         fun isLeft(): Boolean {
-            return key() == InputUtil.GLFW_KEY_LEFT
+            return key() == InputConstants.KEY_LEFT
         }
 
         fun isRight(): Boolean {
-            return key() == InputUtil.GLFW_KEY_RIGHT
+            return key() == InputConstants.KEY_RIGHT
         }
 
-        fun keyWidget(widget: Element): Boolean {
+        fun keyWidget(widget: GuiEventListener): Boolean {
             return keyWidgetOrNull(widget) ?: false
         }
 
-        fun keyWidgetOrNull(widget: Element?): Boolean? {
+        fun keyWidgetOrNull(widget: GuiEventListener?): Boolean? {
             return if (widget is CustomWidget) {
                 widget.onKey(this)
             } else {
-                widget?.keyPressed(KeyInput(key(), scancode(), modifiers()))
+                widget?.keyPressed(KeyEvent(key(), scancode(), modifiers()))
             }
         }
 
-        fun releaseWidget(widget: Element): Boolean {
+        fun releaseWidget(widget: GuiEventListener): Boolean {
             return releaseWidgetOrNull(widget) ?: false
         }
 
-        fun releaseWidgetOrNull(widget: Element?): Boolean? {
+        fun releaseWidgetOrNull(widget: GuiEventListener?): Boolean? {
             return if (widget is CustomWidget) {
                 widget.onKeyRelease(this)
             } else {
-                widget?.keyReleased(KeyInput(key(), scancode(), modifiers()))
+                widget?.keyReleased(KeyEvent(key(), scancode(), modifiers()))
             }
         }
     }
 
-    class CharEvent(private val input: CharInput) {
+    class CharEvent(private val input: CharacterEvent) {
 
         fun codepoint(): Int {
             return input.codepoint
         }
         fun modifiers(): Int {
-            return input.modifiers
+            return 0
         }
 
-        fun charWidget(widget: Element): Boolean {
+        fun charWidget(widget: GuiEventListener): Boolean {
             return charWidgetOrNull(widget) ?: false
         }
 
-        fun charWidgetOrNull(widget: Element?): Boolean? {
+        fun charWidgetOrNull(widget: GuiEventListener?): Boolean? {
             return if (widget is CustomWidget) {
                 widget.onChar(this)
             } else {
-                widget?.charTyped(CharInput(codepoint(), modifiers()))
+                widget?.charTyped(CharacterEvent(codepoint()))
             }
         }
     }

@@ -16,8 +16,8 @@ import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.platform.Registrar
 import me.fzzyhmstrs.fzzy_config.util.platform.RegistryBuilder
 import me.fzzyhmstrs.fzzy_config.util.platform.RegistrySupplier
-import net.minecraft.registry.Registry
-import net.minecraft.util.Identifier
+import net.minecraft.core.Registry
+import net.minecraft.resources.Identifier
 import net.minecraft.util.Util
 import net.neoforged.fml.ModList
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion
@@ -102,7 +102,7 @@ internal object PlatformApiImpl: PlatformApi {
                     }
 
                     val annotations = prop.annotations
-                    val key = Util.createTranslationKey(prefix, id)
+                    val key = Util.makeDescriptionId(prefix, id)
                     annotations.filterIsInstance<Translatable.Name>().firstOrNull { it.lang == lang }.also {
                         if (it == null) FC.LOGGER.error("  No $lang name entry for $key")
                     }?.apply {

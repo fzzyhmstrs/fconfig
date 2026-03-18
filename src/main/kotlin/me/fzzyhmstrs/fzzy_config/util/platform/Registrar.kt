@@ -1,8 +1,8 @@
 package me.fzzyhmstrs.fzzy_config.util.platform
 
-import net.minecraft.registry.Registry
-import net.minecraft.registry.tag.TagKey
-import net.minecraft.util.Identifier
+import net.minecraft.core.Registry
+import net.minecraft.tags.TagKey
+import net.minecraft.resources.Identifier
 import org.jetbrains.annotations.ApiStatus
 import java.util.function.Supplier
 
@@ -21,7 +21,7 @@ import java.util.function.Supplier
  * @author fzzyhmstrs
  * @since 0.5.9, no longer experimental 0.7.0
  */
-interface Registrar<T> {
+interface Registrar<T: Any> {
 
     /**
      * Initializes the Registrar. This is *required* for the registrar to work properly. You don't have to init() before registering objects, necessarily, but it is a good idea.

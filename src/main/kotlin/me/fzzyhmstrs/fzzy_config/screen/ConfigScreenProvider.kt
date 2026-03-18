@@ -12,8 +12,8 @@ package me.fzzyhmstrs.fzzy_config.screen
 
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.api.ConfigApiJava
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.screen.Screen
+import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.screens.Screen
 
 /**
  * Provider of config screens for a particular namespace. This is used to provide custom screens in place of the default Fzzy Config implementation.
@@ -46,7 +46,7 @@ fun interface ConfigScreenProvider {
      */
     fun openScreen(namespace: String, scope: String): Boolean {
         val screen = provideScreen(namespace, scope) ?: return false
-        MinecraftClient.getInstance().setScreen(screen)
+        Minecraft.getInstance().setScreen(screen)
         return true
     }
 }

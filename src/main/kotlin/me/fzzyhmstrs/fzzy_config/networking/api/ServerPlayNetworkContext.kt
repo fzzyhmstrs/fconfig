@@ -12,13 +12,13 @@ package me.fzzyhmstrs.fzzy_config.networking.api
 
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.cast
-import net.minecraft.network.NetworkPhase
-import net.minecraft.network.NetworkSide
-import net.minecraft.network.packet.CustomPayload
+import net.minecraft.network.ConnectionProtocol
+import net.minecraft.network.protocol.PacketFlow
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload
 import net.minecraft.server.MinecraftServer
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.text.Text
-import net.minecraft.util.Identifier
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.network.chat.Component
+import net.minecraft.resources.Identifier
 import net.neoforged.neoforge.network.handling.IPayloadContext
 import net.neoforged.neoforge.network.registration.NetworkRegistry
 
@@ -27,7 +27,7 @@ import net.neoforged.neoforge.network.registration.NetworkRegistry
  * @author fzzyhmstrs
  * @since 0.4.1
  */
-class ServerPlayNetworkContext(private val context: IPayloadContext): NetworkContext<ServerPlayerEntity> {
+class ServerPlayNetworkContext(private val context: IPayloadContext): NetworkContext<ServerPlayer> {
 
     /**
      * Executes a task on the main thread. This should be used for anything interacting with game state outside the network loop
@@ -36,7 +36,7 @@ class ServerPlayNetworkContext(private val context: IPayloadContext): NetworkCon
      * @since 0.4.1
      */
     override fun execute(runnable: Runnable) {
-        player().entityWorld.server?.execute(runnable)
+        player().level().server?.execute(runnable)
     }
 
     /**
@@ -45,7 +45,7 @@ class ServerPlayNetworkContext(private val context: IPayloadContext): NetworkCon
      * @author fzzyhmstrs
      * @since 0.4.1
      */
-    override fun disconnect(reason: Text) {
+    override fun disconnect(reason: Component) {
         context.disconnect(reason)
     }
 
@@ -57,7 +57,7 @@ class ServerPlayNetworkContext(private val context: IPayloadContext): NetworkCon
      * @since 0.4.1
      */
     override fun canReply(id: Identifier): Boolean {
-        return NetworkRegistry.hasChannel(player().networkHandler, id)
+        return NetworkRegistry.hasChannel(player().connection, id)
     }
 
     /**
@@ -66,7 +66,7 @@ class ServerPlayNetworkContext(private val context: IPayloadContext): NetworkCon
      * @author fzzyhmstrs
      * @since 0.4.1
      */
-    override fun reply(payload: CustomPayload) {
+    override fun reply(payload: CustomPacketPayload) {
         context.reply(payload)
     }
 
@@ -78,8 +78,8 @@ class ServerPlayNetworkContext(private val context: IPayloadContext): NetworkCon
      * @since 0.4.1
      */
     @JvmOverloads
-    fun sendToAllPlayers(payload: CustomPayload, skipCurrentPlayer: Boolean = true) {
-        for (player in  player().entityWorld.server?.playerManager?.playerList ?: emptyList()) {
+    fun sendToAllPlayers(payload: CustomPacketPayload, skipCurrentPlayer: Boolean = true) {
+        for (player in  player().level().server?.playerList?.players ?: emptyList()) {
             if (skipCurrentPlayer && player == player()) continue
             ConfigApi.network().send(payload, player)
         }
@@ -91,7 +91,7 @@ class ServerPlayNetworkContext(private val context: IPayloadContext): NetworkCon
      * @author fzzyhmstrs
      * @since 0.4.1
      */
-    override fun player(): ServerPlayerEntity {
+    override fun player(): ServerPlayer {
         return context.player().cast()
     }
 
@@ -100,8 +100,8 @@ class ServerPlayNetworkContext(private val context: IPayloadContext): NetworkCon
      * @author fzzyhmstrs
      * @since 0.4.1
      */
-    override fun networkPhase(): NetworkPhase {
-        return NetworkPhase.PLAY
+    override fun networkPhase(): ConnectionProtocol {
+        return ConnectionProtocol.PLAY
     }
 
     /**
@@ -109,7 +109,7 @@ class ServerPlayNetworkContext(private val context: IPayloadContext): NetworkCon
      * @author fzzyhmstrs
      * @since 0.4.1
      */
-    override fun networkSide(): NetworkSide {
-        return NetworkSide.CLIENTBOUND
+    override fun networkSide(): PacketFlow {
+        return PacketFlow.CLIENTBOUND
     }
 }

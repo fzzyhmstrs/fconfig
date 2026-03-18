@@ -23,10 +23,10 @@ import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.attachTo
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.wrap
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
-import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.client.input.KeyInput
-import net.minecraft.registry.tag.TagKey
-import net.minecraft.util.Identifier
+import net.minecraft.client.gui.components.AbstractWidget
+import net.minecraft.client.input.KeyEvent
+import net.minecraft.tags.TagKey
+import net.minecraft.resources.Identifier
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlNull
 import org.jetbrains.annotations.ApiStatus.Internal
@@ -48,7 +48,7 @@ import java.util.function.Predicate
 open class ValidatedTagKey<T: Any> @JvmOverloads constructor(defaultValue: TagKey<T>, private val predicate: Predicate<Identifier>? = null): ValidatedField<TagKey<T>>(defaultValue), EntryOpener {
 
     private val validator = if(predicate == null) ValidatedIdentifier.ofRegistryTags(defaultValue.regRef()) else ValidatedIdentifier.ofRegistryTags(defaultValue.regRef(), predicate)
-    private val codec = TagKey.codec(defaultValue.regRef())
+    private val codec = TagKey.hashedCodec(defaultValue.regRef())
 
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<TagKey<T>> {
@@ -95,16 +95,16 @@ open class ValidatedTagKey<T: Any> @JvmOverloads constructor(defaultValue: TagKe
      * @since 0.6.0
      */
     override fun copyValue(input: TagKey<T>): TagKey<T> {
-        return TagKey.of(input.regRef(), input.id)
+        return TagKey.create(input.regRef(), input.location)
     }
 
     override fun set(input: TagKey<T>) {
-        validator.validateAndSet(input.id)
+        validator.validateAndSet(input.location)
         super.set(input)
     }
 
     @Internal
-    override fun widgetEntry(choicePredicate: ChoiceValidator<TagKey<T>>): ClickableWidget {
+    override fun widgetEntry(choicePredicate: ChoiceValidator<TagKey<T>>): AbstractWidget {
         return OnClickTextFieldWidget({ validator.get().toString() }, { b, isKb, key, code, mods ->
             openTagPopup(isKb, key, code, mods, choicePredicate, { _, _ -> b.x - 8 }, { _, h -> b.y + 28 + 24 - h })
         })
@@ -131,9 +131,9 @@ open class ValidatedTagKey<T: Any> @JvmOverloads constructor(defaultValue: TagKe
     //client
     private fun openTagPopup(isKeyboard: Boolean, keyCode: Int, scanCode: Int, modifiers: Int, choicePredicate: ChoiceValidator<TagKey<T>> = ChoiceValidator.any(), xPosition: BiFunction<Int, Int, Int> = PopupWidget.Builder.center(), yPosition: BiFunction<Int, Int, Int> = PopupWidget.Builder.center()) {
         val entryValidator = EntryValidator<String>{ s, _ -> Identifier.tryParse(s)?.let { validator.validateEntry(it, EntryValidator.ValidationType.STRONG) }?.wrap(s) ?: ValidationResult.error(s, ValidationResult.Errors.INVALID, "invalid id") }
-        val entryApplier = Consumer<String> { e -> setAndUpdate(TagKey.of(defaultValue.regRef(), e.simpleId())) }
+        val entryApplier = Consumer<String> { e -> setAndUpdate(TagKey.create(defaultValue.regRef(), e.simpleId())) }
         val suggestionProvider = SuggestionBackedTextFieldWidget.SuggestionProvider {s, c, cv -> validator.allowableIds.getSuggestions(s, c, cv.convert({ it.simpleId() }, { it.simpleId() }))}
-        val textField = SuggestionBackedTextFieldWidget(170, 20, { validator.get().toString() }, choicePredicate.convert({it.id.toString()}, {it.id.toString()}), entryValidator, entryApplier, suggestionProvider)
+        val textField = SuggestionBackedTextFieldWidget(170, 20, { validator.get().toString() }, choicePredicate.convert({it.location.toString()}, {it.location.toString()}), entryValidator, entryApplier, suggestionProvider)
         val popup = PopupWidget.Builder(translation())
             .add("text_field", textField, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
             .addDoneWidget({ textField.pushChanges(); PopupWidget.pop() })
@@ -143,6 +143,6 @@ open class ValidatedTagKey<T: Any> @JvmOverloads constructor(defaultValue: TagKe
         PopupWidget.push(popup)
         PopupWidget.focusElement(popup, textField)
         if (isKeyboard)
-            textField.keyPressed(KeyInput(keyCode, scanCode, modifiers))
+            textField.keyPressed(KeyEvent(keyCode, scanCode, modifiers))
     }
 }

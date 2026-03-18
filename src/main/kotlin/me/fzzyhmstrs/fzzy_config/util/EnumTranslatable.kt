@@ -10,7 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.util
 
-import net.minecraft.text.MutableText
+import net.minecraft.network.chat.MutableComponent
 
 /**
  * SubInterface of [Translatable] for use with Enums
@@ -25,7 +25,6 @@ import net.minecraft.text.MutableText
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-@JvmDefaultWithCompatibility
 interface EnumTranslatable: Translatable {
     /**
      * Defines the prefix of the translation/description key
@@ -70,7 +69,7 @@ interface EnumTranslatable: Translatable {
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    override fun translation(fallback: String?): MutableText {
+    override fun translation(fallback: String?): MutableComponent {
         return FcText.translatableWithFallback(translationKey(), fallback ?: (this as Enum<*>).name)
     }
 }

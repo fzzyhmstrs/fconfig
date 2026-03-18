@@ -17,8 +17,8 @@ import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedBoolean
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedString
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedInt
-import net.minecraft.registry.tag.ItemTags
-import net.minecraft.util.Identifier
+import net.minecraft.tags.ItemTags
+import net.minecraft.resources.Identifier
 
 object MapBuilders {
 
@@ -30,7 +30,7 @@ object MapBuilders {
         val stringTest = ValidatedStringMap.Builder<Int>()
             .keyHandler(ValidatedString("yay"))
             .valueHandler(ValidatedInt(1, 100, 0))
-            .defaultIds(mapOf(Identifier.of("minecraft:stick") to 50))
+            .defaultIds(mapOf(Identifier.parse("minecraft:stick") to 50))
             .build()
     }
 

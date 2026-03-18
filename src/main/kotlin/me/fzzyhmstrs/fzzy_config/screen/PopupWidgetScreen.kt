@@ -13,14 +13,14 @@ package me.fzzyhmstrs.fzzy_config.screen
 import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindow
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.Click
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.Element
-import net.minecraft.client.gui.screen.Screen
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
-import net.minecraft.client.input.KeyInput
-import net.minecraft.text.Text
+import net.minecraft.client.Minecraft
+import net.minecraft.client.input.MouseButtonEvent
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.gui.components.events.GuiEventListener
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.client.gui.narration.NarrationElementOutput
+import net.minecraft.client.input.KeyEvent
+import net.minecraft.network.chat.Component
 import org.jetbrains.annotations.ApiStatus.Internal
 import org.lwjgl.glfw.GLFW
 import java.util.*
@@ -41,18 +41,18 @@ import java.util.*
  * @since 0.2.0, made render final and added renderContents 0.6.0
  */
 //client
-open class PopupWidgetScreen(title: Text) : Screen(title), PopupParentElement {
+open class PopupWidgetScreen(title: Component) : Screen(title), PopupParentElement {
 
     override val popupWidgets: LinkedList<PopupWidget> = LinkedList()
     override var justClosedWidget: Boolean = false
-    override var lastSelected: Element? = null
-    protected var hoveredElement: Element? = null
+    override var lastSelected: GuiEventListener? = null
+    protected var hoveredElement: GuiEventListener? = null
 
     override var suggestionWindow: SuggestionWindow? = null
 
     @Internal
     override fun blurElements() {
-        this.blur()
+        this.clearFocus()
     }
 
     @Internal
@@ -76,7 +76,7 @@ open class PopupWidgetScreen(title: Text) : Screen(title), PopupParentElement {
         initPopup()
     }
 
-    override fun setFocused(focused: Element?) {
+    override fun setFocused(focused: GuiEventListener?) {
         if (this.focused === focused) return
         super<Screen>.setFocused(focused)
     }
@@ -85,7 +85,7 @@ open class PopupWidgetScreen(title: Text) : Screen(title), PopupParentElement {
      * Marked final to preserve proper popup ordering and rendering
      * @since 0.6.0
      */
-    final override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    final override fun extractRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
         hoveredElement = if (popupWidgets.isNotEmpty()) null else children().firstOrNull { it.isMouseOver(mouseX.toDouble(), mouseY.toDouble()) }
         preRender(context, mouseX, mouseY, delta)
         renderContents(context, mouseX, mouseY, delta)
@@ -97,19 +97,19 @@ open class PopupWidgetScreen(title: Text) : Screen(title), PopupParentElement {
      * @author fzzyhmstrs
      * @since 0.6.0
      */
-    open fun renderContents(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    open fun renderContents(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
         if (popupWidgets.isEmpty())
-            super.render(context, mouseX, mouseY, delta)
+            super.extractRenderState(context, mouseX, mouseY, delta)
         else
-            super.render(context, 0, 0, delta)
+            super.extractRenderState(context, 0, 0, delta)
     }
 
     @Deprecated("Only for 1.21.6+")
-    override fun applyBlur(context: DrawContext) {
+    override fun extractBlurredBackground(context: GuiGraphicsExtractor) {
         //do not apply blur directly here
     }
 
-    override fun keyPressed(input: KeyInput): Boolean {
+    override fun keyPressed(input: KeyEvent): Boolean {
         val popupWidget = activeWidget() ?: return super<Screen>.keyPressed(input)
         if (popupWidget.keyPressed(input))
             return true
@@ -120,7 +120,7 @@ open class PopupWidgetScreen(title: Text) : Screen(title), PopupParentElement {
         return false
     }
 
-    final override fun mouseClicked(click: Click, doubled: Boolean): Boolean {
+    final override fun mouseClicked(click: MouseButtonEvent, doubled: Boolean): Boolean {
         val popupWidget = activeWidget() ?: return onClick(click, doubled)
         val result = popupWidget.preClick(click.x, click.y, click.button())
         if (result == PopupWidget.ClickResult.PASS) {
@@ -129,12 +129,12 @@ open class PopupWidgetScreen(title: Text) : Screen(title), PopupParentElement {
         return super<PopupParentElement>.mouseClicked(click, doubled)
     }
 
-    open fun onClick(click: Click, doubled: Boolean): Boolean {
+    open fun onClick(click: MouseButtonEvent, doubled: Boolean): Boolean {
         return super<PopupParentElement>.mouseClicked(click, doubled)
     }
 
-    override fun addScreenNarrations(messageBuilder: NarrationMessageBuilder) {
-        activeWidget()?.appendNarrations(messageBuilder) ?: super.addScreenNarrations(messageBuilder)
+    override fun updateNarrationState(messageBuilder: NarrationElementOutput) {
+        activeWidget()?.updateNarration(messageBuilder) ?: super.updateNarrationState(messageBuilder)
     }
 
 

@@ -13,7 +13,7 @@ package me.fzzyhmstrs.fzzy_config.util
 import me.fzzyhmstrs.fzzy_config.annotations.Comment
 import me.fzzyhmstrs.fzzy_config.util.platform.Registrar
 import me.fzzyhmstrs.fzzy_config.util.platform.RegistryBuilder
-import net.minecraft.registry.Registry
+import net.minecraft.core.Registry
 import net.peanuuutz.tomlkt.TomlComment
 import org.jetbrains.annotations.ApiStatus
 import org.slf4j.Logger

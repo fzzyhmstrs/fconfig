@@ -25,9 +25,9 @@ import me.fzzyhmstrs.fzzy_config.util.PortingUtils.isShiftDown
 import me.fzzyhmstrs.fzzy_config.util.function.*
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedBoolean
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedEnum
-import net.minecraft.text.MutableText
-import net.minecraft.text.Text
-import net.minecraft.util.Formatting
+import net.minecraft.network.chat.MutableComponent
+import net.minecraft.network.chat.Component
+import net.minecraft.ChatFormatting
 import java.util.function.BooleanSupplier
 import java.util.function.Predicate
 import java.util.function.Supplier
@@ -48,8 +48,8 @@ internal class SearchConfig: Config("search".fcId()) {
         return behavior.get().willPassSearch(modifier.get())
     }
 
-    fun prefixText(suffix: List<Text>): Supplier<List<Text>> {
-        return CompositingSupplier.of(Supplier { behavior.get().textPrefix().get() }, suffix) { l1: List<Text>, l2: List<Text> -> l1 + l2 }
+    fun prefixText(suffix: List<Component>): Supplier<List<Component>> {
+        return CompositingSupplier.of(Supplier { behavior.get().textPrefix().get() }, suffix) { l1: List<Component>, l2: List<Component> -> l1 + l2 }
     }
 
     enum class Modifier(private val tester: BooleanSupplier): EnumTranslatable {
@@ -66,35 +66,35 @@ internal class SearchConfig: Config("search".fcId()) {
         }
     }
 
-    enum class SearchBehavior(val needsMod: Boolean, private val testModifier: Predicate<Modifier>, private val prefix: FunctionSupplier<Modifier, List<Text>>): EnumTranslatable {
+    enum class SearchBehavior(val needsMod: Boolean, private val testModifier: Predicate<Modifier>, private val prefix: FunctionSupplier<Modifier, List<Component>>): EnumTranslatable {
         HOLD_MODIFIER(true,
             { it.test() },
             SuppliedFunctionSupplier({ INSTANCE.modifier.get() }) {
                 if (it.test())
-                    listOf("fc.search.behavior.HOLD_MODIFIER.desc".translate(it.translation()).formatted(Formatting.ITALIC), FcText.empty(), "fc.search.indirect".translate())
+                    listOf("fc.search.behavior.HOLD_MODIFIER.desc".translate(it.translation()).withStyle(ChatFormatting.ITALIC), FcText.empty(), "fc.search.indirect".translate())
                 else
-                    listOf("fc.search.behavior.ALWAYS.desc".translate(it.translation()).formatted(Formatting.YELLOW, Formatting.ITALIC), FcText.empty(), "fc.search.indirect".translate())
+                    listOf("fc.search.behavior.ALWAYS.desc".translate(it.translation()).withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC), FcText.empty(), "fc.search.indirect".translate())
             }),
         DONT_HOLD_MODIFIER(true,
             { !it.test() },
             SuppliedFunctionSupplier({ INSTANCE.modifier.get() }) {
                 if (it.test())
-                    listOf("fc.search.behavior.DONT_HOLD_MODIFIER.desc".translate(it.translation()).formatted(Formatting.YELLOW, Formatting.ITALIC), FcText.empty(), "fc.search.indirect".translate())
+                    listOf("fc.search.behavior.DONT_HOLD_MODIFIER.desc".translate(it.translation()).withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC), FcText.empty(), "fc.search.indirect".translate())
                 else
-                    listOf("fc.search.behavior.NEVER.desc".translate(it.translation()).formatted(Formatting.ITALIC), FcText.empty(), "fc.search.indirect".translate())
+                    listOf("fc.search.behavior.NEVER.desc".translate(it.translation()).withStyle(ChatFormatting.ITALIC), FcText.empty(), "fc.search.indirect".translate())
             }),
         ALWAYS(false,
             ConstPredicate(true),
-            ConstFunction(listOf("fc.search.behavior.ALWAYS.desc".translate().formatted(Formatting.YELLOW, Formatting.ITALIC), FcText.empty(), "fc.search.indirect".translate()))),
+            ConstFunction(listOf("fc.search.behavior.ALWAYS.desc".translate().withStyle(ChatFormatting.YELLOW, ChatFormatting.ITALIC), FcText.empty(), "fc.search.indirect".translate()))),
         NEVER(false,
             ConstPredicate(false),
-            ConstFunction(listOf("fc.search.behavior.NEVER.desc".translate().formatted(Formatting.ITALIC), FcText.empty(), "fc.search.indirect".translate())));
+            ConstFunction(listOf("fc.search.behavior.NEVER.desc".translate().withStyle(ChatFormatting.ITALIC), FcText.empty(), "fc.search.indirect".translate())));
 
         fun willPassSearch(modifier: Modifier): Boolean {
             return testModifier.test(modifier)
         }
 
-        fun textPrefix(): Supplier<List<Text>> {
+        fun textPrefix(): Supplier<List<Component>> {
             return prefix
         }
 
@@ -102,11 +102,11 @@ internal class SearchConfig: Config("search".fcId()) {
             return "fc.search.behavior"
         }
 
-        override fun translation(fallback: String?): MutableText {
+        override fun translation(fallback: String?): MutableComponent {
             return FcText.translatableWithFallback(translationKey(), fallback ?: (this as Enum<*>).name, INSTANCE.modifier.get().translation("fc.search.modifier.fallback"))
         }
 
-        override fun description(fallback: String?): MutableText {
+        override fun description(fallback: String?): MutableComponent {
             return FcText.translatableWithFallback(descriptionKey(), fallback ?: "", INSTANCE.modifier.get().translation("fc.search.modifier.fallback"))
         }
     }

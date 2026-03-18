@@ -19,16 +19,16 @@ import me.fzzyhmstrs.fzzy_config.simpleId
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.platform.RegistryBuilder
 import me.fzzyhmstrs.fzzy_config.util.platform.RegistrySupplier
-import net.minecraft.item.ItemGroup
-import net.minecraft.registry.Registry
-import net.minecraft.registry.RegistryKey
-import net.minecraft.registry.entry.RegistryEntry
-import net.minecraft.registry.entry.RegistryEntry.Reference
-import net.minecraft.registry.entry.RegistryEntryInfo
-import net.minecraft.registry.tag.TagKey
-import net.minecraft.text.Text
-import net.minecraft.util.Identifier
-import net.minecraft.util.dynamic.Codecs
+import net.minecraft.world.item.CreativeModeTab
+import net.minecraft.core.Registry
+import net.minecraft.resources.ResourceKey
+import net.minecraft.core.Holder
+import net.minecraft.core.Holder.Reference
+import net.minecraft.core.RegistrationInfo
+import net.minecraft.tags.TagKey
+import net.minecraft.network.chat.Component
+import net.minecraft.resources.Identifier
+import net.minecraft.util.ExtraCodecs
 import net.neoforged.neoforge.registries.NewRegistryEvent
 import java.util.function.Function
 
@@ -44,27 +44,27 @@ class RegistryBuilderImpl(private val namespace: String): RegistryBuilder {
         }
     }
 
-    override fun <T : Any> build(key: RegistryKey<Registry<T>>): Registry<T> {
+    override fun <T : Any> build(key: ResourceKey<Registry<T>>): Registry<T> {
         return net.neoforged.neoforge.registries.RegistryBuilder(key).sync(true).create().also(registries::add)
     }
 
-    override fun <T : Any> buildDefaulted(key: RegistryKey<Registry<T>>, defaultId: Identifier): Registry<T> {
+    override fun <T : Any> buildDefaulted(key: ResourceKey<Registry<T>>, defaultId: Identifier): Registry<T> {
         return net.neoforged.neoforge.registries.RegistryBuilder(key).sync(true).defaultKey(defaultId).create().also(registries::add)
     }
 
-    override fun <T : Any> buildIntrusive(key: RegistryKey<Registry<T>>): Registry<T> {
+    override fun <T : Any> buildIntrusive(key: ResourceKey<Registry<T>>): Registry<T> {
         return net.neoforged.neoforge.registries.RegistryBuilder(key).sync(true).withIntrusiveHolders().create().also(registries::add)
     }
 
-    override fun <T : Any> buildDefaultedIntrusive(key: RegistryKey<Registry<T>>, defaultId: Identifier): Registry<T> {
+    override fun <T : Any> buildDefaultedIntrusive(key: ResourceKey<Registry<T>>, defaultId: Identifier): Registry<T> {
         return net.neoforged.neoforge.registries.RegistryBuilder(key).sync(true).defaultKey(defaultId).withIntrusiveHolders().create().also(registries::add)
     }
 
-    override fun itemGroup(): ItemGroup.Builder {
-        return ItemGroup.builder()
+    override fun itemGroup(): CreativeModeTab.Builder {
+        return CreativeModeTab.builder()
     }
 
-    override fun getTagName(tagKey: TagKey<*>): Text {
+    override fun getTagName(tagKey: TagKey<*>): Component {
         return FcText.translatable(getTranslationKey(tagKey))
     }
 
@@ -72,8 +72,8 @@ class RegistryBuilderImpl(private val namespace: String): RegistryBuilder {
         val stringBuilder = StringBuilder()
         stringBuilder.append("tag.")
 
-        val registryIdentifier = tagKey.registryRef.value
-        val tagIdentifier = tagKey.id()
+        val registryIdentifier = tagKey.registry.identifier()
+        val tagIdentifier = tagKey.location()
 
         if (registryIdentifier.namespace != Identifier.DEFAULT_NAMESPACE) {
             stringBuilder.append(registryIdentifier.namespace)
@@ -89,13 +89,13 @@ class RegistryBuilderImpl(private val namespace: String): RegistryBuilder {
         return stringBuilder.toString()
     }
 
-    override fun <T> namespaceCodec(registry: Registry<T>): Codec<T> {
+    override fun <T: Any> namespaceCodec(registry: Registry<T>): Codec<T> {
 
-        fun validateReference(entry: RegistryEntry<T>): DataResult<Reference<T>> {
+        fun validateReference(entry: Holder<T>): DataResult<Reference<T>> {
             val dataResult: DataResult<Reference<T>> = if (entry is Reference<T>) {
                 DataResult.success(entry)
             } else {
-                DataResult.error { "Unregistered holder in " + registry.key.toString() + ": " + entry.toString() }
+                DataResult.error { "Unregistered holder in " + registry.key().toString() + ": " + entry.toString() }
             }
             return dataResult
         }
@@ -106,37 +106,38 @@ class RegistryBuilderImpl(private val namespace: String): RegistryBuilder {
         )
 
         return idCodec.flatXmap(
-            {id -> registry.getEntry(id).map{ DataResult.success(it.value()) }.orElseGet{ DataResult.error<T> { "Unknown registry key in " + registry.key.toString() + ": " + id.toString() } }},
-            { value -> validateReference(registry.getEntry(value)).map { it.registryKey().value } }
+            {id -> registry.get(id).map{ DataResult.success(it.value()) }.orElseGet{ DataResult.error<T> { "Unknown registry key in " + registry.key()
+                .toString() + ": " + id.toString() } }},
+            { value -> validateReference(registry.wrapAsHolder(value)).map { it.key().identifier() } }
         )
     }
 
-    override fun <T> regSupplierCodec(registry: Registry<T>): Codec<RegistryEntry<T>> {
-        return registry.entryCodec.xmap(Function.identity()) { re -> if (re is RegistrySupplier<T>) re.getEntry().cast() else re }
+    override fun <T: Any> regSupplierCodec(registry: Registry<T>): Codec<Holder<T>> {
+        return registry.holderByNameCodec().xmap(Function.identity()) { re -> if (re is RegistrySupplier<T>) re.getEntry().cast() else re }
     }
 
-    override fun <T> referenceEntryCodec(registry: Registry<T>): Codec<Reference<T>> {
+    override fun <T: Any> referenceEntryCodec(registry: Registry<T>): Codec<Reference<T>> {
         val codec: Codec<Reference<T>> = Identifier.CODEC
             .comapFlatMap(
                 { id: Identifier ->
-                    registry.getEntry(id).map<DataResult<Reference<T>>> { result: Reference<T> ->
+                    registry.get(id).map<DataResult<Reference<T>>> { result: Reference<T> ->
                         DataResult.success(result)
-                    }.orElseGet { DataResult.error { "Unknown registry key in " + registry.key + ": " + id } }
+                    }.orElseGet { DataResult.error { "Unknown registry key in " + registry.key() + ": " + id } }
                 },
-                { entry: Reference<T> -> entry.registryKey().value }
+                { entry: Reference<T> -> entry.key().identifier() }
             )
-        return Codecs.withLifecycle(codec) { entry: Reference<T> ->
-            registry.getEntryInfo(
-                entry.registryKey()
-            ).map { obj: RegistryEntryInfo -> obj.lifecycle() }.orElse(Lifecycle.experimental()) as Lifecycle
+        return ExtraCodecs.overrideLifecycle(codec) { entry: Reference<T> ->
+            registry.registrationInfo(
+                entry.key()
+            ).map { obj: RegistrationInfo -> obj.lifecycle() }.orElse(Lifecycle.experimental()) as Lifecycle
         }
     }
 
-    override fun <T> getEntryId(registry: Registry<T>, entry: RegistryEntry<T>): Identifier? {
+    override fun <T: Any> getEntryId(registry: Registry<T>, entry: Holder<T>): Identifier? {
         return if (entry is Reference) {
-            return entry.registryKey().value
+            return entry.key().identifier()
         } else {
-            registry.getId(entry.value())
+            registry.getKey(entry.value())
         }
     }
 }

@@ -19,12 +19,12 @@ import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawOutline
 import me.fzzyhmstrs.fzzy_config.util.Translatable
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.Element
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
-import net.minecraft.client.gui.screen.narration.NarrationPart
-import net.minecraft.client.gui.tooltip.Tooltip
+import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.gui.components.events.GuiEventListener
+import net.minecraft.client.gui.narration.NarrationElementOutput
+import net.minecraft.client.gui.narration.NarratedElementType
+import net.minecraft.client.gui.components.Tooltip
 
 internal class SidebarEntry(parentElement: DynamicListWidget, scope: String, texts: Translatable.Result, icon: Decorated.DecoratedOffset, onPress: Runnable, layer: Int) :
     DynamicListWidget.Entry(parentElement, texts, DynamicListWidget.Scope(scope)) {
@@ -38,32 +38,32 @@ internal class SidebarEntry(parentElement: DynamicListWidget, scope: String, tex
         return selectables
     }
 
-    override fun children(): MutableList<out Element> {
+    override fun children(): MutableList<out GuiEventListener> {
         return children
     }
 
-    override fun renderEntry(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {
+    override fun renderEntry(context: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {
         if (hovered || focused) {
             widget.setPosition(x + 2, y)
         } else {
             widget.setPosition(x, y)
         }
-        widget.render(context, mouseX, mouseY, delta)
+        widget.extractRenderState(context, mouseX, mouseY, delta)
     }
 
-    override fun renderBorder(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {
-        if (focused && MinecraftClient.getInstance().navigationType.isKeyboard) {
+    override fun renderBorder(context: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {
+        if (focused && Minecraft.getInstance().lastInputType.isKeyboard) {
             context.drawOutline(x, y, width, height, -1)
         }
     }
 
-    override fun appendTitleNarrations(builder: NarrationMessageBuilder) {
-        builder.put(NarrationPart.TITLE, "fc.button.goto.narration".translate(texts.name))
+    override fun appendTitleNarrations(builder: NarrationElementOutput) {
+        builder.add(NarratedElementType.TITLE, "fc.button.goto.narration".translate(texts.name))
     }
 
     companion object {
         fun neededWidth(texts: Translatable.Result, layer: Int): Int {
-            return 16 + layer * 4 + 2 + MinecraftClient.getInstance().textRenderer.getWidth(texts.name) + 2
+            return 16 + layer * 4 + 2 + Minecraft.getInstance().font.width(texts.name) + 2
         }
     }
 
@@ -75,12 +75,12 @@ internal class SidebarEntry(parentElement: DynamicListWidget, scope: String, tex
         :
         CustomPressableWidget(
             0, 0,
-            16 + layer * 4 + 2 + MinecraftClient.getInstance().textRenderer.getWidth(texts.name) + 2, 16,
+            16 + layer * 4 + 2 + Minecraft.getInstance().font.width(texts.name) + 2, 16,
             FcText.EMPTY) {
 
         init {
             if (texts.desc != null) {
-                setTooltip(Tooltip.of(texts.desc))
+                setTooltip(Tooltip.create(texts.desc!!))
             }
         }
 
@@ -89,12 +89,12 @@ internal class SidebarEntry(parentElement: DynamicListWidget, scope: String, tex
             onPress.run()
         }
 
-        override fun renderBackground(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
-            val offset = if (isSelected) 2 else 0
-            icon.decorated.renderDecoration(context, x + offset + icon.offsetX + layer * 4, y + icon.offsetY, delta, this.active, this.isSelected)
-            context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, texts.name, x + offset + layer * 4 + 18, y + 3, -1)
+        override fun renderBackground(context: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
+            val offset = if (isHoveredOrFocused) 2 else 0
+            icon.decorated.renderDecoration(context, x + offset + icon.offsetX + layer * 4, y + icon.offsetY, delta, this.active, this.isHoveredOrFocused)
+            context.text(Minecraft.getInstance().font, texts.name, x + offset + layer * 4 + 18, y + 3, -1)
         }
 
-        override fun renderCustom(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {}
+        override fun renderCustom(context: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {}
     }
 }

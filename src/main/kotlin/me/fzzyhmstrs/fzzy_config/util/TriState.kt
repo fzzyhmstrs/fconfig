@@ -11,7 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.util
 
 import com.mojang.serialization.Codec
-import net.minecraft.util.StringIdentifiable
+import net.minecraft.util.StringRepresentable
 import java.util.function.BooleanSupplier
 import java.util.function.Supplier
 
@@ -22,7 +22,7 @@ import java.util.function.Supplier
  * @author fzzyhmstrs
  * @since 0.6.5
  */
-enum class TriState(private val state: String): TriStateProvider, EnumTranslatable, StringIdentifiable {
+enum class TriState(private val state: String): TriStateProvider, EnumTranslatable, StringRepresentable {
     DEFAULT("default"),
     TRUE("true"),
     FALSE("false");
@@ -130,13 +130,13 @@ enum class TriState(private val state: String): TriStateProvider, EnumTranslatab
 
     /// StringIdentifiable ///////////
 
-    override fun asString(): String {
+    override fun getSerializedName(): String {
         return this.state
     }
 
     companion object {
 
-        val CODEC: Codec<TriState> = StringIdentifiable.createCodec { TriState.entries.toTypedArray() }
+        val CODEC: Codec<TriState> = StringRepresentable.fromEnum { TriState.entries.toTypedArray() }
 
         /**
          * Gets the corresponding tri-state from a boolean value.

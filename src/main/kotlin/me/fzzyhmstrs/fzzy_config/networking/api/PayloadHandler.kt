@@ -10,9 +10,9 @@
 
 package me.fzzyhmstrs.fzzy_config.networking.api
 
-import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.network.packet.CustomPayload
+import net.minecraft.world.entity.player.Player
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload
 
-interface PayloadHandler<T: CustomPayload, P: PlayerEntity, C: NetworkContext<P>> {
+interface PayloadHandler<T: CustomPacketPayload, P: Player, C: NetworkContext<P>> {
     fun handle(payload: T, context: C)
 }

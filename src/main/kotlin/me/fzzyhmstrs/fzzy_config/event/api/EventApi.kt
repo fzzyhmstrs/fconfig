@@ -11,7 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.event.api
 
 import me.fzzyhmstrs.fzzy_config.event.api.v2.OnUpdateServerListener as OnUpdateServerListenerV2
-import net.minecraft.util.Identifier
+import net.minecraft.resources.Identifier
 
 /**
  * API for registration of config events

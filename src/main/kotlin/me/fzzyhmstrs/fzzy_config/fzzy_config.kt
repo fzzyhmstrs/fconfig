@@ -16,7 +16,7 @@ import me.fzzyhmstrs.fzzy_config.networking.NetworkEventsClient
 import me.fzzyhmstrs.fzzy_config.networking.impl.NetworkApiImpl
 import me.fzzyhmstrs.fzzy_config.util.platform.impl.PlatformUtils
 import me.fzzyhmstrs.fzzy_config.util.platform.impl.RegistryBuilderImpl
-import net.minecraft.util.Identifier
+import net.minecraft.resources.Identifier
 import net.neoforged.api.distmarker.Dist
 import net.neoforged.bus.api.IEventBus
 import net.neoforged.fml.common.Mod
@@ -36,15 +36,15 @@ inline fun<reified T> Any?.nullCast(): T? {
 }
 
 internal fun String.fcId(): Identifier {
-    return Identifier.of(FC.MOD_ID, this)
+    return Identifier.fromNamespaceAndPath(FC.MOD_ID, this)
 }
 
 internal fun String.simpleId(): Identifier {
-    return Identifier.of(this)
+    return Identifier.parse(this)
 }
 
 internal fun String.nsId(path: String): Identifier {
-    return Identifier.of(this, path)
+    return Identifier.fromNamespaceAndPath(this, path)
 }
 
 

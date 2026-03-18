@@ -26,10 +26,10 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.Ref
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.screen.Screen
-import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.text.Text
+import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.client.gui.components.AbstractWidget
+import net.minecraft.network.chat.Component
 import java.util.function.BiFunction
 import java.util.function.Consumer
 
@@ -78,7 +78,7 @@ object EntryCreators {
                     "open_screen",
                     CustomButtonWidget.builder(context.texts.name) {
                         if (SearchConfig.INSTANCE.willPassSearch()) {
-                            val search = MinecraftClient.getInstance().currentScreen.nullCast<ConfigScreen>()?.getCurrentSearch() ?: ""
+                            val search = Minecraft.getInstance().screen.nullCast<ConfigScreen>()?.getCurrentSearch() ?: ""
                             if (search.isNotEmpty()) {
                                 val scope = "${context.scope}.::$search"
                                 context.misc.get(OPEN_SCREEN)?.accept(scope)
@@ -89,7 +89,7 @@ object EntryCreators {
                             context.misc.get(OPEN_SCREEN)?.accept(context.scope)
                         }
                     }
-                        .narrationSupplier { _, _ -> context.texts.name.copyContentOnly() }
+                        .narrationSupplier { _, _ -> context.texts.name.plainCopy() }
                         .width(110)
                         .build(),
                     LayoutWidget.Position.ALIGN_JUSTIFY,
@@ -112,7 +112,7 @@ object EntryCreators {
                     "open_screen",
                     CustomButtonWidget.builder(context.texts.name) {
                         if (SearchConfig.INSTANCE.willPassSearch()) {
-                            val search = MinecraftClient.getInstance().currentScreen.nullCast<ConfigScreen>()?.getCurrentSearch() ?: ""
+                            val search = Minecraft.getInstance().screen.nullCast<ConfigScreen>()?.getCurrentSearch() ?: ""
                             if (search.isNotEmpty()) {
                                 val scope = "${context.scope}.::$search"
                                 context.misc.get(OPEN_SCREEN)?.accept(scope)
@@ -123,7 +123,7 @@ object EntryCreators {
                             context.misc.get(OPEN_SCREEN)?.accept(context.scope)
                         }
                     }
-                        .narrationSupplier { _, _ -> context.texts.name.copyContentOnly() }
+                        .narrationSupplier { _, _ -> context.texts.name.plainCopy() }
                         .width(110)
                         .build(),
                     LayoutWidget.Position.ALIGN_JUSTIFY,
@@ -138,7 +138,7 @@ object EntryCreators {
 
     internal fun createNoPermsEntry(context: EntryCreator.CreatorContext, type: String): List<EntryCreator.Creator> {
         val child: TooltipChild = object: TooltipChild {
-            override fun provideTooltipLines(mouseX: Int, mouseY: Int, parentSelected: Boolean, keyboardFocused: Boolean): List<Text> {
+            override fun provideTooltipLines(mouseX: Int, mouseY: Int, parentSelected: Boolean, keyboardFocused: Boolean): List<Component> {
                 return if (parentSelected || keyboardFocused) {
                     listOf("fc.button.$type.desc".translate())
                 } else {
@@ -202,7 +202,7 @@ object EntryCreators {
         return listOf(EntryCreator.Creator(context.scope, context.texts, function))
     }
 
-    internal fun createActionEntry(context: EntryCreator.CreatorContext, decoration: Decorated?, widget: ClickableWidget): List<EntryCreator.Creator> {
+    internal fun createActionEntry(context: EntryCreator.CreatorContext, decoration: Decorated?, widget: AbstractWidget): List<EntryCreator.Creator> {
         val function: BiFunction<DynamicListWidget, Int, out DynamicListWidget.Entry> = BiFunction { listWidget, _ ->
             val contentBuilder = ConfigEntry.ContentBuilder(context, setOf())
             contentBuilder.layoutContent { content ->

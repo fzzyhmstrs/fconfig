@@ -12,7 +12,7 @@ package me.fzzyhmstrs.fzzy_config.util
 
 import me.fzzyhmstrs.fzzy_config.entry.EntryKeyed
 import me.fzzyhmstrs.fzzy_config.nullCast
-import net.minecraft.text.MutableText
+import net.minecraft.network.chat.MutableComponent
 
 /**
  * A [Translatable] object that uses it's [EntryKeyed] key to build the translation/description/prefix keys.
@@ -44,15 +44,15 @@ interface TranslatableEntry: Translatable, EntryKeyed {
         return getEntryKey() + ".prefix"
     }
 
-    override fun translation(fallback: String?): MutableText {
+    override fun translation(fallback: String?): MutableComponent {
         return Translatable.getScopedResult(this.getEntryKey())?.name?.nullCast() ?: super.translation(fallback)
     }
 
-    override fun description(fallback: String?): MutableText {
+    override fun description(fallback: String?): MutableComponent {
         return Translatable.getScopedResult(this.getEntryKey())?.desc?.nullCast() ?: super.description(fallback)
     }
 
-    override fun prefix(fallback: String?): MutableText {
+    override fun prefix(fallback: String?): MutableComponent {
         return Translatable.getScopedResult(this.getEntryKey())?.prefix?.nullCast() ?: super.prefix(fallback)
     }
 

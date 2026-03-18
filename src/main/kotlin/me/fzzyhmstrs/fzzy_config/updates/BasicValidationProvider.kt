@@ -23,20 +23,19 @@ import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedRegistryType
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedTagKey
 import me.fzzyhmstrs.fzzy_config.validation.misc.*
 import me.fzzyhmstrs.fzzy_config.validation.number.*
-import net.minecraft.block.Block
-import net.minecraft.entity.EntityType
-import net.minecraft.fluid.Fluid
-import net.minecraft.item.Item
-import net.minecraft.registry.Registries
-import net.minecraft.registry.tag.TagKey
-import net.minecraft.util.Identifier
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.entity.EntityType
+import net.minecraft.world.level.material.Fluid
+import net.minecraft.world.item.Item
+import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.tags.TagKey
+import net.minecraft.resources.Identifier
 import java.awt.Color
 import kotlin.reflect.KCallable
 import kotlin.reflect.KType
 import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.jvm.jvmErasure
 
-@JvmDefaultWithCompatibility
 internal interface BasicValidationProvider {
 
     fun basicValidationStrategy(input: Any?, inputType: KCallable<*>, fieldName: String): ValidatedField<*>? {
@@ -122,13 +121,13 @@ internal interface BasicValidationProvider {
                         TagKey::class.java -> ValidatedTagKey(input as TagKey<*>)
                         else -> {
                             if (Item::class.java.isAssignableFrom(jot)) {
-                                ValidatedRegistryType.of(input as Item, Registries.ITEM)
+                                ValidatedRegistryType.of(input as Item, BuiltInRegistries.ITEM)
                             } else if (Block::class.java.isAssignableFrom(jot)) {
-                                ValidatedRegistryType.of(input as Block, Registries.BLOCK)
+                                ValidatedRegistryType.of(input as Block, BuiltInRegistries.BLOCK)
                             } else if (EntityType::class.java.isAssignableFrom(jot)) {
-                                ValidatedRegistryType.of(input as EntityType<*>, Registries.ENTITY_TYPE)
+                                ValidatedRegistryType.of(input as EntityType<*>, BuiltInRegistries.ENTITY_TYPE)
                             } else if (Fluid::class.java.isAssignableFrom(jot)) {
-                                ValidatedRegistryType.of(input as Fluid, Registries.FLUID)
+                                ValidatedRegistryType.of(input as Fluid, BuiltInRegistries.FLUID)
                             } else {
                                 complexStrategy(input, inputType.returnType, fieldName, inputType.annotations)
                             }
@@ -151,13 +150,13 @@ internal interface BasicValidationProvider {
                     stringClass -> ValidatedString()
                     else -> {
                         if (Item::class.java.isAssignableFrom(jot)) {
-                            ValidatedRegistryType.of(Registries.ITEM)
+                            ValidatedRegistryType.of(BuiltInRegistries.ITEM)
                         } else if (Block::class.java.isAssignableFrom(jot)) {
-                            ValidatedRegistryType.of(Registries.BLOCK)
+                            ValidatedRegistryType.of(BuiltInRegistries.BLOCK)
                         } else if (EntityType::class.java.isAssignableFrom(jot)) {
-                            ValidatedRegistryType.of(Registries.ENTITY_TYPE)
+                            ValidatedRegistryType.of(BuiltInRegistries.ENTITY_TYPE)
                         } else if (Fluid::class.java.isAssignableFrom(jot)) {
-                            ValidatedRegistryType.of(Registries.FLUID)
+                            ValidatedRegistryType.of(BuiltInRegistries.FLUID)
                         } else {
                             complexStrategy(null, ktype, fieldName, inputType.annotations)
                         }
@@ -256,13 +255,13 @@ internal interface BasicValidationProvider {
                             if (triStateClass.isAssignableFrom(jot)) {
                                 ValidatedTriState(TriState.DEFAULT)
                             } else if (itemClass.isAssignableFrom(jot)) {
-                                ValidatedRegistryType.of(input as Item, Registries.ITEM)
+                                ValidatedRegistryType.of(input as Item, BuiltInRegistries.ITEM)
                             } else if (blockClass.isAssignableFrom(jot)) {
-                                ValidatedRegistryType.of(input as Block, Registries.BLOCK)
+                                ValidatedRegistryType.of(input as Block, BuiltInRegistries.BLOCK)
                             } else if (entityClass.isAssignableFrom(jot)) {
-                                ValidatedRegistryType.of(input as EntityType<*>, Registries.ENTITY_TYPE)
+                                ValidatedRegistryType.of(input as EntityType<*>, BuiltInRegistries.ENTITY_TYPE)
                             } else if (fluidClass.isAssignableFrom(jot)) {
-                                ValidatedRegistryType.of(input as Fluid, Registries.FLUID)
+                                ValidatedRegistryType.of(input as Fluid, BuiltInRegistries.FLUID)
                             } else {
                                 complexStrategy(input, inputType, fieldName, annotations)
                             }
@@ -286,13 +285,13 @@ internal interface BasicValidationProvider {
                         if (triStateClass.isAssignableFrom(jot)) {
                             ValidatedTriState(TriState.DEFAULT)
                         } else if (itemClass.isAssignableFrom(jot)) {
-                            ValidatedRegistryType.of(Registries.ITEM)
+                            ValidatedRegistryType.of(BuiltInRegistries.ITEM)
                         } else if (blockClass.isAssignableFrom(jot)) {
-                            ValidatedRegistryType.of(Registries.BLOCK)
+                            ValidatedRegistryType.of(BuiltInRegistries.BLOCK)
                         } else if (entityClass.isAssignableFrom(jot)) {
-                            ValidatedRegistryType.of(Registries.ENTITY_TYPE)
+                            ValidatedRegistryType.of(BuiltInRegistries.ENTITY_TYPE)
                         } else if (fluidClass.isAssignableFrom(jot)) {
-                            ValidatedRegistryType.of(Registries.FLUID)
+                            ValidatedRegistryType.of(BuiltInRegistries.FLUID)
                         } else {
                             complexStrategy(null, inputType, fieldName, annotations)
                         }

@@ -11,7 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.event.api
 
 import me.fzzyhmstrs.fzzy_config.config.Config
-import net.minecraft.util.Identifier
+import net.minecraft.resources.Identifier
 
 /**
  * Listener for on-changed events on the client side. Will be fired for any and all updated configs, allowing inspection of other configs. For use in your own configs, consider directly implementing [Config.onUpdateClient][me.fzzyhmstrs.fzzy_config.config.Config.onUpdateClient]

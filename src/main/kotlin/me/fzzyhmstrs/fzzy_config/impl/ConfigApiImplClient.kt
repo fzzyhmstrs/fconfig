@@ -22,11 +22,11 @@ import me.fzzyhmstrs.fzzy_config.screen.ConfigScreenProvider
 import me.fzzyhmstrs.fzzy_config.screen.internal.ConfigBaseUpdateManager
 import me.fzzyhmstrs.fzzy_config.screen.internal.RestartScreen
 import me.fzzyhmstrs.fzzy_config.util.Translatable
-import net.minecraft.client.MinecraftClient
-import net.minecraft.command.permission.LeveledPermissionPredicate
-import net.minecraft.command.permission.OrPermissionPredicate
-import net.minecraft.command.permission.PermissionPredicate
-import net.minecraft.util.Identifier
+import net.minecraft.client.Minecraft
+import net.minecraft.server.permissions.LevelBasedPermissionSet
+import net.minecraft.server.permissions.PermissionSetUnion
+import net.minecraft.server.permissions.PermissionSet
+import net.minecraft.resources.Identifier
 
 internal object ConfigApiImplClient {
 
@@ -43,7 +43,7 @@ internal object ConfigApiImplClient {
     }
 
     internal fun isConfigLoaded(id: Identifier): Boolean {
-        return ClientConfigRegistry.hasClientConfig(id.toTranslationKey())
+        return ClientConfigRegistry.hasClientConfig(id.toLanguageKey())
     }
 
     internal fun isConfigLoaded(scope: String): Boolean {
@@ -65,11 +65,11 @@ internal object ConfigApiImplClient {
     }
 
     internal fun getClientConfig(id: Identifier): Config? {
-        return ClientConfigRegistry.getClientConfig(id.toTranslationKey())
+        return ClientConfigRegistry.getClientConfig(id.toLanguageKey())
     }
 
     internal fun openScreen(scope: String) {
-        MinecraftClient.getInstance().execute {
+        Minecraft.getInstance().execute {
             ClientConfigRegistry.openScreen(scope)
         }
     }
@@ -87,26 +87,26 @@ internal object ConfigApiImplClient {
     }
 
     internal fun openRestartScreen(): Boolean {
-        if (MinecraftClient.getInstance().currentScreen is RestartScreen) return false
-        MinecraftClient.getInstance().execute {
-            if (MinecraftClient.getInstance().currentScreen !is RestartScreen)
-                MinecraftClient.getInstance().setScreen(RestartScreen())
+        if (Minecraft.getInstance().screen is RestartScreen) return false
+        Minecraft.getInstance().execute {
+            if (Minecraft.getInstance().screen !is RestartScreen)
+                Minecraft.getInstance().setScreen(RestartScreen())
         }
         return true
     }
 
     internal fun getPlayerPermissionLevel(): Int {
-        val client = MinecraftClient.getInstance()
-        if(client.server != null && client?.server?.isSingleplayer == true) return 4 // single player game, they can change whatever they want
-        return client.player?.run { getPermissionPredicateLevel(permissions) } ?: 0
+        val client = Minecraft.getInstance()
+        if(client.singleplayerServer != null && client?.singleplayerServer?.isSingleplayer == true) return 4 // single player game, they can change whatever they want
+        return client.player?.run { getPermissionPredicateLevel(permissions()) } ?: 0
     }
 
-    fun getPermissionPredicateLevel(permissions: PermissionPredicate): Int {
+    fun getPermissionPredicateLevel(permissions: PermissionSet): Int {
         return when (permissions) {
-            PermissionPredicate.ALL -> 4
-            PermissionPredicate.NONE -> 0
-            is LeveledPermissionPredicate -> permissions.level.level
-            is OrPermissionPredicate -> permissions.predicates.maxOf { getPermissionPredicateLevel(it) }
+            PermissionSet.ALL_PERMISSIONS -> 4
+            PermissionSet.NO_PERMISSIONS -> 0
+            is LevelBasedPermissionSet -> permissions.level().id()
+            is PermissionSetUnion -> permissions.permissions.maxOf { getPermissionPredicateLevel(it) }
             else -> {
                 FC.LOGGER.warn("Unknow permissions predicate found! {}", permissions.javaClass.simpleName)
                 0
@@ -155,9 +155,9 @@ internal object ConfigApiImplClient {
 
     internal fun hasNeededPermLevel(thing: Any?, playerPermLevel: Int, config: Any, configId: String, id: String, annotations: List<Annotation>, clientOnly: Boolean, flags: List<EntryFlag.Flag>, cachedPerms:  Map<String, Map<String, Boolean>>): PermResult {
         if (thing is EntryPermissible) return PermResult.SUCCESS
-        val client = MinecraftClient.getInstance()
+        val client = Minecraft.getInstance()
         val needsWorld = flags.contains(EntryFlag.Flag.REQUIRES_WORLD)
-        if (client.isInSingleplayer) return PermResult.SUCCESS //single player or client config, they can do what they want!!
+        if (client.isLocalServer) return PermResult.SUCCESS //single player or client config, they can do what they want!!
         if((clientOnly && !needsWorld)) {
             return PermResult.SUCCESS //single player or client config, they can do what they want!!
         } else if (outOfGame(client)) {
@@ -243,8 +243,8 @@ internal object ConfigApiImplClient {
         }
     }
 
-    private fun outOfGame(client: MinecraftClient): Boolean {
-        return (client.world == null || client.networkHandler == null || client.networkHandler?.isConnectionOpen == false)
+    private fun outOfGame(client: Minecraft): Boolean {
+        return (client.level == null || client.connection == null || client.connection?.isAcceptingMessages == false)
     }
 
     private fun isSeparate(config: Any, flags: List<EntryFlag.Flag>): Boolean {

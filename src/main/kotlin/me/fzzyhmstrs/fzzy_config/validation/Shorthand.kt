@@ -18,10 +18,10 @@ import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedTagKey
 import me.fzzyhmstrs.fzzy_config.validation.misc.*
 import me.fzzyhmstrs.fzzy_config.validation.number.*
-import net.minecraft.registry.Registry
-import net.minecraft.registry.entry.RegistryEntry
-import net.minecraft.registry.tag.TagKey
-import net.minecraft.util.Identifier
+import net.minecraft.core.Registry
+import net.minecraft.core.Holder
+import net.minecraft.tags.TagKey
+import net.minecraft.resources.Identifier
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.awt.Color
 import java.util.function.BiPredicate
@@ -147,7 +147,7 @@ object Shorthand {
      * @since 0.2.0
      */
     @JvmStatic
-    fun<T: Any> List<Identifier>.validatedRegistry(registry: Registry<T>, predicate: BiPredicate<Identifier, RegistryEntry<T>>): ValidatedList<Identifier> {
+    fun<T: Any> List<Identifier>.validatedRegistry(registry: Registry<T>, predicate: BiPredicate<Identifier, Holder<T>>): ValidatedList<Identifier> {
         return ValidatedList(this, ValidatedIdentifier.ofRegistry(registry, predicate))
     }
     /**
@@ -218,7 +218,7 @@ object Shorthand {
      * @since 0.2.0
      */
     @JvmStatic
-    fun<T: Any> Set<Identifier>.validatedRegistry(registry: Registry<T>, predicate: BiPredicate<Identifier, RegistryEntry<T>>): ValidatedSet<Identifier> {
+    fun<T: Any> Set<Identifier>.validatedRegistry(registry: Registry<T>, predicate: BiPredicate<Identifier, Holder<T>>): ValidatedSet<Identifier> {
         return ValidatedSet(this, ValidatedIdentifier.ofRegistry(registry, predicate))
     }
     /**
@@ -327,7 +327,7 @@ object Shorthand {
      */
     @JvmStatic
     @Deprecated("Use only for validation of a list or map.")
-    fun <T: Any> Registry<T>.validatedIds(predicate: BiPredicate<Identifier, RegistryEntry<T>>): ValidatedIdentifier {
+    fun <T: Any> Registry<T>.validatedIds(predicate: BiPredicate<Identifier, Holder<T>>): ValidatedIdentifier {
         return ValidatedIdentifier.ofRegistry(this, predicate)
     }
     /**

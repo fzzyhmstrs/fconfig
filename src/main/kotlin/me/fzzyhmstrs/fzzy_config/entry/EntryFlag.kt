@@ -15,7 +15,6 @@ package me.fzzyhmstrs.fzzy_config.entry
  * @author fzzyhmstrs
  * @since 0.5.6, added setFlag 0.7.1
  */
-@JvmDefaultWithCompatibility
 interface EntryFlag {
 
     fun setFlag(flag: Flag) {

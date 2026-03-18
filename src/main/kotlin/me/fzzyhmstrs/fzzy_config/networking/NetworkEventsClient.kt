@@ -25,13 +25,13 @@ import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.PortingUtils.sendChat
 import me.fzzyhmstrs.fzzy_config.util.ThreadingUtils
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen
-import net.minecraft.client.realms.gui.screen.RealmsMainScreen
-import net.minecraft.client.gui.screen.TitleScreen
-import net.minecraft.server.command.CommandManager
-import net.minecraft.server.command.ServerCommandSource
-import net.minecraft.util.Identifier
+import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen
+import com.mojang.realmsclient.RealmsMainScreen
+import net.minecraft.client.gui.screens.TitleScreen
+import net.minecraft.commands.Commands
+import net.minecraft.commands.CommandSourceStack
+import net.minecraft.resources.Identifier
 import net.neoforged.fml.ModList
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent
 import net.neoforged.neoforge.client.event.ClientTickEvent
@@ -41,7 +41,7 @@ import net.neoforged.neoforge.client.gui.IConfigScreenFactory
 import net.neoforged.neoforge.common.NeoForge
 import net.neoforged.neoforge.network.handling.IPayloadContext
 import net.neoforged.neoforge.network.registration.NetworkRegistry
-import net.minecraft.client.world.ClientWorld
+import net.minecraft.client.multiplayer.ClientLevel
 import java.util.*
 import java.util.function.Consumer
 import java.util.function.Function
@@ -50,13 +50,13 @@ import java.util.function.Supplier
 internal object NetworkEventsClient {
 
     fun canSend(id: Identifier): Boolean {
-        val handler = MinecraftClient.getInstance().networkHandler ?: return false
+        val handler = Minecraft.getInstance().connection ?: return false
         return NetworkRegistry.hasChannel(handler, id)
     }
 
     fun forwardSetting(update: String, player: UUID, scope: String, summary: String) {
         if (!ConfigApi.network().canSend(SettingForwardCustomPayload.type.id, null)) {
-            MinecraftClient.getInstance().player?.sendChat("fc.config.forwarded_error.c2s".translate())
+            Minecraft.getInstance().player?.sendChat("fc.config.forwarded_error.c2s".translate())
             FC.LOGGER.error("Can't forward setting; not connected to a server or server isn't accepting this type of data")
             FC.LOGGER.error("Setting not sent:")
             FC.LOGGER.warn(scope)
@@ -160,17 +160,18 @@ internal object NetworkEventsClient {
         registerClientCommands(event.dispatcher)
     }
 
-    private fun registerClientCommands(dispatcher: CommandDispatcher<ServerCommandSource>) {
+    private fun registerClientCommands(dispatcher: CommandDispatcher<CommandSourceStack>) {
         dispatcher.register(
-            CommandManager.literal("configure")
-                .then(CommandManager.argument("base_scope", ValidScopesArgumentType())
+            Commands.literal("configure")
+                .then(
+                    Commands.argument("base_scope", ValidScopesArgumentType())
                     .executes{ context ->
                         val scope = ValidScopesArgumentType.getValidScope(context, "base_scope")
                         FCC.openScopedScreen(scope ?: "")
                         1
                     }
                     .then(
-                        CommandManager.argument("sub_scope", ValidSubScopesArgumentType())
+                        Commands.argument("sub_scope", ValidSubScopesArgumentType())
                         .executes{ context ->
                             val scope = ValidScopesArgumentType.getValidScope(context, "base_scope")
                             val subScope = ValidSubScopesArgumentType.getValidSubScope(context, "sub_scope")
@@ -181,34 +182,34 @@ internal object NetworkEventsClient {
                 )
         )
         dispatcher.register(
-            CommandManager.literal("fzzy_config_restart")
+            Commands.literal("fzzy_config_restart")
                 .executes{ context ->
-                    MinecraftClient.getInstance().scheduleStop()
+                    Minecraft.getInstance().stop()
                     1
                 }
         )
         dispatcher.register(
-            CommandManager.literal("fzzy_config_leave_game")
+            Commands.literal("fzzy_config_leave_game")
                 .executes{ context ->
-                    val c = MinecraftClient.getInstance()
-                    val sp = c.isInSingleplayer
-                    val serverInfo = c.currentServerEntry
-                    c.world?.disconnect(ClientWorld.QUITTING_MULTIPLAYER_TEXT)
+                    val c = Minecraft.getInstance()
+                    val sp = c.isLocalServer
+                    val serverInfo = c.currentServer
+                    c.level?.disconnect(ClientLevel.DEFAULT_QUIT_MESSAGE)
                     val titleScreen = TitleScreen()
                     if (sp) {
                         c.disconnect(titleScreen, false, true)
                     } else if (serverInfo != null && serverInfo.isRealm) {
                         c.disconnect(RealmsMainScreen(titleScreen), false, true)
                     } else {
-                        c.disconnect(MultiplayerScreen(titleScreen), false, true)
+                        c.disconnect(JoinMultiplayerScreen(titleScreen), false, true)
                     }
                     1
                 }
         )
         dispatcher.register(
-            CommandManager.literal("fzzy_config_reload_resources")
+            Commands.literal("fzzy_config_reload_resources")
                 .executes{ context ->
-                    MinecraftClient.getInstance().reloadResources()
+                    Minecraft.getInstance().reloadResourcePacks()
                     1
                 }
         )

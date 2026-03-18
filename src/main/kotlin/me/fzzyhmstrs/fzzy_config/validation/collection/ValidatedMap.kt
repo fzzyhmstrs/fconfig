@@ -31,7 +31,7 @@ import me.fzzyhmstrs.fzzy_config.validation.ValidatedLazyField
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedMap.Builder
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedMapped
-import net.minecraft.client.gui.widget.ClickableWidget
+import net.minecraft.client.gui.components.AbstractWidget
 import net.peanuuutz.tomlkt.*
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.function.BiFunction
@@ -227,7 +227,7 @@ open class ValidatedMap<K, V>(defaultValue: Map<K, V>, private val keyHandler: E
 
     @Internal
     //client
-    override fun widgetEntry(choicePredicate: ChoiceValidator<Map<K, V>>): ClickableWidget {
+    override fun widgetEntry(choicePredicate: ChoiceValidator<Map<K, V>>): AbstractWidget {
         return CustomButtonWidget.builder { b: CustomButtonWidget ->
             openMapEditPopup(PopupWidget.Builder.popupContext { w -> b.x + b.width/2 - w/2 }, PopupWidget.Builder.popupContext { h -> b.y + b.height/2 - h/2 })
         }.size(110, 20).messageSupplier { provideAttachedValue(Translatable.Provider.WIDGET_TITLE, TextureIds.MAP_LANG) }.build()

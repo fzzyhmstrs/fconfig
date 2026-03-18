@@ -11,14 +11,14 @@
 package me.fzzyhmstrs.fzzy_config.updates
 
 import me.fzzyhmstrs.fzzy_config.entry.EntryKeyed
-import net.minecraft.text.Text
+import net.minecraft.network.chat.Component
 import org.jetbrains.annotations.ApiStatus.Internal
 
 @Internal
 interface Updatable: EntryKeyed {
     fun getUpdateManager(): UpdateManager?
     fun setUpdateManager(manager: UpdateManager)
-    fun update(updateMessage: Text) { //pushes an update to the UpdateManager based on its key, if one is present, so the manager can track changes
+    fun update(updateMessage: Component) { //pushes an update to the UpdateManager based on its key, if one is present, so the manager can track changes
         getUpdateManager()?.update(this, updateMessage)
     }
     fun isDefault(): Boolean //checks if the Updatable is its default value or not

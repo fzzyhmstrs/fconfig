@@ -20,10 +20,10 @@ import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindow
 import me.fzzyhmstrs.fzzy_config.screen.widget.SuggestionBackedTextFieldWidget.SuggestionProvider
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.Click
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.input.KeyInput
+import net.minecraft.client.Minecraft
+import net.minecraft.client.input.MouseButtonEvent
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.input.KeyEvent
 import org.lwjgl.glfw.GLFW
 import java.util.concurrent.CompletableFuture
 import java.util.function.Consumer
@@ -79,25 +79,25 @@ class SuggestionBackedTextFieldWidget(
 
     override fun isValidTest(s: String): Boolean {
         if (s != lastSuggestionText) {
-            pendingSuggestions = suggestionProvider.getSuggestions(s, this.cursor, choiceValidator)
+            pendingSuggestions = suggestionProvider.getSuggestions(s, this.cursorPosition, choiceValidator)
             lastSuggestionText = s
         }
         return super.isValidTest(s)
     }
 
-    override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun extractWidgetRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
         val testValue = wrappedValue.get()
         if (cachedWrappedValue != testValue || needsUpdating) {
             needsUpdating = false
             this.storedValue = testValue
             this.cachedWrappedValue = testValue
-            this.text = this.storedValue
+            this.setValue(this.storedValue)
         }
         if(isChanged()) {
             if (lastChangedTime != 0L && !ongoingChanges())
                 applier.accept(storedValue)
         }
-        super.renderWidget(context, mouseX, mouseY, delta)
+        super.extractWidgetRenderState(context, mouseX, mouseY, delta)
         if(isValid) {
             if (ongoingChanges())
                 context.drawTex(TextureIds.ENTRY_ONGOING, x + width - 20, y, 20, 20)
@@ -114,7 +114,7 @@ class SuggestionBackedTextFieldWidget(
             }
         }
         if (window != null)
-            MinecraftClient.getInstance().currentScreen?.nullCast<PopupController>()?.suggestionWindow = window
+            Minecraft.getInstance().screen?.nullCast<PopupController>()?.suggestionWindow = window
     }
 
     private fun addSuggestionWindow(suggestions: Suggestions) {
@@ -127,16 +127,16 @@ class SuggestionBackedTextFieldWidget(
             }
         }
         val closer: Consumer<SuggestionWindow> = Consumer { closeWindow = true }
-        this.window = SuggestionWindow.createSuggestionWindow(this.x, this.y, suggestions, this.text, this.cursor, applier, closer)
+        this.window = SuggestionWindow.createSuggestionWindow(this.x, this.y, suggestions, this.value, this.cursorPosition, applier, closer)
         suggestionWindowListener?.setSuggestionWindowElement(this)
     }
 
-    override fun mouseClicked(click: Click, doubled: Boolean): Boolean {
+    override fun mouseClicked(click: MouseButtonEvent, doubled: Boolean): Boolean {
         val bl = window?.mouseClicked(click.x.toInt(), click.y.toInt(), click.button()) ?: super.mouseClicked(click, doubled)
         if (closeWindow) {
             pendingSuggestions = null
             window = null
-            MinecraftClient.getInstance().currentScreen?.nullCast<PopupController>()?.suggestionWindow = null
+            Minecraft.getInstance().screen?.nullCast<PopupController>()?.suggestionWindow = null
             suggestionWindowListener?.setSuggestionWindowElement(null)
             closeWindow = false
         }
@@ -151,8 +151,8 @@ class SuggestionBackedTextFieldWidget(
         return super.isMouseOver(mouseX, mouseY) || window?.isMouseOver(mouseX.toInt(), mouseY.toInt()) == true
     }
 
-    override fun keyPressed(input: KeyInput): Boolean {
-        val bl = window?.keyPressed(input.keycode, input.scancode, input.modifiers) ?: super.keyPressed(input)
+    override fun keyPressed(input: KeyEvent): Boolean {
+        val bl = window?.keyPressed(input.input(), input.scancode, input.modifiers) ?: super.keyPressed(input)
         if (closeWindow) {
             pendingSuggestions = null
             window = null
@@ -160,7 +160,7 @@ class SuggestionBackedTextFieldWidget(
             suggestionWindowListener?.setSuggestionWindowElement(null)
             closeWindow = false
         }
-        if (input.isEnter || (input.isTab && bl)) {
+        if (input.isConfirmation || (input.isCycleFocus && bl)) {
             pushChanges()
             if (closePopup)
                 PopupWidget.pop()

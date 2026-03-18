@@ -14,11 +14,11 @@ import com.google.common.collect.Lists
 import com.mojang.blaze3d.systems.RenderSystem
 import com.mojang.brigadier.suggestion.Suggestion
 import com.mojang.brigadier.suggestion.Suggestions
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.text.Text
-import net.minecraft.util.Colors
-import net.minecraft.util.math.MathHelper
+import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.network.chat.Component
+import net.minecraft.util.CommonColors
+import net.minecraft.util.Mth
 import org.lwjgl.glfw.GLFW
 import java.util.function.Consumer
 import kotlin.math.max
@@ -41,9 +41,9 @@ class SuggestionWindow(
     private var index = 0
 
     @Suppress("UNUSED_PARAMETER")
-    fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-        context.matrices.pushMatrix()
-        context.matrices.translate(0f, 0f)//, 5f)
+    fun render(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
+        context.pose().pushMatrix()
+        context.pose().translate(0f, 0f)//, 5f)
         context.fill(x, y-1, x+w, y+h+1, -805306368)
         if (index > 0) {
             if (!up) {
@@ -71,10 +71,10 @@ class SuggestionWindow(
         for (l in index until index + suggestionSize) {
             if (mouseX > x && mouseX < x + w && mouseY > textY - 2 && mouseY < textY + 10)
                 select(l)
-            context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, suggestions[l].text, x + 1, textY, if(selection == l) Colors.YELLOW else -5592406)
+            context.text(Minecraft.getInstance().font, suggestions[l].text, x + 1, textY, if(selection == l) CommonColors.YELLOW else -5592406)
             textY += if(up) -12 else 12
         }
-        context.matrices.popMatrix()
+        context.pose().popMatrix()
     }
 
     fun mouseClicked(mouseX: Int, mouseY: Int, button: Int): Boolean {
@@ -108,7 +108,7 @@ class SuggestionWindow(
                 -1
             }
         }
-        index = MathHelper.clamp(index + d, 0, max(suggestions.size - suggestionSize, 0))
+        index = Mth.clamp(index + d, 0, max(suggestions.size - suggestionSize, 0))
         return true
     }
 
@@ -127,7 +127,7 @@ class SuggestionWindow(
                 if (selection == -1) {
                     selection = if (up) -1 else suggestions.lastIndex + 1
                 }
-                select(MathHelper.clamp(selection + d, 0, suggestions.lastIndex))
+                select(Mth.clamp(selection + d, 0, suggestions.lastIndex))
                 if (selection < index)
                     index = selection
                 if (selection > index + suggestionSize - 1)
@@ -142,7 +142,7 @@ class SuggestionWindow(
                 if (selection == -1) {
                     selection = if (up) suggestions.lastIndex + 1 else -1
                 }
-                select(MathHelper.clamp(selection + d, 0, suggestions.lastIndex))
+                select(Mth.clamp(selection + d, 0, suggestions.lastIndex))
                 if (selection < index)
                     index = selection
                 if (selection > index + suggestionSize - 1)
@@ -169,27 +169,27 @@ class SuggestionWindow(
     private fun select(i: Int) {
         selection = i
         if (lastNarrationIndex != selection) {
-            MinecraftClient.getInstance().narratorManager.narrate(getNarration())
+            Minecraft.getInstance().narrator.saySystemChatQueued(getNarration())
         }
     }
 
-    private fun getNarration(): Text? {
+    private fun getNarration(): Component {
         this.lastNarrationIndex = this.selection
         val suggestion = suggestions[this.selection]
         val message = suggestion.tooltip
         return if (message != null) {
-            Text.translatable("narration.suggestion.tooltip", this.selection + 1, suggestions.size, suggestion.text, Text.of(message))
-        } else Text.translatable("narration.suggestion", this.selection + 1, suggestions.size, suggestion.text)
+            Component.translatable("narration.suggestion.tooltip", this.selection + 1, suggestions.size, suggestion.text, Component.translationArg(message))
+        } else Component.translatable("narration.suggestion", this.selection + 1, suggestions.size, suggestion.text)
     }
 
     companion object {
         fun createSuggestionWindow(windowX: Int, windowY: Int, suggestions: Suggestions, text: String, cursor: Int, applier: Consumer<String>, closer: Consumer<SuggestionWindow>): SuggestionWindow {
             var w = 0
             for (suggestion in suggestions.list) {
-                w = max(w, MinecraftClient.getInstance().textRenderer.getWidth(suggestion.text))
+                w = max(w, Minecraft.getInstance().font.width(suggestion.text))
             }
-            val sWidth = MinecraftClient.getInstance().currentScreen?.width ?: Int.MAX_VALUE
-            val sHeight = MinecraftClient.getInstance().currentScreen?.height ?: Int.MAX_VALUE
+            val sWidth = Minecraft.getInstance().screen?.width ?: Int.MAX_VALUE
+            val sHeight = Minecraft.getInstance().screen?.height ?: Int.MAX_VALUE
             val x = max(min(windowX, sWidth - w), 0)
             var h = min(suggestions.list.size * 12, 120)
             val down = sHeight - (windowY + 20)

@@ -17,8 +17,8 @@ import com.mojang.serialization.DataResult
 import me.fzzyhmstrs.fzzy_config.util.Expression.Impl.NamedExpression
 import me.fzzyhmstrs.fzzy_config.util.Expression.Impl.validated
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedExpression
-import net.minecraft.util.math.MathHelper
-import net.minecraft.util.math.random.Random
+import net.minecraft.util.Mth
+import net.minecraft.util.RandomSource
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.util.*
@@ -61,7 +61,6 @@ import kotlin.reflect.typeOf
  * @since 0.2.0, min/max since 0.3.7
  */
 @FunctionalInterface
-@JvmDefaultWithCompatibility
 fun interface Expression {
 
     /**
@@ -1771,7 +1770,7 @@ fun interface Expression {
             }
         }
         private class ConstSin(val c1: Double, val s1: String): Expression, Const {
-            private val c3 = MathHelper.sin(c1).toDouble()
+            private val c3 = Mth.sin(c1).toDouble()
             override fun eval(vars: Map<Char, Double>): Double {
                 return c3
             }
@@ -1797,7 +1796,7 @@ fun interface Expression {
         private class ExpSin(val e1: Expression): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
                 @Suppress("DEPRECATION")
-                return MathHelper.sin(e1.eval(vars)).toDouble()
+                return Mth.sin(e1.eval(vars)).toDouble()
             }
             override fun toString(): String {
                 return "sin($e1)"
@@ -1822,7 +1821,7 @@ fun interface Expression {
             }
         }
         private class ConstCos(val c1: Double, val s1: String): Expression, Const {
-            private val c3 = MathHelper.cos(c1).toDouble()
+            private val c3 = Mth.cos(c1).toDouble()
             override fun eval(vars: Map<Char, Double>): Double {
                 return c3
             }
@@ -1848,7 +1847,7 @@ fun interface Expression {
         private class ExpCos(val e1: Expression): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
                 @Suppress("DEPRECATION")
-                return MathHelper.cos(e1.eval(vars)).toDouble()
+                return Mth.cos(e1.eval(vars)).toDouble()
             }
             override fun toString(): String {
                 return "cos($e1)"
@@ -2166,11 +2165,11 @@ fun interface Expression {
 
 
         private val doubleType = typeOf<Double>()
-        private val randomClassifier = typeOf<Random>().classifier
-        private val random = Random.createLocal()
+        private val randomClassifier = typeOf<RandomSource>().classifier
+        private val random = RandomSource.createThreadLocalInstance()
 
         private fun mathHelper(reader: StringReader, context: String, chunk: String): Expression? {
-            val member = MathHelper::class.members.firstOrNull {
+            val member = Mth::class.members.firstOrNull {
                 it.name == chunk && it.parameters.mapNotNull {
                     p -> if(p.type == doubleType || p.type.classifier == randomClassifier) true else null
                 }.isNotEmpty()

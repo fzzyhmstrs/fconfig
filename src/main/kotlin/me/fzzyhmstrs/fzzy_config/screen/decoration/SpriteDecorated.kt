@@ -14,7 +14,7 @@ import com.mojang.blaze3d.systems.RenderSystem
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureProvider
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureSet
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
-import net.minecraft.client.gui.DrawContext
+import net.minecraft.client.gui.GuiGraphicsExtractor
 
 /**
  * [Decorated] based on a sprite [TextureSet]
@@ -48,7 +48,7 @@ interface SpriteDecorated: Decorated {
     val h: Int
         get() = 16
 
-    override fun renderDecoration(context: DrawContext, x: Int, y: Int, delta: Float, enabled: Boolean, selected: Boolean) {
+    override fun renderDecoration(context: GuiGraphicsExtractor, x: Int, y: Int, delta: Float, enabled: Boolean, selected: Boolean) {
         context.drawTex(textures().get(enabled, selected), x, y, w, h)
     }
 }

@@ -18,12 +18,12 @@ import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedIdentifierMap
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedBoolean
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedDouble
-import net.minecraft.item.Items
-import net.minecraft.registry.Registries
-import net.minecraft.registry.tag.ItemTags
-import net.minecraft.util.Identifier
+import net.minecraft.world.item.Items
+import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.tags.ItemTags
+import net.minecraft.resources.Identifier
 
-internal class MyConfig: Config(Identifier.of(FC.MOD_ID, "my_config")) {
+internal class MyConfig: Config(Identifier.fromNamespaceAndPath(FC.MOD_ID, "my_config")) {
 
     var bareDouble = 5.0 // this won't have most of the features of the lib
 
@@ -38,7 +38,7 @@ internal class MyConfig: Config(Identifier.of(FC.MOD_ID, "my_config")) {
 
         var sectionMap = ValidatedIdentifierMap(
             mapOf(),
-            ValidatedIdentifier.ofTag(Registries.ITEM.getId(Items.IRON_AXE), ItemTags.AXES),
+            ValidatedIdentifier.ofTag(BuiltInRegistries.ITEM.getKey(Items.IRON_AXE), ItemTags.AXES),
             ValidatedDouble(1.0, 1.0, 0.0)
         )
     }

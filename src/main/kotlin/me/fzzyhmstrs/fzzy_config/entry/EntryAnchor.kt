@@ -14,8 +14,8 @@ import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.internal.ConfigScreen
-import net.minecraft.client.MinecraftClient
-import net.minecraft.text.Text
+import net.minecraft.client.Minecraft
+import net.minecraft.network.chat.Component
 import org.jetbrains.annotations.ApiStatus.Internal
 
 @Internal
@@ -29,7 +29,7 @@ interface EntryAnchor {
         return scope
     }
 
-    class Anchor internal constructor(internal var layer: Int, internal var name: Text) {
+    class Anchor internal constructor(internal var layer: Int, internal var name: Component) {
         internal var type: AnchorType = AnchorType.CONFIG
         internal var decoration: Decorated? = null
         internal var offsetX = 0
@@ -54,7 +54,7 @@ interface EntryAnchor {
          * @author fzzyhmstrs
          * @since 0.6.0
          */
-        fun name(name: Text): Anchor {
+        fun name(name: Component): Anchor {
             this.name = name
             return this
         }
@@ -96,7 +96,7 @@ interface EntryAnchor {
             override fun action(scope: String, anchorId: String): Runnable {
                 return Runnable {
                     ConfigApi.openScreen(scope)
-                    MinecraftClient.getInstance().currentScreen?.nullCast<ConfigScreen>()?.scrollToGroup(anchorId)
+                    Minecraft.getInstance().screen?.nullCast<ConfigScreen>()?.scrollToGroup(anchorId)
                 }
             }
         };

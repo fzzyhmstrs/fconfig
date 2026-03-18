@@ -15,13 +15,13 @@ import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.networking.api.*
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
 import me.fzzyhmstrs.fzzy_config.util.platform.impl.PlatformUtils
-import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.network.RegistryByteBuf
-import net.minecraft.network.codec.PacketCodec
-import net.minecraft.network.packet.CustomPayload
+import net.minecraft.world.entity.player.Player
+import net.minecraft.network.RegistryFriendlyByteBuf
+import net.minecraft.network.codec.StreamCodec
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload
 import net.minecraft.server.MinecraftServer
-import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.util.Identifier
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.resources.Identifier
 import net.neoforged.neoforge.client.network.ClientPacketDistributor
 import net.neoforged.neoforge.network.PacketDistributor
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent
@@ -30,16 +30,16 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar
 
 internal object NetworkApiImpl: NetworkApi {
 
-    override fun canSend(id: Identifier, playerEntity: PlayerEntity?): Boolean {
-        return if (playerEntity is ServerPlayerEntity) {
-            NetworkRegistry.hasChannel(playerEntity.networkHandler, id)
+    override fun canSend(id: Identifier, playerEntity: Player?): Boolean {
+        return if (playerEntity is ServerPlayer) {
+            NetworkRegistry.hasChannel(playerEntity.connection, id)
         } else {
             NetworkEventsClient.canSend(id)
         }
     }
 
-    override fun send(payload: CustomPayload, playerEntity: PlayerEntity?) {
-        if (playerEntity is ServerPlayerEntity) {
+    override fun send(payload: CustomPacketPayload, playerEntity: Player?) {
+        if (playerEntity is ServerPlayer) {
             PacketDistributor.sendToPlayer(playerEntity, payload)
         } else {
             ClientPacketDistributor.sendToServer(payload)
@@ -48,13 +48,13 @@ internal object NetworkApiImpl: NetworkApi {
 
     private val registeredS2CPayloads: MutableList<S2CRegistration<*>> = mutableListOf()
 
-    override fun <T : CustomPayload> registerS2C(id: CustomPayload.Id<T>, codec: PacketCodec<in RegistryByteBuf, T>, handler: S2CPayloadHandler<T>) {
+    override fun <T : CustomPacketPayload> registerS2C(id: CustomPacketPayload.Type<T>, codec: StreamCodec<in RegistryFriendlyByteBuf, T>, handler: S2CPayloadHandler<T>) {
         registeredS2CPayloads.add(S2CRegistration(id, codec, handler))
     }
 
     private val registeredC2SPayloads: MutableList<C2SRegistration<*>> = mutableListOf()
 
-    override fun <T : CustomPayload> registerC2S(id: CustomPayload.Id<T>, codec: PacketCodec<in RegistryByteBuf, T>, handler: C2SPayloadHandler<T>) {
+    override fun <T : CustomPacketPayload> registerC2S(id: CustomPacketPayload.Type<T>, codec: StreamCodec<in RegistryFriendlyByteBuf, T>, handler: C2SPayloadHandler<T>) {
         registeredC2SPayloads.add(C2SRegistration(id, codec, handler))
     }
 
@@ -70,7 +70,7 @@ internal object NetworkApiImpl: NetworkApi {
         }
     }
 
-    private data class S2CRegistration<T : CustomPayload>(val id: CustomPayload.Id<T>, val codec: PacketCodec<in RegistryByteBuf, T>, val handler: S2CPayloadHandler<T>) {
+    private data class S2CRegistration<T : CustomPacketPayload>(val id: CustomPacketPayload.Type<T>, val codec: StreamCodec<in RegistryFriendlyByteBuf, T>, val handler: S2CPayloadHandler<T>) {
         fun apply(registrar: PayloadRegistrar) {
             registrar.playToClient(id, codec) { payload, context ->
                 if (PlatformUtils.isClient()) {
@@ -81,7 +81,7 @@ internal object NetworkApiImpl: NetworkApi {
         }
     }
 
-    private data class C2SRegistration<T : CustomPayload>(val id: CustomPayload.Id<T>, val codec: PacketCodec<in RegistryByteBuf, T>, val handler: C2SPayloadHandler<T>) {
+    private data class C2SRegistration<T : CustomPacketPayload>(val id: CustomPacketPayload.Type<T>, val codec: StreamCodec<in RegistryFriendlyByteBuf, T>, val handler: C2SPayloadHandler<T>) {
         fun apply(registrar: PayloadRegistrar) {
             registrar.playToServer(id, codec) { payload, context ->
                 val newContext = ServerPlayNetworkContext(context)
@@ -91,11 +91,11 @@ internal object NetworkApiImpl: NetworkApi {
     }
 
 
-    override fun <T: CustomPayload> registerLenientS2C(id: CustomPayload.Id<T>, codec: PacketCodec<in RegistryByteBuf, T>, handler: S2CPayloadHandler<T>) {
+    override fun <T: CustomPacketPayload> registerLenientS2C(id: CustomPacketPayload.Type<T>, codec: StreamCodec<in RegistryFriendlyByteBuf, T>, handler: S2CPayloadHandler<T>) {
         registerS2C(id, codec, handler)
     }
 
-    override fun <T : CustomPayload> registerLenientC2S(id: CustomPayload.Id<T>, codec: PacketCodec<in RegistryByteBuf, T>, handler: C2SPayloadHandler<T>) {
+    override fun <T : CustomPacketPayload> registerLenientC2S(id: CustomPacketPayload.Type<T>, codec: StreamCodec<in RegistryFriendlyByteBuf, T>, handler: C2SPayloadHandler<T>) {
         registerC2S(id, codec, handler)
     }
 

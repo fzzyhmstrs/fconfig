@@ -22,24 +22,25 @@ import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedKeybind
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.Drawable
-import net.minecraft.client.gui.Element
-import net.minecraft.client.gui.Selectable
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
-import net.minecraft.client.gui.screen.narration.NarrationPart
-import net.minecraft.client.gui.tooltip.Tooltip
-import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.client.gui.widget.Widget
-import net.minecraft.util.Colors
-import net.minecraft.util.Formatting
+import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.gui.components.Renderable
+import net.minecraft.client.gui.components.events.GuiEventListener
+import net.minecraft.client.gui.narration.NarratableEntry
+import net.minecraft.client.gui.narration.NarrationElementOutput
+import net.minecraft.client.gui.narration.NarratedElementType
+import net.minecraft.client.gui.components.Tooltip
+import net.minecraft.client.gui.components.AbstractWidget
+import net.minecraft.client.gui.layouts.LayoutElement
+import net.minecraft.util.CommonColors
+import net.minecraft.ChatFormatting
 import kotlin.math.max
 
 internal class InfoKeybindEntry(parentElement: DynamicListWidget, index: Int, scope: String, keybind: ValidatedKeybind):
         DynamicListWidget.Entry(
             parentElement,
-            Translatable.createScopedResult("fc.button.info.$scope", "fc.button.info.$scope".translate(), "fc.button.info.$scope.desc".translate().formatted(Formatting.ITALIC, Formatting.GRAY)),
+            Translatable.createScopedResult("fc.button.info.$scope", "fc.button.info.$scope".translate(), "fc.button.info.$scope.desc".translate().withStyle(
+                ChatFormatting.ITALIC, ChatFormatting.GRAY)),
             DynamicListWidget.Scope(scope))
 {
 
@@ -70,32 +71,32 @@ internal class InfoKeybindEntry(parentElement: DynamicListWidget, index: Int, sc
         return selectables
     }
 
-    override fun children(): MutableList<out Element> {
+    override fun children(): MutableList<out GuiEventListener> {
         return children
     }
 
-    override fun renderEntry(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {
+    override fun renderEntry(context: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {
         restore.setPosition(x + width - 20, y)
-        restore.render(context, mouseX, mouseY, delta)
+        restore.extractRenderState(context, mouseX, mouseY, delta)
         widget.setPosition(x + width - 125, y)
-        widget.render(context, mouseX, mouseY, delta)
-        description.setDimensionsAndPosition(width - 130, 0, x, y + 10)
-        description.render(context, mouseX, mouseY, delta)
-        context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, this.texts.name, x, y, if (hovered || focused) -171 else -1)
+        widget.extractRenderState(context, mouseX, mouseY, delta)
+        description.setRectangle(width - 130, 0, x, y + 10)
+        description.extractRenderState(context, mouseX, mouseY, delta)
+        context.text(Minecraft.getInstance().font, this.texts.name, x, y, if (hovered || focused) -171 else -1)
     }
 
-    override fun renderHighlight(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {
+    override fun renderHighlight(context: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {
         if (odd)
             context.fill(x - 2, y - 2, x + width + 2, y + height + 2, 1684300900)
     }
 
-    override fun renderExtras(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {
+    override fun renderExtras(context: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {
         if (hovered || focused)
-            context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, ">", x - 8, y, -171)
+            context.text(Minecraft.getInstance().font, ">", x - 8, y, -171)
     }
 
-    override fun appendNarrations(builder: NarrationMessageBuilder) {
+    override fun appendNarrations(builder: NarrationElementOutput) {
         super.appendNarrations(builder)
-        this.texts.desc?.let { builder.put(NarrationPart.HINT, it.string) }
+        this.texts.desc?.let { builder.add(NarratedElementType.HINT, it.string) }
     }
 }

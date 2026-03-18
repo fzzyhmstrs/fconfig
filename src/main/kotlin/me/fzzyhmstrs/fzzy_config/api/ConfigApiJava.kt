@@ -29,7 +29,7 @@ import me.fzzyhmstrs.fzzy_config.screen.ConfigScreenProvider
 import me.fzzyhmstrs.fzzy_config.util.PlatformApi
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.platform.impl.PlatformApiImpl
-import net.minecraft.util.Identifier
+import net.minecraft.resources.Identifier
 import net.peanuuutz.tomlkt.TomlComment
 import java.util.function.BiConsumer
 import java.util.function.Supplier

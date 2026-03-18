@@ -12,8 +12,8 @@ package me.fzzyhmstrs.fzzy_config.entry
 
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
-import net.minecraft.client.gui.tooltip.Tooltip
-import net.minecraft.client.gui.widget.ClickableWidget
+import net.minecraft.client.gui.components.Tooltip
+import net.minecraft.client.gui.components.AbstractWidget
 
 /**
  * Interface handles an [Entry] creating a ClickableWidget
@@ -32,7 +32,7 @@ interface EntryWidget<T> {
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun widgetEntry(choicePredicate: ChoiceValidator<T> = ChoiceValidator.any()): ClickableWidget
+    fun widgetEntry(choicePredicate: ChoiceValidator<T> = ChoiceValidator.any()): AbstractWidget
 
     /**
      * Builds a new [ClickableWidget] and applies a tooltip to it. This shouldn't need to be overridden in most cases
@@ -41,10 +41,10 @@ interface EntryWidget<T> {
      * @author fzzyhmstrs
      * @since 0.6.0
      */
-    fun widgetAndTooltipEntry(choicePredicate: ChoiceValidator<T> = ChoiceValidator.any()): ClickableWidget {
+    fun widgetAndTooltipEntry(choicePredicate: ChoiceValidator<T> = ChoiceValidator.any()): AbstractWidget {
         val widget = widgetEntry(choicePredicate)
         if (this is Translatable && this.hasDescription()) {
-            widget.setTooltip(Tooltip.of(this.description("")))
+            widget.setTooltip(Tooltip.create(this.description("")))
         }
         return widget
     }

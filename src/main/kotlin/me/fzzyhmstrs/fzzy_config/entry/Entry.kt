@@ -32,7 +32,6 @@ import java.util.function.Supplier
  * @author fzzyhmstrs
  * @since 0.2.0, add EntryFlag 0.5.6, add listenToEntry 0.6.0
  */
-@JvmDefaultWithCompatibility
 interface Entry<T, E: Entry<T, E>>: EntryHandler<T>, EntryWidget<T>, EntryFlag, Consumer<T>, Supplier<T> {
     /**
      * Creates as deep a copy as possible of this Entry

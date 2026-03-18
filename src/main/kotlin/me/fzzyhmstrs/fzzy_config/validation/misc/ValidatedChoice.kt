@@ -32,14 +32,14 @@ import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.attachTo
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedChoiceList
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedChoice.WidgetType
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
-import net.minecraft.client.gui.screen.narration.NarrationPart
-import net.minecraft.client.gui.tooltip.Tooltip
-import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.text.MutableText
-import net.minecraft.text.Text
+import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.gui.narration.NarrationElementOutput
+import net.minecraft.client.gui.narration.NarratedElementType
+import net.minecraft.client.gui.components.Tooltip
+import net.minecraft.client.gui.components.AbstractWidget
+import net.minecraft.network.chat.MutableComponent
+import net.minecraft.network.chat.Component
 import net.peanuuutz.tomlkt.TomlElement
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.function.BiFunction
@@ -67,13 +67,13 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
     defaultValue: T,
     private val choices: List<T>,
     private val handler: EntryHandler<T>,
-    translationProvider: BiFunction<T, String, MutableText> = BiFunction { t, _ -> t.transLit(t.toString()) },
-    descriptionProvider: BiFunction<T, String, Text> = BiFunction { t, _ -> t.descLit("") },
+    translationProvider: BiFunction<T, String, MutableComponent> = BiFunction { t, _ -> t.transLit(t.toString()) },
+    descriptionProvider: BiFunction<T, String, Component> = BiFunction { t, _ -> t.descLit("") },
     private val widgetType: WidgetType = WidgetType.POPUP): ValidatedField<T>(defaultValue), EntryOpener
 {
 
-    private val entryTranslationProvider: BiFunction<T, String, MutableText> = translationProvider
-    private val entryDescriptionProvider: BiFunction<T, String, Text> = descriptionProvider
+    private val entryTranslationProvider: BiFunction<T, String, MutableComponent> = translationProvider
+    private val entryDescriptionProvider: BiFunction<T, String, Component> = descriptionProvider
 
     /**
      * A validated single choice of any type, from an input list of possible choices
@@ -105,7 +105,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
      * @since 0.2.0, added providers 0.3.6
      */
     @JvmOverloads
-    constructor(choices: List<T>, handler: EntryHandler<T>, translationProvider: BiFunction<T, String, MutableText> = BiFunction { t, _ -> t.transLit(t.toString()) }, descriptionProvider: BiFunction<T, String, Text> = BiFunction { t, _ -> t.descLit(t.toString()) }, widgetType: WidgetType = WidgetType.POPUP): this(choices[0], choices, handler, translationProvider, descriptionProvider, widgetType)
+    constructor(choices: List<T>, handler: EntryHandler<T>, translationProvider: BiFunction<T, String, MutableComponent> = BiFunction { t, _ -> t.transLit(t.toString()) }, descriptionProvider: BiFunction<T, String, Component> = BiFunction { t, _ -> t.descLit(t.toString()) }, widgetType: WidgetType = WidgetType.POPUP): this(choices[0], choices, handler, translationProvider, descriptionProvider, widgetType)
 
     /**
      * A validated set of choices of any type using the first choice as the default
@@ -195,7 +195,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
 
     @Internal
     //client
-    override fun widgetEntry(choicePredicate: ChoiceValidator<T>): ClickableWidget {
+    override fun widgetEntry(choicePredicate: ChoiceValidator<T>): AbstractWidget {
         return when(widgetType) {
             WidgetType.POPUP -> {
                 ChoicePopupButtonWidget(translation(), choicePredicate)
@@ -215,7 +215,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
                     layout.add("choice$index", button, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_CENTER)
                 }
                 LayoutClickableWidget(0, 0, 110, 20 * choices.size, layout).withNarrationAppender { builder ->
-                    builder.put(NarrationPart.TITLE, "fc.validated_field.current".translate(this.entryTranslationProvider.apply(this.get(), this.translationKey())).append(". "))
+                    builder.add(NarratedElementType.TITLE, "fc.validated_field.current".translate(this.entryTranslationProvider.apply(this.get(), this.translationKey())).append(". "))
                 }
             }
             WidgetType.SCROLLABLE -> {
@@ -307,7 +307,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
          */
         @JvmStatic
         @JvmOverloads
-        fun <T> translate(suffix: String = ""): BiFunction<T, String, MutableText> {
+        fun <T> translate(suffix: String = ""): BiFunction<T, String, MutableComponent> {
             return if(suffix.isEmpty())
                 BiFunction { t, u -> FcText.translatable(u + "." + t.toString()) }
             else
@@ -316,15 +316,15 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
 
     }
 
-    private fun openPopup(name: Text, choicePredicate: ChoiceValidator<T> = ChoiceValidator.any(), choiceOptionRunnable: Runnable = Runnable { }, xPosition: BiFunction<Int, Int, Int> = PopupWidget.Builder.center(), yPosition: BiFunction<Int, Int, Int> = PopupWidget.Builder.center()) {
-        val textRenderer = MinecraftClient.getInstance().textRenderer
+    private fun openPopup(name: Component, choicePredicate: ChoiceValidator<T> = ChoiceValidator.any(), choiceOptionRunnable: Runnable = Runnable { }, xPosition: BiFunction<Int, Int, Int> = PopupWidget.Builder.center(), yPosition: BiFunction<Int, Int, Int> = PopupWidget.Builder.center()) {
+        val textRenderer = Minecraft.getInstance().font
         var buttonWidth = 86
         val choices = this@ValidatedChoice.choices.filter {
             choicePredicate.validateEntry(it, EntryValidator.ValidationType.STRONG).isValid()
         }
         val entries: MutableList<BiFunction<DynamicListWidget, Int, out DynamicListWidget.Entry>> = mutableListOf()
         for (const in choices) {
-            buttonWidth = max(buttonWidth, textRenderer.getWidth(this@ValidatedChoice.entryTranslationProvider.apply(const, this@ValidatedChoice.translationKey())))
+            buttonWidth = max(buttonWidth, textRenderer.width(this@ValidatedChoice.entryTranslationProvider.apply(const, this@ValidatedChoice.translationKey())))
         }
         if (choices.size <= 6)
             buttonWidth += 10
@@ -348,22 +348,22 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
         } else {
             DynamicListWidget.ListSpec(leftPadding = 0, rightPadding = -6, verticalPadding = 0, listNarrationKey = "fc.narrator.position.entry")
         }
-        val entryList = DynamicListWidget(MinecraftClient.getInstance(), entries, 0, 0, listWidth, 120, spec)
+        val entryList = DynamicListWidget(Minecraft.getInstance(), entries, 0, 0, listWidth, 120, spec)
 
         val builder = PopupWidget.Builder(name)
         builder.add("choice_list", entryList, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
         if (entries.size > 6) {
-            val searchField = NavigableTextFieldWidget(MinecraftClient.getInstance().textRenderer, listWidth, 20, FcText.EMPTY)
+            val searchField = NavigableTextFieldWidget(Minecraft.getInstance().font, listWidth, 20, FcText.EMPTY)
             searchField.setMaxLength(100)
-            searchField.text = ""
+            searchField.setValue("")
             fun setColor(entries: Int) {
                 if(entries > 0)
-                    searchField.setEditableColor(-1)
+                    searchField.setTextColor(-1)
                 else
-                    searchField.setEditableColor(-43691)
+                    searchField.setTextColor(-43691)
             }
-            searchField.setChangedListener { s -> setColor(entryList.search(s)) }
-            searchField.setTooltip(Tooltip.of("fc.config.search.desc".translate()))
+            searchField.setResponder { s -> setColor(entryList.search(s)) }
+            searchField.setTooltip(Tooltip.create("fc.config.search.desc".translate()))
             builder.add("choice_search", searchField, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_JUSTIFY_WEAK)
         }
         builder.positionX(xPosition)
@@ -373,18 +373,18 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
     }
 
     //client
-    private inner class ChoicePopupButtonWidget(private val name: Text, private val choicePredicate: ChoiceValidator<T>): CustomPressableWidget(0, 0, 110, 20, FcText.empty()) {
+    private inner class ChoicePopupButtonWidget(private val name: Component, private val choicePredicate: ChoiceValidator<T>): CustomPressableWidget(0, 0, 110, 20, FcText.empty()) {
 
         init {
             constructTooltip()
         }
 
-        override fun getMessage(): Text {
+        override fun getMessage(): Component {
             return this@ValidatedChoice.entryTranslationProvider.apply(this@ValidatedChoice.get(), this@ValidatedChoice.translationKey())
         }
 
-        override fun appendClickableNarrations(builder: NarrationMessageBuilder?) {
-            builder?.put(NarrationPart.TITLE, "fc.validated_field.current".translate(this.getMessage()).append(". "))
+        override fun updateWidgetNarration(builder: NarrationElementOutput) {
+            builder.add(NarratedElementType.TITLE, "fc.validated_field.current".translate(this.getMessage()).append(". "))
         }
 
         private fun constructTooltip() {
@@ -400,18 +400,18 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
                 text2 ?: FcText.empty()
             }
             if(totalText.string != "")
-                setTooltip(Tooltip.of(totalText))
+                setTooltip(Tooltip.create(totalText))
         }
 
         override fun onPress() {
             val builder = PopupWidget.Builder(name, spacingH = 0)
-            val textRenderer = MinecraftClient.getInstance().textRenderer
+            val textRenderer = Minecraft.getInstance().font
             var buttonWidth = 86
             val choices = this@ValidatedChoice.choices.filter {
                 choicePredicate.validateEntry(it, EntryValidator.ValidationType.STRONG).isValid()
             }
             for (const in choices) {
-                buttonWidth = max(buttonWidth, textRenderer.getWidth(this@ValidatedChoice.entryTranslationProvider.apply(const, this@ValidatedChoice.translationKey())))
+                buttonWidth = max(buttonWidth, textRenderer.width(this@ValidatedChoice.entryTranslationProvider.apply(const, this@ValidatedChoice.translationKey())))
             }
             buttonWidth = max(150, buttonWidth + 4)
             for ((index, const) in choices.withIndex()) {
@@ -431,18 +431,18 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
     }
 
     //client
-    private inner class ChoiceScrollablePopupButtonWidget(private val name: Text, private val choicePredicate: ChoiceValidator<T>): CustomPressableWidget(0, 0, 110, 20, FcText.empty()) {
+    private inner class ChoiceScrollablePopupButtonWidget(private val name: Component, private val choicePredicate: ChoiceValidator<T>): CustomPressableWidget(0, 0, 110, 20, FcText.empty()) {
 
         init {
             constructTooltip()
         }
 
-        override fun getMessage(): Text {
+        override fun getMessage(): Component {
             return this@ValidatedChoice.entryTranslationProvider.apply(this@ValidatedChoice.get(), this@ValidatedChoice.translationKey())
         }
 
-        override fun appendClickableNarrations(builder: NarrationMessageBuilder?) {
-            builder?.put(NarrationPart.TITLE, "fc.validated_field.current".translate(this.getMessage()).append(". "))
+        override fun updateWidgetNarration(builder: NarrationElementOutput) {
+            builder.add(NarratedElementType.TITLE, "fc.validated_field.current".translate(this.getMessage()).append(". "))
         }
 
         private fun constructTooltip() {
@@ -458,7 +458,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
                 text2 ?: FcText.empty()
             }
             if(totalText.string != "")
-                setTooltip( Tooltip.of(totalText))
+                setTooltip( Tooltip.create(totalText))
         }
 
         override fun onPress() {
@@ -475,15 +475,15 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
     private class ChoiceOptionWidget<T>(private val thisVal: T, width: Int, private val activePredicate: Predicate<T>, private val entry: ValidatedChoice<T>, private val valueApplier: Consumer<T>): CustomPressableWidget(0, 0, width, 20, entry.entryTranslationProvider.apply(thisVal, entry.translationKey())) {
 
         init {
-            entry.entryDescriptionProvider.apply(thisVal, entry.descriptionKey()).takeIf { it.string != "" }?.also { setTooltip(Tooltip.of(it)) }
+            entry.entryDescriptionProvider.apply(thisVal, entry.descriptionKey()).takeIf { it.string != "" }?.also { setTooltip(Tooltip.create(it)) }
         }
 
-        override fun renderCustom(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
+        override fun renderCustom(context: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
             this.active = activePredicate.test(thisVal)
             super.renderCustom(context, x, y, width, height, mouseX, mouseY, delta)
         }
 
-        override fun getNarrationMessage(): MutableText {
+        override fun createNarrationMessage(): MutableComponent {
             return entry.entryTranslationProvider.apply(thisVal, entry.translationKey())
         }
 
@@ -516,10 +516,10 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
                 text2 ?: FcText.empty()
             }
             if(totalText.string != "")
-                setTooltip( Tooltip.of(totalText))
+                setTooltip( Tooltip.create(totalText))
         }
 
-        override fun getNarrationMessage(): MutableText {
+        override fun createNarrationMessage(): MutableComponent {
             return "fc.validated_field.current".translate(entry.entryTranslationProvider.apply(entry.get(), entry.translationKey()).append(". "))
         }
 

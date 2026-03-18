@@ -16,24 +16,24 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.RepositioningWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import me.fzzyhmstrs.fzzy_config.util.function.ConstSupplier
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.Click
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.Element
-import net.minecraft.client.gui.ParentElement
-import net.minecraft.client.gui.navigation.GuiNavigation
-import net.minecraft.client.gui.navigation.GuiNavigationPath
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
-import net.minecraft.client.gui.screen.narration.NarrationPart
-import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.client.input.CharInput
-import net.minecraft.client.input.KeyInput
-import net.minecraft.client.input.MouseInput
-import net.minecraft.client.sound.PositionedSoundInstance
-import net.minecraft.screen.ScreenTexts
-import net.minecraft.sound.SoundEvents
-import net.minecraft.util.Identifier
-import net.minecraft.util.math.MathHelper
+import net.minecraft.client.Minecraft
+import net.minecraft.client.input.MouseButtonEvent
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.gui.components.events.GuiEventListener
+import net.minecraft.client.gui.components.events.ContainerEventHandler
+import net.minecraft.client.gui.navigation.FocusNavigationEvent
+import net.minecraft.client.gui.ComponentPath
+import net.minecraft.client.gui.narration.NarrationElementOutput
+import net.minecraft.client.gui.narration.NarratedElementType
+import net.minecraft.client.gui.components.AbstractWidget
+import net.minecraft.client.input.CharacterEvent
+import net.minecraft.client.input.KeyEvent
+import net.minecraft.client.input.MouseButtonInfo
+import net.minecraft.client.resources.sounds.SimpleSoundInstance
+import net.minecraft.network.chat.CommonComponents
+import net.minecraft.sounds.SoundEvents
+import net.minecraft.resources.Identifier
+import net.minecraft.util.Mth
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.function.Supplier
 
@@ -48,13 +48,13 @@ import java.util.function.Supplier
  * @since 0.6.0, implements RepositioningWidget 0.6.3
  */
 @Suppress("MemberVisibilityCanBePrivate")
-abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val client: MinecraftClient, x: Int, y: Int, width: Int, height: Int)
-    : ClickableWidget(
+abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val client: Minecraft, x: Int, y: Int, width: Int, height: Int)
+    : AbstractWidget(
     x,
     y,
     width,
     height,
-    ScreenTexts.EMPTY), CustomWidget, ParentElement, RepositioningWidget {
+    CommonComponents.EMPTY), CustomWidget, ContainerEventHandler, RepositioningWidget {
 
     //// Widget ////
 
@@ -126,8 +126,8 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
     /**
      * @suppress
      */
-    override fun setDimensions(width: Int, height: Int) {
-        super.setDimensions(width, height)
+    override fun setSize(width: Int, height: Int) {
+        super.setSize(width, height)
         onReposition()
         focusedElement?.let { ensureVisible(it) }
     }
@@ -135,9 +135,9 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
     /**
      * @suppress
      */
-    override fun setDimensionsAndPosition(width: Int, height: Int, x: Int, y: Int) {
+    override fun setRectangle(width: Int, height: Int, x: Int, y: Int) {
         super.setPosition(x, y)
-        super.setDimensions(width, height)
+        super.setSize(width, height)
         onReposition()
         focusedElement?.let { ensureVisible(it) }
     }
@@ -164,11 +164,11 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
     /**
      * @suppress
      */
-    override fun children(): List<Element> {
+    override fun children(): List<GuiEventListener> {
         return selectableEntries()
     }
 
-    override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun extractWidgetRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
         this.hoveredElement = if (isMouseOver(mouseX.toDouble(), mouseY.toDouble()))
             inFrameEntries().firstOrNull { it.isMouseOver(mouseX.toDouble(), mouseY.toDouble()) }
         else
@@ -179,7 +179,7 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
         }
 
         //context.disableScissor()
-        if (!noScroll() && (!hideScrollWhileNotHovered() || this.hovered || this.isDragging)) {
+        if (!noScroll() && (!hideScrollWhileNotHovered() || this.isHovered || this.isDragging)) {
             val sW = scrollWidth
             context.drawTex(scrollBarBackground, right - sW, y, sW, height)
             val pos = scrollBarPosition(mouseY.toDouble())
@@ -223,11 +223,11 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
      */
     abstract fun ensureVisible(entry: E)
 
-    override fun getFocused(): Element? {
+    override fun getFocused(): GuiEventListener? {
         return this.focusedElement
     }
 
-    override fun setFocused(focused: Element?) {
+    override fun setFocused(focused: GuiEventListener?) {
         if (focusedElement === focused) return
         @Suppress("UNCHECKED_CAST")
         val f = focused as? E
@@ -235,7 +235,7 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
         focusedElement?.isFocused = false
         f?.isFocused = true
         this.focusedElement = f
-        if (f != null && client.navigationType.isKeyboard) {
+        if (f != null && client.lastInputType.isKeyboard) {
             ensureVisible(f)
         }
     }
@@ -257,8 +257,8 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
      * @author fzzyhmstrs
      * @since 0.6.0
      */
-    override fun getNavigationPath(navigation: GuiNavigation?): GuiNavigationPath? {
-        return super<ParentElement>.getNavigationPath(navigation)
+    override fun nextFocusPath(navigation: FocusNavigationEvent): ComponentPath? {
+        return super<ContainerEventHandler>.nextFocusPath(navigation)
     }
 
     /**
@@ -364,7 +364,7 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
             } else {
                 val progress = topDelta().toDouble() / (topDelta() - bottomDelta()).toDouble()
                 val halfBarHeight = scrollFixedHeight / 2
-                val midPoint = MathHelper.lerp(progress.toFloat(), scrollTop() + halfBarHeight, scrollBottom() - halfBarHeight)
+                val midPoint = Mth.lerpInt(progress.toFloat(), scrollTop() + halfBarHeight, scrollBottom() - halfBarHeight)
                 if ((mouseY >= midPoint - halfBarHeight) && (mouseY < midPoint + halfBarHeight)) {
                     scrollingTop = (scrollTop() + halfBarHeight).toDouble()
                     scrollingBottom = (scrollBottom() + halfBarHeight).toDouble()
@@ -389,13 +389,13 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
                 }
                 val progress = topDelta().toDouble() / (topDelta() - bottomDelta()).toDouble()
                 val halfBarHeight = (height * contentFraction).toInt() / 2
-                val midPoint = MathHelper.lerp(progress.toFloat(), scrollTop() + halfBarHeight, scrollBottom() - halfBarHeight)
+                val midPoint = Mth.lerpInt(progress.toFloat(), scrollTop() + halfBarHeight, scrollBottom() - halfBarHeight)
                 return ((midPoint - mouseY)/contentFraction).toInt()
             }
             ScrollBarType.FIXED -> {
                 val progress = topDelta().toDouble() / (topDelta() - bottomDelta()).toDouble()
                 val halfBarHeight = scrollFixedHeight / 2
-                val midPoint = MathHelper.lerp(progress.toFloat(), scrollTop() + halfBarHeight, scrollBottom() - halfBarHeight)
+                val midPoint = Mth.lerpInt(progress.toFloat(), scrollTop() + halfBarHeight, scrollBottom() - halfBarHeight)
                 val contentFraction = (scrollHeight().toDouble() / contentHeight().toDouble())
                 return ((midPoint - mouseY)/contentFraction).toInt()
             }
@@ -413,7 +413,7 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
             ScrollBarType.FIXED -> {
                 val progress = topDelta().toDouble() / (topDelta() - bottomDelta()).toDouble()
                 val halfBarHeight = scrollFixedHeight / 2
-                val midPoint = MathHelper.lerp(progress.toFloat(), scrollTop() + halfBarHeight, scrollBottom() - halfBarHeight)
+                val midPoint = Mth.lerpInt(progress.toFloat(), scrollTop() + halfBarHeight, scrollBottom() - halfBarHeight)
                 ScrollBarPosition(midPoint - halfBarHeight, midPoint + halfBarHeight, (mouseY >= midPoint - halfBarHeight) && (mouseY < midPoint + halfBarHeight))
             }
         }
@@ -429,10 +429,10 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
         if (event.x() >= (right - scrollWidth) && (event.x() < right)) {
             dragging = true
             if (scrollButtonType.get().mouseOverUp(event.y(), y, bottom)) {
-                client.soundManager.play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.0f))
+                client.soundManager.play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0f))
                 return handleScrollByBar(50)
             } else if (scrollButtonType.get().mouseOverDown(event.y(), y, bottom)) {
-                client.soundManager.play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.0f))
+                client.soundManager.play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0f))
                 return handleScrollByBar(-50)
             } else {
                 val jump = jumpScrollBarToMouse(event.y(), event.button())
@@ -451,7 +451,7 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
         if (e != null) {
             focused = e
             if (event.clickWidget(e)) {
-                if (e2 != e && e2 is ParentElement) {
+                if (e2 != e && e2 is ContainerEventHandler) {
                     e2.focused = null
                 }
                 dragging = true
@@ -465,7 +465,7 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
     }
 
     @Deprecated("Will be marked final 0.8.0. Use onMouse instead")
-    override fun mouseClicked(click: Click, doubled: Boolean): Boolean {
+    override fun mouseClicked(click: MouseButtonEvent, doubled: Boolean): Boolean {
         return onMouse(CustomWidget.OnClick(click, doubled))
     }
 
@@ -475,7 +475,7 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
     }
 
     @Deprecated("Will be marked final 0.8.0. Use onMouseRelease instead")
-    override fun mouseReleased(click: Click): Boolean {
+    override fun mouseReleased(click: MouseButtonEvent): Boolean {
         return onMouseRelease(CustomWidget.OnRelease(click))
     }
 
@@ -493,7 +493,7 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
                 scrollingY = event.y()
                 return true
             } else {
-                val travelProgress = MathHelper.getLerpProgress(event.y(), scrollingTop, scrollingBottom)
+                val travelProgress = Mth.inverseLerp(event.y(), scrollingTop, scrollingBottom)
                 if (travelProgress < 0.0) {
                     scrollToTop()
                     scrollingBottom = scrollingBottom - scrollingTop + event.y()
@@ -515,8 +515,8 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
     }
 
     @Deprecated("Will be marked final 0.8.0. Use onMouseDrag instead")
-    override fun mouseDragged(click: Click, offsetX: Double, offsetY: Double): Boolean {
-        if (super<ParentElement>.mouseDragged(click, offsetX, offsetY)) {
+    override fun mouseDragged(click: MouseButtonEvent, offsetX: Double, offsetY: Double): Boolean {
+        if (super<ContainerEventHandler>.mouseDragged(click, offsetX, offsetY)) {
             return true
         }
         return onMouseDrag(CustomWidget.OnDrag(click, offsetX, offsetY))
@@ -581,25 +581,25 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
     }
 
     @Deprecated("Will be marked final 0.8.0. Use onKey instead.")
-    override fun keyPressed(input: KeyInput): Boolean {
+    override fun keyPressed(input: KeyEvent): Boolean {
         if (onKey(CustomWidget.KeyEvent(input))) return true
-        return super<ParentElement>.keyPressed(input)
+        return super<ContainerEventHandler>.keyPressed(input)
     }
 
     @Deprecated("Will be marked final 0.8.0. Use onKeyRelease instead.")
-    override fun keyReleased(input: KeyInput): Boolean {
+    override fun keyReleased(input: KeyEvent): Boolean {
         if (onKeyRelease(CustomWidget.KeyEvent(input))) return true
-        return super<ClickableWidget>.keyReleased(input)
+        return super<AbstractWidget>.keyReleased(input)
     }
 
     @Deprecated("Will be marked final 0.8.0. Use onChar instead.")
-    override fun charTyped(input: CharInput): Boolean {
+    override fun charTyped(input: CharacterEvent): Boolean {
         if (onChar(CustomWidget.CharEvent(input))) return true
-        return super<ParentElement>.charTyped(input)
+        return super<ContainerEventHandler>.charTyped(input)
     }
 
     override fun isFocused(): Boolean {
-        return super<ParentElement>.isFocused()
+        return super<ContainerEventHandler>.isFocused()
     }
 
     override fun setFocused(focused: Boolean) {
@@ -609,22 +609,22 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
         }
     }
 
-    override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
-        if (client.navigationType.isKeyboard) {
-            focusedElement?.appendNarrations(builder.nextMessage())
+    override fun updateWidgetNarration(builder: NarrationElementOutput) {
+        if (client.lastInputType.isKeyboard) {
+            focusedElement?.appendNarrations(builder.nest())
             val i = selectableEntries().indexOf(focusedElement)
             if (i >= 0) {
-                builder.put(NarrationPart.POSITION, FcText.translatable(listNarrationKey(), i + 1, selectableEntries().size))
+                builder.add(NarratedElementType.POSITION, FcText.translatable(listNarrationKey(), i + 1, selectableEntries().size))
             }
         } else {
-            hoveredElement?.appendNarrations(builder.nextMessage().nextMessage())
+            hoveredElement?.appendNarrations(builder.nest().nest())
             val i = selectableEntries().indexOf(hoveredElement)
             if (i >= 0) {
-                builder.put(NarrationPart.POSITION, FcText.translatable(listNarrationKey(), i + 1, selectableEntries().size))
+                builder.add(NarratedElementType.POSITION, FcText.translatable(listNarrationKey(), i + 1, selectableEntries().size))
             }
         }
 
-        builder.put(NarrationPart.USAGE, FcText.translatable("narration.component_list.usage"))
+        builder.add(NarratedElementType.USAGE, FcText.translatable("narration.component_list.usage"))
     }
 
     /**
@@ -781,7 +781,7 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
      * @author fzzyhmstrs
      * @since 0.6.0
      */
-    abstract class Entry<P: ParentElement>(val parentElement: P): Element {
+    abstract class Entry<P: ContainerEventHandler>(val parentElement: P): GuiEventListener {
 
         override fun isFocused(): Boolean {
             return this.parentElement.focused == this
@@ -798,7 +798,7 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
          * @author fzzyhmstrs
          * @since 0.6.0
          */
-        abstract fun render (context: DrawContext, mouseX: Int, mouseY: Int, delta: Float)
+        abstract fun render (context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float)
 
         /**
          * Append narration messages to current [NarrationMessageBuilder]. The list will handle list position and navigation, the entry should focus on providing title and description information, and internal navigation information as applicable (if there are multiple children in one entry for example)
@@ -806,7 +806,7 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
          * @author fzzyhmstrs
          * @since 0.6.0
          */
-        open fun appendNarrations(builder: NarrationMessageBuilder) {
+        open fun appendNarrations(builder: NarrationElementOutput) {
         }
     }
 }

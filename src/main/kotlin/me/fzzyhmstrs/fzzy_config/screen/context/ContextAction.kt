@@ -5,7 +5,7 @@ import me.fzzyhmstrs.fzzy_config.screen.decoration.SmallSpriteDecoration
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureDeco
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.function.ConstSupplier
-import net.minecraft.text.Text
+import net.minecraft.network.chat.Component
 import java.util.function.Function
 import java.util.function.Supplier
 import java.util.function.UnaryOperator
@@ -27,8 +27,8 @@ class ContextAction private constructor(val texts: Translatable.Result, val acti
      * @author fzzyhmstrs
      * @since 0.6.0
      */
-    class Builder(private val name: Text, private val action: Function<Position, Boolean>) {
-        private var narration: Text? = null
+    class Builder(private val name: Component, private val action: Function<Position, Boolean>) {
+        private var narration: Component? = null
         private var active: Supplier<Boolean> = ConstSupplier(true)
         private var icon: Decorated? = null
         private var forMenu: Boolean = true
@@ -50,7 +50,7 @@ class ContextAction private constructor(val texts: Translatable.Result, val acti
          * @author fzzyhmstrs
          * @since 0.6.0
          */
-        fun narration(narration: Text): Builder {
+        fun narration(narration: Component): Builder {
             this.narration = narration
             return this
         }

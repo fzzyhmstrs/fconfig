@@ -12,14 +12,15 @@ import com.matthewprenger.cursegradle.CurseArtifact
 import com.matthewprenger.cursegradle.CurseProject
 import com.matthewprenger.cursegradle.CurseRelation
 import com.matthewprenger.cursegradle.Options
+import org.gradle.api.internal.artifacts.dependencies.DefaultImmutableVersionConstraint.strictly
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.net.URI
 
 plugins {
-    id("dev.architectury.loom")
+    id("net.neoforged.moddev")
     val kotlinVersion: String by System.getProperties()
     kotlin("jvm").version(kotlinVersion)
-    kotlin("plugin.serialization") version "1.9.22"
+    kotlin("plugin.serialization") version "2.3.20"
     id("com.modrinth.minotaur") version "2.+"
     id("com.matthewprenger.cursegradle") version "1.4.0"
     `maven-publish`
@@ -37,6 +38,23 @@ version = "$modVersion+$minecraftVersion+neoforge"
 val mavenGroup: String by project
 group = mavenGroup
 println("## Changelog for FzzyConfig $version \n\n" + log.readText())
+
+val loaderVersion: String by project
+neoForge {
+    version = loaderVersion
+
+    runs {
+        register("client") {
+            client()
+        }
+    }
+
+    mods {
+        register("testProject") {
+            sourceSet(sourceSets.main.get())
+        }
+    }
+}
 
 repositories {
     mavenCentral()
@@ -60,30 +78,43 @@ repositories {
 
 dependencies {
 
-    minecraft("com.mojang:minecraft:$minecraftVersion")
-    val yarnMappings: String by project
-    val yarnMappingsPatchVersion: String by project
-    mappings( loom.layered {
-        mappings("net.fabricmc:yarn:$yarnMappings:v2")
-        mappings("dev.architectury:yarn-mappings-patch-neoforge:$yarnMappingsPatchVersion")
-    })
-    val loaderVersion: String by project
-    neoForge("net.neoforged:neoforge:$loaderVersion")
+    //minecraft("com.mojang:minecraft:$minecraftVersion")
+    //val yarnMappings: String by project
+    //val yarnMappingsPatchVersion: String by project
+    //mappings( loom.layered {
+    //    mappings("net.fabricmc:yarn:$yarnMappings:v2")
+    //    mappings("dev.architectury:yarn-mappings-patch-neoforge:$yarnMappingsPatchVersion")
+    //})
+    //val loaderVersion: String by project
+    //neoForge("net.neoforged:neoforge:$loaderVersion")
 
 
-    /*val kotlinForForgeVersion: String by project
-    modLocalRuntime("thedarkcolour:kotlinforforge-neoforge:$kotlinForForgeVersion")*/
+    val kotlinForForgeVersion: String by project
+    runtimeOnly("thedarkcolour:kotlinforforge-neoforge:$kotlinForForgeVersion")
 
-    val klfVersion: String by project
-    modLocalRuntime("dev.nyon:KotlinLangForge:$klfVersion")
+    /*val klfVersion: String by project
+    modLocalRuntime("dev.nyon:KotlinLangForge:$klfVersion")*/
 
     val tomlktVersion: String by project
     implementation("net.peanuuutz.tomlkt:tomlkt-jvm:$tomlktVersion")
-    include("net.peanuuutz.tomlkt:tomlkt-jvm:$tomlktVersion")
+    //include("net.peanuuutz.tomlkt:tomlkt-jvm:$tomlktVersion")
+    jarJar("net.peanuuutz.tomlkt:tomlkt-jvm") {
+        version {
+            strictly(tomlktVersion)
+            prefer(tomlktVersion)
+        }
+    }
 
     val janksonVersion: String by project
     implementation("blue.endless:jankson:$janksonVersion")
-    include("blue.endless:jankson:$janksonVersion")
+    //include("blue.endless:jankson:$janksonVersion")
+    jarJar("blue.endless:jankson") {
+        version {
+            strictly(janksonVersion)
+            prefer(janksonVersion)
+        }
+    }
+
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
@@ -93,7 +124,7 @@ dependencies {
 val kotlinVersion: String by System.getProperties()
 
 tasks {
-    val javaVersion = JavaVersion.VERSION_21
+    val javaVersion = JavaVersion.VERSION_25
     withType<JavaCompile> {
         options.encoding = "UTF-8"
         sourceCompatibility = javaVersion.toString()
@@ -103,8 +134,8 @@ tasks {
 
     withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
         compilerOptions {
-            freeCompilerArgs = listOf("-Xjvm-default=all")
-            jvmTarget.set(JvmTarget.JVM_21)
+            freeCompilerArgs = listOf("-Xjvm-default=all", "-jvm-default=enable")
+            jvmTarget.set(JvmTarget.JVM_25)
         }
         //java.sourceCompatibility = javaVersion
         //targetCompatibility = javaVersion.toString()
@@ -153,8 +184,7 @@ if (System.getenv("MODRINTH_TOKEN") != null) {
         versionNumber.set("${project.version}")
         versionName.set("${base.archivesName.get()}-${project.version}")
         versionType.set(releaseType)
-        uploadFile.set(tasks.remapJar.get())
-        additionalFiles.add(tasks.remapSourcesJar.get().archiveFile)
+        uploadFile.set(tasks.jar.get())
         gameVersions.addAll(mcVersions.split(","))
         loaders.addAll("neoforge")
         detectLoaders.set(false)
@@ -182,15 +212,11 @@ if (System.getenv("CURSEFORGE_TOKEN") != null) {
                 addGameVersion(ver)
             }
             addGameVersion("NeoForge")
-            mainArtifact(tasks.remapJar.get().archiveFile.get(), closureOf<CurseArtifact> {
+            mainArtifact(tasks.jar.get().archiveFile.get(), closureOf<CurseArtifact> {
                 displayName = "${base.archivesName.get()}-${project.version}"
                 relations(closureOf<CurseRelation> {
                     this.requiredDependency("kotlinlangforge")
                 })
-            })
-            addArtifact(tasks.remapSourcesJar.get().archiveFile, closureOf<CurseArtifact> {
-                changelogType = "markdown"
-                changelog = "Source files for ${base.archivesName.get()}-${project.version}"
             })
             relations(closureOf<CurseRelation> {
                 this.requiredDependency("kotlinlangforge")

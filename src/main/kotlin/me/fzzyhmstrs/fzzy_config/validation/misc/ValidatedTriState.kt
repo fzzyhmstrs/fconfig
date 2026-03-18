@@ -22,10 +22,10 @@ import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import me.fzzyhmstrs.fzzy_config.util.TriState.*
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedTriState.WidgetType
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.tooltip.Tooltip
-import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.text.MutableText
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.gui.components.Tooltip
+import net.minecraft.client.gui.components.AbstractWidget
+import net.minecraft.network.chat.MutableComponent
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
 import net.peanuuutz.tomlkt.toBoolean
@@ -61,12 +61,12 @@ open class ValidatedTriState @JvmOverloads constructor(defaultValue: TriState, p
     @Internal
     override fun serialize(input: TriState): ValidationResult<TomlElement> {
         val result = TriState.CODEC.encodeStart(TomlOps.INSTANCE, input)
-        return ValidationResult.mapDataResult(result, TomlLiteral(input.asString()))
+        return ValidationResult.mapDataResult(result, TomlLiteral(input.serializedName))
     }
 
     @Internal
     //client
-    override fun widgetEntry(choicePredicate: ChoiceValidator<TriState>): ClickableWidget {
+    override fun widgetEntry(choicePredicate: ChoiceValidator<TriState>): AbstractWidget {
         return when(widgetType) {
             WidgetType.SIDE_BY_SIDE -> {
                 val t = SideBySideWidget(
@@ -224,30 +224,30 @@ open class ValidatedTriState @JvmOverloads constructor(defaultValue: TriState, p
     }
 
     //client
-    private inner class SideBySideWidget(private val state: TriState, private val enabledRender: (context: DrawContext, x: Int, y: Int, w: Int, h: Int) -> Unit = {_, _, _, _, _ -> }, private val disabledRender: (context: DrawContext, x: Int, y: Int, w: Int, h: Int) -> Unit = { _, _, _, _, _ -> }): CustomPressableWidget(0, 0, 110, 20, FcText.EMPTY) {
+    private inner class SideBySideWidget(private val state: TriState, private val enabledRender: (context: GuiGraphicsExtractor, x: Int, y: Int, w: Int, h: Int) -> Unit = { _, _, _, _, _ -> }, private val disabledRender: (context: GuiGraphicsExtractor, x: Int, y: Int, w: Int, h: Int) -> Unit = { _, _, _, _, _ -> }): CustomPressableWidget(0, 0, 110, 20, FcText.EMPTY) {
 
         init {
-            setTooltip(Tooltip.of(state.descLit(state.asString())))
+            setTooltip(Tooltip.create(state.descLit(state.serializedName)))
         }
 
         override val textures: TextureProvider = TextureSet.Quad(tex, disabled, highlighted, "widget/button_disabled_highlighted".fcId())
 
         var choiceSelected = state == this@ValidatedTriState.get()
 
-        override fun renderBackground(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
+        override fun renderBackground(context: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
             choiceSelected = state == this@ValidatedTriState.get()
-            context.drawNineSlice(textures.get(choiceSelected, this.isSelected), x, y, width, height, this.alpha)
+            context.drawNineSlice(textures.get(choiceSelected, this.isHoveredOrFocused), x, y, width, height, this.alpha)
         }
 
-        override fun renderCustom(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
+        override fun renderCustom(context: GuiGraphicsExtractor, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
             if (choiceSelected)
                 enabledRender(context, x, y, width, height)
             else
                 disabledRender(context, x, y, width, height)
         }
 
-        override fun getNarrationMessage(): MutableText {
-            val m = state.transLit(state.asString())
+        override fun createNarrationMessage(): MutableComponent {
+            val m = state.transLit(state.serializedName)
             return if (choiceSelected)
                 FcText.translatable("fc.validated_field.choice_set.selected", m)
             else
@@ -261,21 +261,21 @@ open class ValidatedTriState @JvmOverloads constructor(defaultValue: TriState, p
     }
 
     //client
-    private inner class CyclingOptionsWidget: CustomPressableWidget(0, 0, 110, 20, this@ValidatedTriState.get().let { it.transLit(it.asString()) }) {
+    private inner class CyclingOptionsWidget: CustomPressableWidget(0, 0, 110, 20, this@ValidatedTriState.get().let { it.transLit(it.serializedName) }) {
 
         init {
-            this@ValidatedTriState.descLit("").takeIf { it.string != "" }?.let { setTooltip(Tooltip.of(it)) }
+            this@ValidatedTriState.descLit("").takeIf { it.string != "" }?.let { setTooltip(Tooltip.create(it)) }
         }
 
-        override fun getNarrationMessage(): MutableText {
-            return this@ValidatedTriState.get().let { it.transLit(it.asString()) }
+        override fun createNarrationMessage(): MutableComponent {
+            return this@ValidatedTriState.get().let { it.transLit(it.serializedName) }
         }
 
         override fun onPress() {
             val newIndex = (TriState.entries.indexOf(this@ValidatedTriState.get()) + 1).takeIf { it < TriState.entries.size } ?: 0
             val newConst = TriState.entries[newIndex]
-            message = newConst.let { it.transLit(it.asString()) }
-            newConst.descLit("").takeIf { it.string != "" }?.also { setTooltip(Tooltip.of(it)) }
+            message = newConst.let { it.transLit(it.serializedName) }
+            newConst.descLit("").takeIf { it.string != "" }?.also { setTooltip(Tooltip.create(it)) }
             this@ValidatedTriState.accept(newConst)
         }
 

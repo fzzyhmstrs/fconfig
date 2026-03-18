@@ -23,8 +23,8 @@ import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.attachTo
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedPair.LayoutStyle
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedPair.Tuple
-import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.text.Text
+import net.minecraft.client.gui.components.AbstractWidget
+import net.minecraft.network.chat.Component
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlNull
 import net.peanuuutz.tomlkt.TomlTableBuilder
@@ -73,7 +73,7 @@ open class ValidatedPair<A, B> @JvmOverloads constructor(defaultValue: Tuple<A, 
          * @since 0.6.0
          */
         @JvmStatic
-        fun <F: ValidatedPair<*, *>> F.withLabels(leftLabel: Text, rightLabel: Text): F {
+        fun <F: ValidatedPair<*, *>> F.withLabels(leftLabel: Component, rightLabel: Component): F {
             this.leftLabel = leftLabel
             this.rightLabel = rightLabel
             return this
@@ -113,8 +113,8 @@ open class ValidatedPair<A, B> @JvmOverloads constructor(defaultValue: Tuple<A, 
      */
     open fun onRightChanged(right: Entry<B, *>) {}
 
-    private var leftLabel: Text? = null
-    private var rightLabel: Text? = null
+    private var leftLabel: Component? = null
+    private var rightLabel: Component? = null
 
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<Tuple<A, B>> {
@@ -160,7 +160,7 @@ open class ValidatedPair<A, B> @JvmOverloads constructor(defaultValue: Tuple<A, 
 
     @Internal
     //client
-    override fun widgetEntry(choicePredicate: ChoiceValidator<Tuple<A, B>>): ClickableWidget {
+    override fun widgetEntry(choicePredicate: ChoiceValidator<Tuple<A, B>>): AbstractWidget {
         val left = leftHandler.widgetEntry().wrap(leftLabel, "left")
         val right = rightHandler.widgetEntry().wrap(rightLabel, "right")
         if (layoutStyle == LayoutStyle.SIDE_BY_SIDE) {
@@ -266,7 +266,7 @@ open class ValidatedPair<A, B> @JvmOverloads constructor(defaultValue: Tuple<A, 
         }
     }
 
-    private fun ClickableWidget.wrap(label: Text?, side: String): ClickableWidget {
+    private fun AbstractWidget.wrap(label: Component?, side: String): AbstractWidget {
         return if (label == null) LabelWrappedWidget(this, "fc.validated_field.pair.$side".translate(), false) else LabelWrappedWidget(this, label)
     }
 

@@ -13,9 +13,9 @@ package me.fzzyhmstrs.fzzy_config.examples
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedAny
-import net.minecraft.util.Identifier
+import net.minecraft.resources.Identifier
 
-class BoisConfig: Config(Identifier.of(FC.MOD_ID, "bois_config")) {
+class BoisConfig: Config(Identifier.fromNamespaceAndPath(FC.MOD_ID, "bois_config")) {
 
     // If there are common clusters of settings you want to use in many places, such as mob stats,
     // you can use ValidatedAny to implement arrangements of settings from one common source

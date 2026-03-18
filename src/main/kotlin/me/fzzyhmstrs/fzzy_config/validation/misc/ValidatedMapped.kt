@@ -19,8 +19,8 @@ import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.map
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField.Companion.translationProvider
-import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.text.Text
+import net.minecraft.client.gui.components.AbstractWidget
+import net.minecraft.network.chat.Component
 import net.peanuuutz.tomlkt.TomlElement
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.function.BiFunction
@@ -138,7 +138,7 @@ open class ValidatedMapped<N, T> @JvmOverloads constructor(protected val delegat
     }
 
     @Internal
-    override fun widgetEntry(choicePredicate: ChoiceValidator<N>): ClickableWidget {
+    override fun widgetEntry(choicePredicate: ChoiceValidator<N>): AbstractWidget {
         return delegate.widgetEntry(choicePredicate.convert(from, from))
     }
 
@@ -216,7 +216,7 @@ open class ValidatedMapped<N, T> @JvmOverloads constructor(protected val delegat
 
     private inner class ForwardingUpdateManager(private val forwardTo: UpdateManager): UpdateManager {
 
-        override fun update(updatable: Updatable, updateMessage: Text) {
+        override fun update(updatable: Updatable, updateMessage: Component) {
             forwardTo.update(this@ValidatedMapped, updateMessage)
         }
 
@@ -228,7 +228,7 @@ open class ValidatedMapped<N, T> @JvmOverloads constructor(protected val delegat
             return null
         }
 
-        override fun addUpdateMessage(key: Updatable, text: Text) {
+        override fun addUpdateMessage(key: Updatable, text: Component) {
             forwardTo.addUpdateMessage(this@ValidatedMapped, text)
         }
 

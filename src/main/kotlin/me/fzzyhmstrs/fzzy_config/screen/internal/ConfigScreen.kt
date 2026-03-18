@@ -32,33 +32,34 @@ import me.fzzyhmstrs.fzzy_config.util.PortingUtils.isControlDown
 import me.fzzyhmstrs.fzzy_config.util.PortingUtils.isShiftDown
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import me.fzzyhmstrs.fzzy_config.util.TriState
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.Click
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.Drawable
-import net.minecraft.client.gui.Selectable
-import net.minecraft.client.gui.screen.Screen
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
-import net.minecraft.client.gui.tooltip.Tooltip
-import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.client.gui.widget.DirectionalLayoutWidget
-import net.minecraft.client.gui.widget.TextWidget
-import net.minecraft.client.gui.widget.ThreePartsLayoutWidget
-import net.minecraft.client.input.KeyInput
-import net.minecraft.screen.ScreenTexts
-import net.minecraft.text.Text
-import net.minecraft.util.Identifier
+import net.minecraft.client.Minecraft
+import net.minecraft.client.input.MouseButtonEvent
+import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.client.gui.components.Renderable
+import net.minecraft.client.gui.narration.NarratableEntry
+import net.minecraft.client.gui.screens.Screen
+import net.minecraft.client.gui.narration.NarrationElementOutput
+import net.minecraft.client.gui.components.Tooltip
+import net.minecraft.client.gui.components.AbstractWidget
+import net.minecraft.client.gui.layouts.LinearLayout
+import net.minecraft.client.gui.components.StringWidget
+import net.minecraft.client.gui.components.events.GuiEventListener
+import net.minecraft.client.gui.layouts.HeaderAndFooterLayout
+import net.minecraft.client.input.KeyEvent
+import net.minecraft.network.chat.CommonComponents
+import net.minecraft.network.chat.Component
+import net.minecraft.resources.Identifier
 import net.minecraft.util.Util
 import java.util.concurrent.TimeUnit
 import java.util.function.Supplier
 
 //client
 internal class ConfigScreen(
-    title: Text,
+    title: Component,
     val scope: String,
     private val manager: UpdateManager,
     private val configList: DynamicListWidget,
-    private val parentScopesButtons: List<Supplier<ClickableWidget>>,
+    private val parentScopesButtons: List<Supplier<AbstractWidget>>,
     private val sidebar: ConfigScreenManager.Sidebar,
     private val onFinalClose: Runnable)
     :
@@ -69,7 +70,7 @@ internal class ConfigScreen(
     private var parent: Screen? = null
     private var globalInputHandler: ((key: Int, released: Boolean, type: ContextInput, ctrl: Boolean, shift: Boolean, alt: Boolean) -> TriState)? = null
 
-    internal lateinit var layout: ThreePartsLayoutWidget
+    internal lateinit var layout: HeaderAndFooterLayout
     private lateinit var searchField: NavigableTextFieldWidget
     private lateinit var doneButton: CustomButtonWidget
 
@@ -97,7 +98,7 @@ internal class ConfigScreen(
 
     fun getCurrentSearch(): String {
         return try {
-            searchField.text
+            searchField.value
         } catch (e: Throwable) {
             ""
         }
@@ -119,7 +120,7 @@ internal class ConfigScreen(
     fun processEntry(rawEntryString: String): Boolean {
         if (rawEntryString.startsWith("::") && rawEntryString.length > 2) {
             //check if I have to also prompt a search field change
-            searchField.text = rawEntryString.substring(2)
+            searchField.setValue(rawEntryString.substring(2))
             return true
         }
         return false
@@ -144,12 +145,12 @@ internal class ConfigScreen(
         configList.scrollToGroup(g)
     }
 
-    override fun close() {
+    override fun onClose() {
         if(this.parent == null || this.parent !is ConfigScreen) {
             onFinalClose.run()
-            this.client?.narratorManager?.clear()
+            this.minecraft?.narrator?.clear()
         }
-        this.client?.setScreen(parent)
+        this.minecraft?.setScreen(parent)
     }
 
     private fun shiftClose() {
@@ -161,16 +162,16 @@ internal class ConfigScreen(
             }
             this.parent = parentParent
         }
-        close()
+        onClose()
     }
 
-    override fun onDisplayed() {
+    override fun added() {
         initialInit = true
-        super.onDisplayed()
+        super.added()
     }
 
     override fun init() {
-        layout = ThreePartsLayoutWidget(this)
+        layout = HeaderAndFooterLayout(this)
         super.init()
         initHeader()
         initFooter()
@@ -181,60 +182,60 @@ internal class ConfigScreen(
         initialInit = false
     }
     private fun initHeader() {
-        val directionalLayoutWidget = layout.addHeader(DirectionalLayoutWidget.horizontal().spacing(2))
+        val directionalLayoutWidget = layout.addToHeader(LinearLayout.horizontal().spacing(2))
         for (scopeButton in parentScopesButtons) {
-            directionalLayoutWidget.add(scopeButton.get())
-            directionalLayoutWidget.add(TextWidget(textRenderer.getWidth(" > ".lit()), 20, " > ".lit(), this.textRenderer))
+            directionalLayoutWidget.addChild(scopeButton.get())
+            directionalLayoutWidget.addChild(StringWidget(font.width(" > ".lit()), 20, " > ".lit(), this.font))
         }
-        directionalLayoutWidget.add(TextWidget(textRenderer.getWidth(this.title), 20, this.title, this.textRenderer))
+        directionalLayoutWidget.addChild(StringWidget(font.width(this.title), 20, this.title, this.font))
 
     }
     private fun initBody() {
-        this.addDrawableChild(configList)
-        layout.forEachChild { drawableElement: ClickableWidget? ->
+        this.addRenderableWidget(configList)
+        layout.visitWidgets { drawableElement: AbstractWidget ->
             if (drawableElement is LayoutClickableWidget) {
                 for (element in drawableElement.children()) {
-                    if (element is Drawable && element is Selectable) {
-                        addDrawableChild(element)
+                    if (element is Renderable && element is NarratableEntry && element is GuiEventListener) {
+                        addRenderableWidget(element)
                     }
                 }
             } else {
-                addDrawableChild(drawableElement)
+                addRenderableWidget(drawableElement)
             }
         }
         configList.onReposition()
     }
     private fun initFooter() {
-        val directionalLayoutWidget = layout.addFooter(DirectionalLayoutWidget.horizontal().spacing(8))
+        val directionalLayoutWidget = layout.addToFooter(LinearLayout.horizontal().spacing(8))
         //goto button
-        directionalLayoutWidget.add(CustomButtonWidget.builder { Popups.openGotoPopup(this.sidebar.getAnchors(), this.sidebar.getAnchorWidth(), this.height) }.size(20, 20).textures(TextureIds.GOTO_SET).narrationSupplier { _, _ -> TextureIds.GOTO_LANG }.activeSupplier { sidebar.needsSidebar() }.tooltip(TextureIds.GOTO_LANG).build()) { p -> p.alignLeft() }
+        directionalLayoutWidget.addChild(CustomButtonWidget.builder { Popups.openGotoPopup(this.sidebar.getAnchors(), this.sidebar.getAnchorWidth(), this.height) }.size(20, 20).textures(TextureIds.GOTO_SET).narrationSupplier { _, _ -> TextureIds.GOTO_LANG }.activeSupplier { sidebar.needsSidebar() }.tooltip(TextureIds.GOTO_LANG).build()) { p -> p.alignHorizontallyLeft() }
         //info button
-        directionalLayoutWidget.add(CustomButtonWidget.builder { Popups.openInfoPopup(this) }.size(20, 20).textures(TextureIds.INFO_SET).narrationSupplier { _, _ -> TextureIds.INFO_LANG }.tooltip(TextureIds.INFO_LANG).build()) { p -> p.alignLeft() }
+        directionalLayoutWidget.addChild(CustomButtonWidget.builder { Popups.openInfoPopup(this) }.size(20, 20).textures(TextureIds.INFO_SET).narrationSupplier { _, _ -> TextureIds.INFO_LANG }.tooltip(TextureIds.INFO_LANG).build()) { p -> p.alignHorizontallyLeft() }
         //search bar
         val searchText = if (this::searchField.isInitialized && !(SearchConfig.INSTANCE.clearSearch.get() && initialInit)) {
-            searchField.text
+            searchField.value
         } else {
             ""
         }
         val searchFieldText = if (this::searchField.isInitialized) {
-            searchField.text
+            searchField.value
         } else {
             ""
         }
-        searchField = NavigableTextFieldWidget(MinecraftClient.getInstance().textRenderer, 109, 20, FcText.EMPTY)
+        searchField = NavigableTextFieldWidget(Minecraft.getInstance().font, 109, 20, FcText.EMPTY)
         fun setColor(entries: Int) {
             if(entries > 0)
-                searchField.setEditableColor(-1)
+                searchField.setTextColor(-1)
             else if (entries == 0)
-                searchField.setEditableColor(-43691)
+                searchField.setTextColor(-43691)
             else
-                searchField.setEditableColor(-256)
+                searchField.setTextColor(-256)
         }
         searchField.setMaxLength(100)
-        searchField.setChangedListener { s -> setColor(configList.search(s)) }
+        searchField.setResponder { s -> setColor(configList.search(s)) }
         if (searchText != searchFieldText || searchText.isNotEmpty())
-            searchField.text = searchText
-        searchField.setTooltip(Tooltip.of("fc.config.search.desc".translate()))
+            searchField.setValue(searchText)
+        searchField.setTooltip(Tooltip.create("fc.config.search.desc".translate()))
 
         val layout = LayoutWidget.Builder().paddingBoth(0).spacingBoth(0).build()
         layout.add(
@@ -258,7 +259,8 @@ internal class ConfigScreen(
         layout.add(
             "clear",
             CustomButtonWidget.builder(TextureIds.MENU_CLEAR_LANG) {
-                searchField.text = "" }
+                searchField.setValue("")
+            }
                 .noMessage()
                 .size(11, 10)
                 .tooltip(TextureIds.MENU_CLEAR_LANG)
@@ -269,27 +271,28 @@ internal class ConfigScreen(
             LayoutWidget.Position.VERTICAL_TO_LEFT_EDGE
         )
 
-        directionalLayoutWidget.add(LayoutClickableWidget(0, 0, 120, 20, layout))
+        directionalLayoutWidget.addChild(LayoutClickableWidget(0, 0, 120, 20, layout))
         //forward alert button
-        directionalLayoutWidget.add(CustomButtonWidget.builder { manager.forwardsHandler() }.size(20, 20).textures("widget/action/alert".fcId(), "widget/action/alert_inactive".fcId(), "widget/action/alert_highlighted".fcId()).narrationSupplier { a, _ -> if (a) "fc.button.alert.active".translate() else "fc.button.alert.inactive".translate() }.activeSupplier { manager.hasForwards() }.tooltipSupplier { a -> if (a) "fc.button.alert.active".translate() else "fc.button.alert.inactive".translate() }.build()) { p -> p.alignLeft() }
+        directionalLayoutWidget.addChild(CustomButtonWidget.builder { manager.forwardsHandler() }.size(20, 20).textures("widget/action/alert".fcId(), "widget/action/alert_inactive".fcId(), "widget/action/alert_highlighted".fcId()).narrationSupplier { a, _ -> if (a) "fc.button.alert.active".translate() else "fc.button.alert.inactive".translate() }.activeSupplier { manager.hasForwards() }.tooltipSupplier { a -> if (a) "fc.button.alert.active".translate() else "fc.button.alert.inactive".translate() }.build()) { p -> p.alignHorizontallyLeft() }
         //directionalLayoutWidget.add(TextlessActionWidget("widget/action/alert".fcId(), "widget/action/alert_inactive".fcId(), "widget/action/alert_highlighted".fcId(), "fc.button.alert.active".translate(), "fc.button.alert.inactive".translate(), { manager.hasForwards() } ) { manager.forwardsHandler() })
         //changes button
-        directionalLayoutWidget.add(ChangesWidget(scope, { this.width }, manager))
+        directionalLayoutWidget.addChild(ChangesWidget(scope, { this.width }, manager))
         //done button
-        doneButton = CustomButtonWidget.builder { _ -> if (isShiftDown()) shiftClose() else close() }
+        doneButton = CustomButtonWidget.builder { _ -> if (isShiftDown()) shiftClose() else onClose() }
             .size(78, 20)
             .messageSupplier {
-                if (isShiftDown() || parent !is ConfigScreen) { ScreenTexts.DONE } else { "fc.config.back".translate() }
+                if (isShiftDown() || parent !is ConfigScreen) { CommonComponents.GUI_DONE
+                } else { "fc.config.back".translate() }
             }
             .tooltipSupplier {
                 if (parent !is ConfigScreen || isShiftDown()) "fc.config.done.desc".translate() else "fc.config.back.desc".translate(parent?.title ?: "")
             }.build()
-        directionalLayoutWidget.add(doneButton)
+        directionalLayoutWidget.addChild(doneButton)
     }
 
     private fun initLayout() {
-        layout.refreshPositions()
-        configList.setDimensionsAndPosition(320, layout.contentHeight, (this.width / 2) - 160, layout.headerHeight)
+        layout.arrangeElements()
+        configList.setRectangle(320, layout.contentHeight, (this.width / 2) - 160, layout.headerHeight)
     }
 
     private fun initNarrator() {
@@ -298,53 +301,53 @@ internal class ConfigScreen(
     }
 
     private fun setScreenNarrationDelay(delayMs: Long, restartElementNarration: Boolean) {
-        this.screenNarrationStartTime = Util.getMeasuringTimeMs() + delayMs
+        this.screenNarrationStartTime = Util.getMillis() + delayMs
         if (restartElementNarration) {
             this.elementNarrationStartTime = Long.MIN_VALUE
         }
     }
 
     private fun setElementNarrationDelay(delayMs: Long) {
-        this.elementNarrationStartTime = Util.getMeasuringTimeMs() + delayMs
+        this.elementNarrationStartTime = Util.getMillis() + delayMs
     }
 
-    override fun applyMouseMoveNarratorDelay() {
+    override fun afterMouseMove() {
         this.setScreenNarrationDelay(750L, false)
     }
 
-    override fun applyMousePressScrollNarratorDelay() {
+    override fun afterMouseAction() {
         this.setScreenNarrationDelay(200L, true)
     }
 
-    override fun applyKeyPressNarratorDelay() {
+    override fun afterKeyboardAction() {
         this.setScreenNarrationDelay(200L, true)
     }
 
     private fun isNarratorActive(): Boolean {
-        return client?.narratorManager?.isActive == true
+        return minecraft?.narrator?.isActive == true
     }
 
     private var introUsage = true
 
-    override fun hasUsageText(): Boolean {
+    override fun shouldNarrateNavigation(): Boolean {
         val bl = introUsage
         introUsage = false
         return bl
     }
 
-    override fun refreshNarrator(previouslyDisabled: Boolean) {
+    override fun updateNarratorStatus(previouslyDisabled: Boolean) {
         if (previouslyDisabled) {
             this.setScreenNarrationDelay(TimeUnit.SECONDS.toMillis(2L), false)
         }
 
-        if (this.narratorToggleButton != null) {
-            narratorToggleButton?.setValue(client?.options?.narrator?.value)
+        if (this.narratorButton != null) {
+            narratorButton?.value = minecraft.options.narrator().get()
         }
     }
 
-    override fun updateNarrator() {
+    override fun handleDelayedNarration() {
         if (this.isNarratorActive()) {
-            val l = Util.getMeasuringTimeMs()
+            val l = Util.getMillis()
             if (l > this.screenNarrationStartTime && l > this.elementNarrationStartTime) {
                 this.narrateScreen(true)
                 this.screenNarrationStartTime = Long.MAX_VALUE
@@ -352,42 +355,42 @@ internal class ConfigScreen(
         }
     }
 
-    override fun narrateScreenIfNarrationEnabled(onlyChangedNarrations: Boolean) {
+    override fun triggerImmediateNarration(onlyChangedNarrations: Boolean) {
         if (this.isNarratorActive()) {
             this.narrateScreen(onlyChangedNarrations)
         }
     }
 
     private fun narrateScreen(onlyChangedNarrations: Boolean) {
-        this.narrator.buildNarrations { messageBuilder: NarrationMessageBuilder -> this.addScreenNarrations(messageBuilder) }
+        this.narrator.buildNarrations { messageBuilder: NarrationElementOutput -> this.updateNarrationState(messageBuilder) }
         val string = this.narrator.buildNarratorText(!onlyChangedNarrations)
         if (string.isNotEmpty()) {
-            client?.narratorManager?.narrate(Text.literal(string))
+            minecraft?.narrator?.saySystemChatQueued(Component.literal(string))
         }
     }
 
-    override fun getUsageNarrationText(): Text {
-        return if (client?.navigationType?.isKeyboard == true)
-            super.getUsageNarrationText()
+    override fun getUsageNarration(): Component {
+        return if (minecraft.lastInputType.isKeyboard)
+            super.getUsageNarration()
         else
             "narrator.screen.usage".translate()
     }
 
-    override fun renderContents(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun renderContents(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
         drawMenuListBackground(context)
         super.renderContents(context, mouseX, mouseY, delta)
         drawHeaderAndFooterSeparators(context)
     }
 
-    private fun drawHeaderAndFooterSeparators(context: DrawContext) {
-        val identifier = if (client?.world == null) HEADER_SEPARATOR_TEXTURE else INWORLD_HEADER_SEPARATOR_TEXTURE
-        val identifier2 = if (client?.world == null) FOOTER_SEPARATOR_TEXTURE else INWORLD_FOOTER_SEPARATOR_TEXTURE
+    private fun drawHeaderAndFooterSeparators(context: GuiGraphicsExtractor) {
+        val identifier = if (minecraft?.level == null) HEADER_SEPARATOR else INWORLD_HEADER_SEPARATOR
+        val identifier2 = if (minecraft?.level == null) FOOTER_SEPARATOR else INWORLD_FOOTER_SEPARATOR
         context.drawTex(identifier, 0, layout.headerHeight - 2, 0.0f, 0.0f, this.width, 2, 32, 2)
         context.drawTex(identifier2, 0, layout.headerHeight + layout.contentHeight, 0.0f, 0.0f, this.width, 2, 32, 2)
     }
 
-    private fun drawMenuListBackground(context: DrawContext) {
-        val identifier = if (client?.world == null) menuListBackground else inWorldMenuListBackground
+    private fun drawMenuListBackground(context: GuiGraphicsExtractor) {
+        val identifier = if (minecraft?.level == null) menuListBackground else inWorldMenuListBackground
         context.drawTex(identifier, 0, layout.headerHeight, 0f, 0f, this.width, layout.contentHeight, 32, 32)
     }
 
@@ -405,10 +408,10 @@ internal class ConfigScreen(
         return configList.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
     }
 
-    override fun onClick(click: Click, doubled: Boolean): Boolean {
-        val global = globalInputHandler?.invoke(click.button(), false, ContextInput.MOUSE, click.hasCtrl(), click.hasShift(), click.hasAlt())
+    override fun onClick(click: MouseButtonEvent, doubled: Boolean): Boolean {
+        val global = globalInputHandler?.invoke(click.button(), false, ContextInput.MOUSE, click.hasControlDown(), click.hasShiftDown(), click.hasAltDown())
         if (global != null && global != TriState.DEFAULT) return global.asBoolean
-        val contextTypes = ContextType.getRelevantContext(click.button(), ContextInput.MOUSE, click.hasCtrl(), click.hasShift(), click.hasAlt())
+        val contextTypes = ContextType.getRelevantContext(click.button(), ContextInput.MOUSE, click.hasControlDown(), click.hasShiftDown(), click.hasAltDown())
         if (contextTypes.isEmpty()) return super.onClick(click, doubled)
         val activeWidget = activeWidget()
         if (activeWidget != null || justClosedWidget) {
@@ -417,7 +420,7 @@ internal class ConfigScreen(
                     if (activeWidget != null)
                         PopupWidget.popImmediate()
                     hoveredElement = children().firstOrNull { it.isMouseOver(mX, mY) }
-                    val builder = ContextProvider.empty(Position(if (MinecraftClient.getInstance().navigationType.isKeyboard) ContextInput.KEYBOARD else ContextInput.MOUSE, mX.toInt(), mY.toInt(), activeWidget?.x ?: 0, activeWidget?.y ?: 0, this.width, this.height, this.width, this.height))
+                    val builder = ContextProvider.empty(Position(if (Minecraft.getInstance().lastInputType.isKeyboard) ContextInput.KEYBOARD else ContextInput.MOUSE, mX.toInt(), mY.toInt(), activeWidget?.x ?: 0, activeWidget?.y ?: 0, this.width, this.height, this.width, this.height))
                     this.provideContext(builder)
                     return if (builder.isNotEmpty()) {
                         Popups.openContextMenuPopup(builder, true)
@@ -441,17 +444,17 @@ internal class ConfigScreen(
 
     }
 
-    override fun mouseReleased(click: Click): Boolean {
-        val global = globalInputHandler?.invoke(click.button(), true, ContextInput.MOUSE, click.hasCtrl(), click.hasShift(), click.hasAlt())
+    override fun mouseReleased(click: MouseButtonEvent): Boolean {
+        val global = globalInputHandler?.invoke(click.button(), true, ContextInput.MOUSE, click.hasControlDown(), click.hasShiftDown(), click.hasAltDown())
         if (global != null && global != TriState.DEFAULT) return global.asBoolean
         return super.mouseReleased(click)
     }
 
-    override fun keyPressed(input: KeyInput): Boolean {
-        val global = globalInputHandler?.invoke(input.key(), false, ContextInput.KEYBOARD, input.hasCtrl(), input.hasShift(), input.hasAlt())
+    override fun keyPressed(input: KeyEvent): Boolean {
+        val global = globalInputHandler?.invoke(input.key(), false, ContextInput.KEYBOARD, input.hasControlDown(), input.hasShiftDown(), input.hasAltDown())
         if (global != null && global != TriState.DEFAULT) return global.asBoolean
 
-        val contextTypes = ContextType.getRelevantContext(input.key(), ContextInput.KEYBOARD, input.hasCtrl(), input.hasShift(), input.hasAlt())
+        val contextTypes = ContextType.getRelevantContext(input.key(), ContextInput.KEYBOARD, input.hasControlDown(), input.hasShiftDown(), input.hasAltDown())
         if (contextTypes.isEmpty()) return super.keyPressed(input)
 
         val activeWidget = activeWidget()
@@ -460,7 +463,7 @@ internal class ConfigScreen(
                 if (contextType == ContextType.CONTEXT_KEYBOARD) {
                     PopupWidget.popImmediate()
                     hoveredElement = children().firstOrNull { it.isMouseOver(mX, mY) }
-                    val builder = ContextProvider.empty(Position(if (MinecraftClient.getInstance().navigationType.isKeyboard) ContextInput.KEYBOARD else ContextInput.MOUSE, mX.toInt(), mY.toInt(), activeWidget.x, activeWidget.y, this.width, this.height, this.width, this.height))
+                    val builder = ContextProvider.empty(Position(if (Minecraft.getInstance().lastInputType.isKeyboard) ContextInput.KEYBOARD else ContextInput.MOUSE, mX.toInt(), mY.toInt(), activeWidget.x, activeWidget.y, this.width, this.height, this.width, this.height))
                     this.provideContext(builder)
                     return if (builder.isNotEmpty()) {
                         Popups.openContextMenuPopup(builder, true)
@@ -474,7 +477,7 @@ internal class ConfigScreen(
         }
 
         var bl = false
-        val inputCtx = if (MinecraftClient.getInstance().navigationType.isKeyboard) ContextInput.KEYBOARD else ContextInput.MOUSE
+        val inputCtx = if (Minecraft.getInstance().lastInputType.isKeyboard) ContextInput.KEYBOARD else ContextInput.MOUSE
         for (contextType in contextTypes) {
             bl = bl || handleContext(contextType, Position(inputCtx, mX.toInt(), mY.toInt(), 0, 0, this.width, this.height, this.width, this.height))
         }
@@ -483,7 +486,7 @@ internal class ConfigScreen(
         } else {
             val bl2 = super.keyPressed(input)
             if (!bl2 && contextTypes.contains(ContextType.BACK) && parent is ConfigScreen) {
-                this.close()
+                this.onClose()
                 true
             } else {
                 bl2
@@ -491,8 +494,8 @@ internal class ConfigScreen(
         }
     }
 
-    override fun keyReleased(input: KeyInput): Boolean {
-        val global = globalInputHandler?.invoke(input.key(), true, ContextInput.KEYBOARD, input.hasCtrl(), input.hasShift(), input.hasAlt())
+    override fun keyReleased(input: KeyEvent): Boolean {
+        val global = globalInputHandler?.invoke(input.key(), true, ContextInput.KEYBOARD, input.hasControlDown(), input.hasShiftDown(), input.hasAltDown())
         if (global != null && global != TriState.DEFAULT) return global.asBoolean
         return super.keyReleased(input)
     }
