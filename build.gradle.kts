@@ -111,7 +111,7 @@ dependencies {
 
     val fabricPermsVersion: String by project
     implementation("me.lucko:fabric-permissions-api:$fabricPermsVersion")
-    //include("me.lucko:fabric-permissions-api:$fabricPermsVersion")
+    include("me.lucko:fabric-permissions-api:$fabricPermsVersion")
 
     val modmenuVersion: String by project
     compileOnly("com.terraformersmc:modmenu:$modmenuVersion") {

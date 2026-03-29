@@ -65,7 +65,7 @@ internal object PlatformUtils {
     } //ClientConfigRegistry
 
     fun hasPermission(player: Player, permission: String): Boolean {
-        //return Permissions.check(player, permission)
+        return Permissions.check(player, permission)
         return true
     } //COnfigApiImpl, elsewhere??
 

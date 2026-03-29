@@ -87,14 +87,14 @@ object FC: ModInitializer {
 
         buildRegTranslation("en_us", "effect")
 
-        /*PermissionCheckEvent.EVENT.register { _, permission ->
+        PermissionCheckEvent.EVENT.register { _, permission ->
             if (permission == TEST_PERMISSION_GOOD)
                 TriState.TRUE
             else if (permission == TEST_PERMISSION_BAD)
                 TriState.FALSE
             else
                 TriState.DEFAULT
-        }*/
+        }
 
         TestConfig.init()
 
