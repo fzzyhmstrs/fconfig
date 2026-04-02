@@ -13,7 +13,6 @@ import com.google.gson.JsonObject
 import com.google.gson.JsonPrimitive
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.arguments.IntegerArgumentType
-import kotlinx.io.bytestring.encodeToByteString
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.api.FileType
 import me.fzzyhmstrs.fzzy_config.api.RegisterType
