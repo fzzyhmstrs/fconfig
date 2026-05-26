@@ -60,6 +60,7 @@ import net.minecraft.ChatFormatting
 import net.minecraft.core.HolderLookup
 import net.minecraft.core.Registry
 import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.network.chat.TextColor
 import net.minecraft.resources.Identifier
 import net.minecraft.resources.RegistryDataLoader
 import net.minecraft.resources.ResourceKey
@@ -1128,7 +1129,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
             }
             val id = Identifier.tryParse(s)
             if (id == null || !s.contains(":")) {
-                setTextColor(ARGB.opaque(ChatFormatting.RED.color ?: 0xFFFFFF))
+                setTextColor(ARGB.opaque(TextColor.fromLegacyFormat(ChatFormatting.RED)?.value ?: 0xFFFFFF))
                 return false
             }
             return if (validatedIdentifier.validateEntry(id, EntryValidator.ValidationType.STRONG).isValid()) {
@@ -1139,11 +1140,11 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
                     setTextColor(-1)
                     true
                 } else {
-                    setTextColor(ARGB.opaque(ChatFormatting.RED.color ?: 0xFFFFFF))
+                    setTextColor(ARGB.opaque(TextColor.RED.value))
                     false
                 }
             } else {
-                setTextColor(ARGB.opaque(ChatFormatting.RED.color ?: 0xFFFFFF))
+                setTextColor(ARGB.opaque(TextColor.RED.value))
                 false
             }
         }
