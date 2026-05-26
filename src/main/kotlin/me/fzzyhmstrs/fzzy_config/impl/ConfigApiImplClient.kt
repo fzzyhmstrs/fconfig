@@ -87,10 +87,10 @@ internal object ConfigApiImplClient {
     }
 
     internal fun openRestartScreen(): Boolean {
-        if (Minecraft.getInstance().screen is RestartScreen) return false
+        if (Minecraft.getInstance().gui.screen() is RestartScreen) return false
         Minecraft.getInstance().execute {
-            if (Minecraft.getInstance().screen !is RestartScreen)
-                Minecraft.getInstance().setScreen(RestartScreen())
+            if (Minecraft.getInstance().gui.screen() !is RestartScreen)
+                Minecraft.getInstance().gui.setScreen(RestartScreen())
         }
         return true
     }

@@ -161,7 +161,7 @@ internal class ConfigScreenManager(private val scope: String, private val subSco
     }
 
     internal fun isScreenOpen(scope: String): Boolean {
-        return Minecraft.getInstance().screen?.nullCast<ConfigScreen>()?.scope?.let {
+        return Minecraft.getInstance().gui.screen()?.nullCast<ConfigScreen>()?.scope?.let {
             //perfect scope match or the root config is open and the scope alias lines up
             it == scope || (it == rootScope && scope == this.scope || scope == this.rootScope)
         } == true
@@ -189,7 +189,7 @@ internal class ConfigScreenManager(private val scope: String, private val subSco
             cachedPermKey.incrementAndGet()
         }
         //don't open the screen that's already open
-        if (Minecraft.getInstance().screen?.nullCast<ConfigScreen>()?.scope?.let {
+        if (Minecraft.getInstance().gui.screen()?.nullCast<ConfigScreen>()?.scope?.let {
             //perfect scope match or the root config is open and the scope alias lines up
             it == scope || (it == rootScope && scope == this.scope || scope == this.rootScope)
         } == true) {
@@ -204,7 +204,7 @@ internal class ConfigScreenManager(private val scope: String, private val subSco
         try {
             val screenArgPair = provideScopedScreen(scope)
             val screen = screenArgPair.first ?: return
-            Minecraft.getInstance().setScreen(screenArgPair.first)
+            Minecraft.getInstance().gui.setScreen(screenArgPair.first)
             val rawEntryString = screenArgPair.second
             if (rawEntryString != null && rawEntryString != "") {
                 screen.scrollToEntry(scope)
@@ -554,7 +554,7 @@ internal class ConfigScreenManager(private val scope: String, private val subSco
                     if (cache.manager.hasChanges()) cache.manager.apply(true)
                     cache.manager.invalidatePush()
                 }
-            }.setParent(Minecraft.getInstance().screen)
+            }.setParent(Minecraft.getInstance().gui.screen())
         }
     }
 

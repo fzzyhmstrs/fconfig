@@ -114,7 +114,7 @@ class SuggestionBackedTextFieldWidget(
             }
         }
         if (window != null)
-            Minecraft.getInstance().screen?.nullCast<PopupController>()?.suggestionWindow = window
+            Minecraft.getInstance().gui.screen()?.nullCast<PopupController>()?.suggestionWindow = window
     }
 
     private fun addSuggestionWindow(suggestions: Suggestions) {
@@ -136,7 +136,7 @@ class SuggestionBackedTextFieldWidget(
         if (closeWindow) {
             pendingSuggestions = null
             window = null
-            Minecraft.getInstance().screen?.nullCast<PopupController>()?.suggestionWindow = null
+            Minecraft.getInstance().gui.screen()?.nullCast<PopupController>()?.suggestionWindow = null
             suggestionWindowListener?.setSuggestionWindowElement(null)
             closeWindow = false
         }

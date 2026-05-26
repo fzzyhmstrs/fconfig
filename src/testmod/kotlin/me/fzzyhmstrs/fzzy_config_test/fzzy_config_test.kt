@@ -251,7 +251,7 @@ object FCC: ClientModInitializer {
         }
         ClientTickEvents.START_CLIENT_TICK.register{client ->
             if (openDamnScreen == "please") {
-                client.setScreen(TestPopupScreen(entries))
+                client.gui.setScreen(TestPopupScreen(entries))
                 openDamnScreen = ""
             } else if (openDamnScreen == "the_big_one") {
                 ConfigApi.openScreen("fzzy_config_test")

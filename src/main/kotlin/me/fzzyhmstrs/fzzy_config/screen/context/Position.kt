@@ -50,8 +50,8 @@ data class Position(val contextInput: ContextInput,
                 mX.toInt(), mY.toInt(),
                 widget.x, widget.y,
                 widget.width, widget.height,
-                Minecraft.getInstance()?.screen?.width ?: widget.width,
-                Minecraft.getInstance()?.screen?.height ?: widget.height)
+                Minecraft.getInstance().gui.screen()?.width ?: widget.width,
+                Minecraft.getInstance().gui.screen()?.height ?: widget.height)
         }
     }
 }

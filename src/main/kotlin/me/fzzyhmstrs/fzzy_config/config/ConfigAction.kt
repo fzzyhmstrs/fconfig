@@ -325,12 +325,12 @@ class ConfigAction @JvmOverloads constructor(
                     val uRI = clickEvent.uri()
                     if (!client.options.chatLinksPrompt().get()) return false
                     if (client.options.chatLinksPrompt().get()) {
-                        val screen = client.screen
-                        client.setScreen(ConfirmLinkScreen({ confirmed: Boolean ->
+                        val screen = client.gui.screen()
+                        client.gui.setScreen(ConfirmLinkScreen({ confirmed: Boolean ->
                             if (confirmed) {
                                 Util.getPlatform().openUri(uRI)
                             }
-                            client.setScreen(screen)
+                            client.gui.setScreen(screen)
                         }, uRI.toString(), false))
                     } else {
                         Util.getPlatform().openUri(uRI)
@@ -357,7 +357,7 @@ class ConfigAction @JvmOverloads constructor(
                 return true
             } else if (clickEvent is ClickEvent.ShowDialog) {
                 val player = client.player ?: return false
-                player.connection.showDialog(clickEvent.dialog(), client.screen)
+                player.connection.showDialog(clickEvent.dialog(), client.gui.screen())
                 return true
             } else if (clickEvent is ClickEvent.Custom) {
                 val player = client.player ?: return false
