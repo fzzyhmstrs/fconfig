@@ -21,7 +21,7 @@ object MinecraftExamples {
 
     fun tags() {
         //validated block tag that allows any tag in the Block Registry
-        val validatedTag = ValidatedTagKey(BlockTags.ACACIA_LOGS)
+        val validatedTag = ValidatedTagKey(BlockTags.LOGS)
 
         //validated Item TagKey with a predicate on the various tool types (this is optional)
         val validatedTagPredicated = ValidatedTagKey(ItemTags.AXES) { id ->
