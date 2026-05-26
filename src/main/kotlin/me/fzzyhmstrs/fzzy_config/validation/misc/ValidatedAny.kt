@@ -310,7 +310,7 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
         }
         searchField.setMaxLength(100)
         val searchText = if (SearchConfig.INSTANCE.willPassSearch()) {
-            Minecraft.getInstance().screen.nullCast<ConfigScreen>()?.getCurrentSearch() ?: ""
+            Minecraft.getInstance().gui.screen().nullCast<ConfigScreen>()?.getCurrentSearch() ?: ""
         } else {
             ""
         }

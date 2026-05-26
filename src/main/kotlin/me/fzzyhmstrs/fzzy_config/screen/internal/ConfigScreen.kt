@@ -148,9 +148,9 @@ internal class ConfigScreen(
     override fun onClose() {
         if(this.parent == null || this.parent !is ConfigScreen) {
             onFinalClose.run()
-            this.minecraft?.narrator?.clear()
+            this.minecraft.narrator.clear()
         }
-        this.minecraft?.setScreen(parent)
+        this.minecraft.gui.setScreen(parent)
     }
 
     private fun shiftClose() {

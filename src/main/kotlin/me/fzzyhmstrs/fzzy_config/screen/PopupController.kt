@@ -186,7 +186,7 @@ interface PopupController: LastSelectable {
         }
 
         internal fun pop() {
-            val popupParentElement = Minecraft.getInstance().screen?.nullCast<PopupController>() ?: return
+            val popupParentElement = Minecraft.getInstance().gui.screen()?.nullCast<PopupController>() ?: return
             popupParentElement.setPopupInternal(null, null, null)
         }
 

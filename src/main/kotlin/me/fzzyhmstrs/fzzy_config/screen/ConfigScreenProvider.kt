@@ -46,7 +46,7 @@ fun interface ConfigScreenProvider {
      */
     fun openScreen(namespace: String, scope: String): Boolean {
         val screen = provideScreen(namespace, scope) ?: return false
-        Minecraft.getInstance().setScreen(screen)
+        Minecraft.getInstance().gui.setScreen(screen)
         return true
     }
 }

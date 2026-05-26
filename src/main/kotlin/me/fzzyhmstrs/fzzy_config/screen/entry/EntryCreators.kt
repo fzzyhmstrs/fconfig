@@ -78,7 +78,7 @@ object EntryCreators {
                     "open_screen",
                     CustomButtonWidget.builder(context.texts.name) {
                         if (SearchConfig.INSTANCE.willPassSearch()) {
-                            val search = Minecraft.getInstance().screen.nullCast<ConfigScreen>()?.getCurrentSearch() ?: ""
+                            val search = Minecraft.getInstance().gui.screen().nullCast<ConfigScreen>()?.getCurrentSearch() ?: ""
                             if (search.isNotEmpty()) {
                                 val scope = "${context.scope}.::$search"
                                 context.misc.get(OPEN_SCREEN)?.accept(scope)
@@ -112,7 +112,7 @@ object EntryCreators {
                     "open_screen",
                     CustomButtonWidget.builder(context.texts.name) {
                         if (SearchConfig.INSTANCE.willPassSearch()) {
-                            val search = Minecraft.getInstance().screen.nullCast<ConfigScreen>()?.getCurrentSearch() ?: ""
+                            val search = Minecraft.getInstance().gui.screen().nullCast<ConfigScreen>()?.getCurrentSearch() ?: ""
                             if (search.isNotEmpty()) {
                                 val scope = "${context.scope}.::$search"
                                 context.misc.get(OPEN_SCREEN)?.accept(scope)

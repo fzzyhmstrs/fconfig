@@ -308,7 +308,7 @@ open class ValidatedKeybind(defaultValue: FzzyKeybind): ValidatedField<FzzyKeybi
                 }
                 resetting = false
                 compounding = false
-                Minecraft.getInstance().screen?.nullCast<ConfigScreen>()?.setGlobalInputHandler(null)
+                Minecraft.getInstance().gui.screen()?.nullCast<ConfigScreen>()?.setGlobalInputHandler(null)
             }
         }
 
@@ -323,7 +323,7 @@ open class ValidatedKeybind(defaultValue: FzzyKeybind): ValidatedField<FzzyKeybi
         }
 
         fun setupHandler() {
-            Minecraft.getInstance().screen?.nullCast<ConfigScreen>()?.setGlobalInputHandler { key, released, type, ctrl, shift, alt ->
+            Minecraft.getInstance().gui.screen()?.nullCast<ConfigScreen>()?.setGlobalInputHandler { key, released, type, ctrl, shift, alt ->
                 if (!released || justCLickedToggle || justClickedShift) {
                     if (released && (key == GLFW.GLFW_KEY_LEFT_SHIFT || key == GLFW.GLFW_KEY_RIGHT_SHIFT)) {
                         justClickedShift = false
@@ -346,7 +346,7 @@ open class ValidatedKeybind(defaultValue: FzzyKeybind): ValidatedField<FzzyKeybi
                 }
                 resetting = false
                 compounding = false
-                Minecraft.getInstance().screen?.nullCast<ConfigScreen>()?.setGlobalInputHandler(null)
+                Minecraft.getInstance().gui.screen()?.nullCast<ConfigScreen>()?.setGlobalInputHandler(null)
                 TriState.TRUE
             }
         }

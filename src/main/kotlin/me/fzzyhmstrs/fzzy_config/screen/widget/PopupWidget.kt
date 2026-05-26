@@ -275,7 +275,7 @@ class PopupWidget
          */
         @JvmOverloads
         fun push(popup: PopupWidget?, mouseX: Double? = null, mouseY: Double? = null) {
-            Minecraft.getInstance().screen?.nullCast<PopupParentElement>()?.setPopup(popup, mouseX, mouseY)
+            Minecraft.getInstance().gui.screen()?.nullCast<PopupParentElement>()?.setPopup(popup, mouseX, mouseY)
         }
 
         /**
@@ -308,7 +308,7 @@ class PopupWidget
          */
         @JvmOverloads
         fun pushImmediate(popup: PopupWidget?, mouseX: Double? = null, mouseY: Double? = null) {
-            Minecraft.getInstance().screen?.nullCast<PopupParentElement>()?.setPopupImmediate(popup, mouseX, mouseY)
+            Minecraft.getInstance().gui.screen()?.nullCast<PopupParentElement>()?.setPopupImmediate(popup, mouseX, mouseY)
         }
 
         /**
@@ -331,7 +331,7 @@ class PopupWidget
          * @since 0.2.0
          */
         fun focusElement(element: GuiEventListener) {
-            (Minecraft.getInstance().screen as? PopupWidgetScreen)?.popupWidgets?.peek()?.trySetFocused(element)
+            (Minecraft.getInstance().gui.screen() as? PopupWidgetScreen)?.popupWidgets?.peek()?.trySetFocused(element)
         }
 
         /**

@@ -1131,7 +1131,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
                 }
             }
             if (window != null)
-                Minecraft.getInstance().screen?.nullCast<PopupController>()?.suggestionWindow = window
+                Minecraft.getInstance().gui.screen()?.nullCast<PopupController>()?.suggestionWindow = window
         }
 
         override fun mouseClicked(click: MouseButtonEvent, doubled: Boolean): Boolean {
@@ -1158,7 +1158,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
             if (closeWindow) {
                 pendingSuggestions = null
                 window = null
-                Minecraft.getInstance().screen?.nullCast<PopupController>()?.suggestionWindow = null
+                Minecraft.getInstance().gui.screen()?.nullCast<PopupController>()?.suggestionWindow = null
                 suggestionWindowListener?.setSuggestionWindowElement(null)
                 closeWindow = false
             }

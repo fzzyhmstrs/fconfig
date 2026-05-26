@@ -296,7 +296,7 @@ class DynamicListWidget(
 
     override fun extractWidgetRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
         super.extractWidgetRenderState(context, mouseX, mouseY, delta)
-        context.enableScissor(0, this.top, Minecraft.getInstance().screen?.width ?: 320, this.bottom)
+        context.enableScissor(0, this.top, Minecraft.getInstance().gui.screen()?.width ?: 320, this.bottom)
         for (entry in inFrameEntries()) {
             entry.renderExtras(context, mouseX, mouseY, delta)
         }
