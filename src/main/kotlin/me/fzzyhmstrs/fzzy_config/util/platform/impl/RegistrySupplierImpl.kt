@@ -30,11 +30,11 @@ internal class RegistrySupplierImpl<R: Any, T: R>(private val entry: DeferredHol
         return entry.value()
     }
 
-    override fun areComponentsBound(): Boolean {
+    fun areComponentsBound(): Boolean {
         return entry.areComponentsBound()
     }
 
-    override fun components(): DataComponentMap {
+    fun components(): DataComponentMap {
         return entry.components()
     }
 
