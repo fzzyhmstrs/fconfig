@@ -31,7 +31,7 @@ import me.fzzyhmstrs.fzzy_config_test.FC
 import me.fzzyhmstrs.fzzy_config_test.fctId
 import net.minecraft.world.level.block.Blocks
 import net.minecraft.client.Minecraft
-import net.minecraft.world.entity.EntityType
+import net.minecraft.world.entity.EntityTypes
 import net.minecraft.world.level.material.Fluids
 import net.minecraft.world.item.Items
 import net.minecraft.world.level.storage.loot.BuiltInLootTables
@@ -99,7 +99,7 @@ class TestConfigImpl3: Config(Identifier.fromNamespaceAndPath("fzzy_config_test"
 
     private var blockTest = Blocks.AMETHYST_BLOCK
 
-    private var entityTest = EntityType.EGG
+    private var entityTest = EntityTypes.EGG
 
     private var fluidTest = Fluids.LAVA
 
