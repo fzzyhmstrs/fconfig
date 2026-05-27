@@ -17,7 +17,7 @@ import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.api.ConfigApiJava
 import me.fzzyhmstrs.fzzy_config.util.FcText.transSupplied
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
-import net.minecraft.client.resources.language.I18n
+import me.fzzyhmstrs.fzzy_config.util.PortingUtils.langKeyExists
 import net.minecraft.network.chat.MutableComponent
 import net.minecraft.network.chat.Component
 import net.minecraft.ChatFormatting
@@ -129,7 +129,7 @@ interface Translatable {
      * @since 0.2.8
      */
     fun hasTranslation(): Boolean {
-        return I18n.exists(translationKey())
+        return langKeyExists(translationKey())
     }
     /**
      * Whether this Translatable has a valid description
@@ -138,7 +138,7 @@ interface Translatable {
      * @since 0.2.8
      */
     fun hasDescription(): Boolean {
-        return I18n.exists(descriptionKey())
+        return langKeyExists(descriptionKey())
     }
     /**
      * Whether this Translatable has a valid prefix
@@ -147,7 +147,7 @@ interface Translatable {
      * @since 0.6.0
      */
     fun hasPrefix(): Boolean {
-        return I18n.exists(prefixKey())
+        return langKeyExists(prefixKey())
     }
 
     object Impls {
@@ -192,9 +192,9 @@ interface Translatable {
             val keyN = if(bl) FcText.concat(annotation.prefix, PERIOD, fieldName) else annotation.prefix
             val keyD = if(bl) FcText.concat(annotation.prefix, PERIOD, fieldName, DESC) else FcText.concat(annotation.prefix, DESC)
             val keyP = if(bl) FcText.concat(annotation.prefix, PERIOD, fieldName, PREFIX) else FcText.concat(annotation.prefix, PREFIX)
-            val n = if (I18n.exists(keyN)) keyN.translate() else thing.transSupplied { getNameFallback(annotations, fallback) }
-            val d = if (I18n.exists(keyD)) keyD.translate() else thing.descGet { getDescFallback(annotations, globalAnnotations) }
-            val p = if (I18n.exists(keyP)) keyP.translate() else thing.prefixGet { getPrefixFallback(annotations) }
+            val n = if (langKeyExists(keyN)) keyN.translate() else thing.transSupplied { getNameFallback(annotations, fallback) }
+            val d = if (langKeyExists(keyD)) keyD.translate() else thing.descGet { getDescFallback(annotations, globalAnnotations) }
+            val p = if (langKeyExists(keyP)) keyP.translate() else thing.prefixGet { getPrefixFallback(annotations) }
             return Utils.createScopedResult(scope, n, d, p)
         }
 

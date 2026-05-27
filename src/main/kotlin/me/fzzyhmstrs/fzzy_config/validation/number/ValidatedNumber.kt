@@ -22,6 +22,7 @@ import me.fzzyhmstrs.fzzy_config.simpleId
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
+import me.fzzyhmstrs.fzzy_config.util.PortingUtils.langKeyExists
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.attachTo
@@ -35,10 +36,8 @@ import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.narration.NarrationElementOutput
 import net.minecraft.client.gui.narration.NarratedElementType
 import net.minecraft.client.gui.components.AbstractWidget
-import net.minecraft.client.resources.language.I18n
 import net.minecraft.client.sounds.SoundManager
 import net.minecraft.network.chat.MutableComponent
-import net.minecraft.network.chat.Component
 import net.minecraft.resources.Identifier
 import net.minecraft.util.Util
 import net.minecraft.util.Mth
@@ -110,7 +109,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
 
     @Internal
     override fun description(fallback: String?): MutableComponent {
-        return if(I18n.exists(descriptionKey())) super.description(fallback) else genericDescription()
+        return if(langKeyExists(descriptionKey())) super.description(fallback) else genericDescription()
     }
 
     private fun genericDescription(): MutableComponent {

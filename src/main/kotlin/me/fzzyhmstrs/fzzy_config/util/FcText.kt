@@ -11,8 +11,8 @@
 package me.fzzyhmstrs.fzzy_config.util
 
 import com.mojang.brigadier.Message
+import me.fzzyhmstrs.fzzy_config.util.PortingUtils.langKeyExists
 import net.minecraft.client.gui.Font
-import net.minecraft.client.resources.language.I18n
 import net.minecraft.network.chat.CommonComponents
 import net.minecraft.ChatFormatting
 import net.minecraft.resources.Identifier
@@ -288,7 +288,7 @@ object FcText {
                 return this.prefix()
             }
         }
-        return if (I18n.exists(fallback))
+        return if (langKeyExists(fallback))
             translatable(fallback).withStyle(ChatFormatting.ITALIC)
         else
             null

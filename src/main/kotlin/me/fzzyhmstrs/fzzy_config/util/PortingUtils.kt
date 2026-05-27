@@ -32,6 +32,7 @@ import net.minecraft.resources.Identifier
 import net.minecraft.util.ARGB
 import java.util.*
 import java.util.function.Predicate
+import net.minecraft.locale.Language
 
 object PortingUtils {
 
@@ -119,6 +120,10 @@ object PortingUtils {
 
     fun isControlDown(): Boolean {
         return Minecraft.getInstance().hasControlDown()
+    }
+
+    fun langKeyExists(key:String): Boolean {
+        return Language.getInstance().has(key)
     }
 
     object Codecs {
