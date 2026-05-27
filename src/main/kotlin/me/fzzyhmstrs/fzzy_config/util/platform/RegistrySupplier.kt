@@ -19,7 +19,7 @@ import java.util.stream.Stream
  * @author fzzyhmstrs
  * @since 0.5.9, implements RegistryEntry itself as of 0.6.5, no longer experimental 0.7.0
  */
-interface RegistrySupplier<T: Any>: Supplier<T>, Holder<T> {
+interface RegistrySupplier<T: Any>: Supplier<T> {
 
     /**
      * The objects [RegistryKey]
@@ -47,53 +47,53 @@ interface RegistrySupplier<T: Any>: Supplier<T>, Holder<T> {
 
     /////// Implementation of RegistryEntry ///////
 
-    override fun isBound(): Boolean {
+    fun isBound(): Boolean {
         return getEntry().isBound
     }
 
-    override fun `is`(id: Identifier): Boolean {
+    fun `is`(id: Identifier): Boolean {
         return getEntry().`is`(id)
     }
 
-    override fun `is`(key: ResourceKey<T>): Boolean {
+    fun `is`(key: ResourceKey<T>): Boolean {
         return getEntry().`is`(key)
     }
 
-    override fun `is`(predicate: Predicate<ResourceKey<T>>): Boolean {
+    fun `is`(predicate: Predicate<ResourceKey<T>>): Boolean {
         return getEntry().`is`(predicate)
     }
 
-    override fun `is`(tag: TagKey<T>): Boolean {
+    fun `is`(tag: TagKey<T>): Boolean {
         return getEntry().`is`(tag)
     }
 
-    override fun tags(): Stream<TagKey<T>> {
+    fun tags(): Stream<TagKey<T>> {
         return getEntry().tags()
     }
 
-    override fun unwrap(): Either<ResourceKey<T>, T> {
+    fun unwrap(): Either<ResourceKey<T>, T> {
         return getEntry().unwrap()
     }
 
-    override fun unwrapKey(): Optional<ResourceKey<T>> {
+    fun unwrapKey(): Optional<ResourceKey<T>> {
         return getEntry().unwrapKey()
     }
 
-    override fun kind(): Holder.Kind {
+    fun kind(): Holder.Kind {
         return getEntry().kind()
     }
 
-    override fun canSerializeIn(owner: HolderOwner<T>): Boolean {
+    fun canSerializeIn(owner: HolderOwner<T>): Boolean {
         return getEntry().canSerializeIn(owner)
     }
 
     @Suppress("DeprecatedCallableAddReplaceWith")
     @Deprecated("Deprecated in Java")
-    override fun `is`(entry: Holder<T>): Boolean {
+    fun `is`(entry: Holder<T>): Boolean {
         return getEntry().`is`(entry)
     }
 
-    override fun value(): T {
+    fun value(): T {
         return get()
     }
 }
