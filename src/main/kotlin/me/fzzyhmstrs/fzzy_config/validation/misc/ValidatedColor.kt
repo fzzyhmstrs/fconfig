@@ -54,6 +54,7 @@ import net.minecraft.network.chat.MutableComponent
 import net.minecraft.network.chat.Component
 import net.minecraft.world.item.DyeColor
 import net.minecraft.ChatFormatting
+import net.minecraft.network.chat.TextColor
 import net.minecraft.util.Mth
 import net.peanuuutz.tomlkt.*
 import org.jetbrains.annotations.ApiStatus.Internal
@@ -225,11 +226,11 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
      * @since 0.7.2
      */
     fun withFormattingColorPresets(): ValidatedColor {
-        val colors = ChatFormatting.entries.mapNotNull { it.takeIf { it.color != null } }
+        val colors = ChatFormatting.entries.mapNotNull { it.takeIf { TextColor.fromLegacyFormat(it)?.value != null } }
         return withColorPresets(if (get().opaque()) colors.map {
-            ColorPreset(it.color!!, get().alphaMode, it.name.capital())
+            ColorPreset(TextColor.fromLegacyFormat(it)?.value!!, get().alphaMode, it.name.capital())
         } else colors.map {
-            ColorPreset(PortingUtils.fullAlpha(it.color!!), get().alphaMode, it.name.capital())
+            ColorPreset(PortingUtils.fullAlpha(TextColor.fromLegacyFormat(it)?.value!!), get().alphaMode, it.name.capital())
         })
     }
 

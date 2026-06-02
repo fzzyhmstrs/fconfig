@@ -188,8 +188,8 @@ class SuggestionWindow(
             for (suggestion in suggestions.list) {
                 w = max(w, Minecraft.getInstance().font.width(suggestion.text))
             }
-            val sWidth = Minecraft.getInstance().screen?.width ?: Int.MAX_VALUE
-            val sHeight = Minecraft.getInstance().screen?.height ?: Int.MAX_VALUE
+            val sWidth = Minecraft.getInstance().gui.screen()?.width ?: Int.MAX_VALUE
+            val sHeight = Minecraft.getInstance().gui.screen()?.height ?: Int.MAX_VALUE
             val x = max(min(windowX, sWidth - w), 0)
             var h = min(suggestions.list.size * 12, 120)
             val down = sHeight - (windowY + 20)

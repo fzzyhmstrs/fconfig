@@ -96,7 +96,7 @@ interface EntryAnchor {
             override fun action(scope: String, anchorId: String): Runnable {
                 return Runnable {
                     ConfigApi.openScreen(scope)
-                    Minecraft.getInstance().screen?.nullCast<ConfigScreen>()?.scrollToGroup(anchorId)
+                    Minecraft.getInstance().gui.screen()?.nullCast<ConfigScreen>()?.scrollToGroup(anchorId)
                 }
             }
         };

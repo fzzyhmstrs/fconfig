@@ -13,11 +13,11 @@ internal class RegistrySupplierImpl<T: Any>(private val entry: Holder.Reference<
         return entry.key()
     }
 
-    override fun areComponentsBound(): Boolean {
+    fun areComponentsBound(): Boolean {
         return entry.areComponentsBound()
     }
 
-    override fun components(): DataComponentMap {
+    fun components(): DataComponentMap {
         return entry.components()
     }
 

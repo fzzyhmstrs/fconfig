@@ -3,11 +3,9 @@ package me.fzzyhmstrs.fzzy_config.util.platform.impl
 import com.mojang.serialization.Codec
 import com.mojang.serialization.DataResult
 import com.mojang.serialization.Lifecycle
-import me.fzzyhmstrs.fzzy_config.cast
 import me.fzzyhmstrs.fzzy_config.nsId
 import me.fzzyhmstrs.fzzy_config.simpleId
 import me.fzzyhmstrs.fzzy_config.util.platform.RegistryBuilder
-import me.fzzyhmstrs.fzzy_config.util.platform.RegistrySupplier
 import net.fabricmc.fabric.api.creativetab.v1.FabricCreativeModeTab
 import net.fabricmc.fabric.api.event.registry.FabricRegistryBuilder
 import net.minecraft.world.item.CreativeModeTab
@@ -74,7 +72,7 @@ class RegistryBuilderImpl(private val namespace: String): RegistryBuilder {
     }
 
     override fun <T: Any> regSupplierCodec(registry: Registry<T>): Codec<Holder<T>> {
-        return registry.holderByNameCodec().xmap(Function.identity()) { re -> if (re is RegistrySupplier<T>) re.getEntry().cast() else re }
+        return registry.holderByNameCodec()
     }
 
     override fun <T: Any> referenceEntryCodec(registry: Registry<T>): Codec<Reference<T>> {
