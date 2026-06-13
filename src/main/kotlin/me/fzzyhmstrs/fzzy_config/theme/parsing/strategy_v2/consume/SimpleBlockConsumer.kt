@@ -42,7 +42,7 @@ class SimpleBlockConsumer(private val closing: TokenType<*>): TokenConsumer<Toke
                     return ValidationResult.predicated(token, errors.isEmpty(), errors.toString())
                 }
                 else -> {
-                    componentValues.add(ComponentValueConsumer.consume(queue, args).also { it.writeError(errors) }.get())
+                    componentValues.add(ComponentValueConsumer.consume(queue, args)/*.also { it.writeError(errors) }*/.get())
                 }
             }
         }

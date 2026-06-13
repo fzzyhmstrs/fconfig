@@ -16,6 +16,7 @@ import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy_v2.TokenConsumer
 import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy_v2.consume.ListOfRulesConsumer.Rule
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.Token
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenQueue
+import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenType
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import java.util.LinkedList
 
@@ -40,15 +41,20 @@ object AtRuleConsumer: TokenConsumer<Token<*>> {
                     return ValidationResult.predicated(Token(CssType.AT_RULE, AtRule(identifier, prelude, value), at.line(), at.column()), errors.isEmpty(), errors.toString())
                 }
                 CssType.OPEN_BRACE -> {
-                    value = SimpleBlockConsumer(CssType.CLOSE_BRACE).consume(queue, args).also { it.writeError(errors) }.get()
+                    val sb = SimpleBlockConsumer(CssType.CLOSE_BRACE).consume(queue, args)/*.also { it.writeError(errors) }*/.get()
+                    value = StyleBlockConsumer.consume(sb.valueStrict(CssType.SIMPLE_BLOCK).values, args)/*.also { it.writeError(errors) }*/.get()
                     return ValidationResult.predicated(Token(CssType.AT_RULE, AtRule(identifier, prelude, value), at.line(), at.column()), errors.isEmpty(), errors.toString())
                 }
                 else -> {
-                    if (peek.type == CssType.SIMPLE_BLOCK && (peek.value as SimpleBlockConsumer.Block).type == CssType.OPEN_BRACE) {
-                        value = queue.poll()
-                        return ValidationResult.predicated(Token(CssType.AT_RULE, AtRule(identifier, prelude, value), at.line(), at.column()), errors.isEmpty(), errors.toString())
+                    if (peek.type == CssType.SIMPLE_BLOCK) {
+                        if ((peek.value as SimpleBlockConsumer.Block).type == CssType.OPEN_BRACE) {
+                            val sb = queue.poll()
+                            val q = sb.valueStrict(CssType.SIMPLE_BLOCK as TokenType<SimpleBlockConsumer.Block>)
+                            value = StyleBlockConsumer.consume(q.values, args)/*.also { it.writeError(errors) }*/.get()
+                            return ValidationResult.predicated(Token(CssType.AT_RULE, AtRule(identifier, prelude, value), at.line(), at.column()), errors.isEmpty(), errors.toString())
+                        }
                     }
-                    prelude.add(ComponentValueConsumer.consume(queue, args).also { it.writeError(errors) }.get())
+                    prelude.add(ComponentValueConsumer.consume(queue, args)/*.also { it.writeError(errors) }*/.get())
                 }
             }
         }

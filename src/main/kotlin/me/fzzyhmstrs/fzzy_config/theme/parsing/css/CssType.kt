@@ -53,8 +53,8 @@ object CssType: ParseTokenizerType {
     val FUNCTION_CONSUMED = TokenType<FunctionConsumer.Function>("Function", this)
     val STYLE_BLOCK = TokenType<StyleBlockConsumer.StyleBlock>("Style Block", this)
     val DECLARATION = TokenType<DeclarationConsumer.Declaration>("Declaration", this)
-    val AT_RULE = TokenType<ListOfRulesConsumer.Rule>("At-Rule", this)
-    val QUALIFIED_RULE = TokenType<ListOfRulesConsumer.Rule>("Qualified Rule", this)
+    val AT_RULE = TokenType<AtRuleConsumer.AtRule>("At-Rule", this)
+    val QUALIFIED_RULE = TokenType<QualifiedRuleConsumer.QualifiedRule>("Qualified Rule", this)
     val EMPTY_RULE = TokenType<ListOfRulesConsumer.Rule>("Empty Rule", this)
     val UNKNOWN_RULE = TokenType<ListOfRulesConsumer.Rule>("Unknown Rule", this, true)
 

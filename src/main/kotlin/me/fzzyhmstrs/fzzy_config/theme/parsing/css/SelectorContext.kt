@@ -10,9 +10,33 @@
 
 package me.fzzyhmstrs.fzzy_config.theme.parsing.css
 
-class SelectorContext(val namespace: String?,
-                      val type: String,
-                      val id: String?,
-                      val clazz: String?,
-                      val attrGetter: AttrGetter,
-                      val pseudoGetter: PseudoGetter)
+/**
+ * Only class a selector context provider *needs* to have support for is type
+ */
+interface SelectorContext {
+    fun selectorType(): String
+    fun selectorNamespace(): String? {
+        return null
+    }
+    fun selectorId(): String? {
+        return null
+    }
+    fun isSelectorClass(clazz: String): Boolean {
+        return false
+    }
+    fun getAttrValue(attr: Attr): String? {
+        return null
+    }
+    fun selectorParent(): SelectorContext? {
+        return null
+    }
+    fun pseudoHovered(): Boolean {
+        return false
+    }
+    fun pseudoFocused(): Boolean {
+        return false
+    }
+    fun pseudoValid(): Boolean {
+        return true
+    }
+}

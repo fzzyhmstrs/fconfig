@@ -12,8 +12,6 @@ package me.fzzyhmstrs.fzzy_config.theme.parsing.strategy_v2.grammar
 
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.*
 import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy_v2.TokenConsumer
-import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy_v2.grammar.PseudoClassSelectorGrammar.PseudoClass
-import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy_v2.grammar.PseudoClassSelectorGrammar.PseudoFunction
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.Token
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenQueue
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
@@ -80,7 +78,7 @@ object PseudoElementSelectorGrammar: TokenConsumer<Optional<Selector>> {
     class PseudoElement(private val pseudo: Pseudo, private val name: String): Selector {
 
         override fun matches(context: SelectorContext): Boolean {
-            return pseudo.getterGetter(context.pseudoGetter)
+            return pseudo.pseudoGetter(context)
         }
 
         override fun selector(): String {

@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.theme.parsing.strategy_v2.grammar
 
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.CssType
+import me.fzzyhmstrs.fzzy_config.theme.parsing.css.Selector
 import me.fzzyhmstrs.fzzy_config.theme.parsing.parser.Parser
 import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy_v2.TokenConsumer
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.Token
@@ -19,19 +20,22 @@ import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import java.util.LinkedList
 
 
-object SelectorListGrammar: TokenConsumer<List<Token<*>>> {
+object SelectorListGrammar: TokenConsumer<List<Selector>> {
 
-    override fun consume(queue: TokenQueue, args: Set<String>): ValidationResult<List<Token<*>>> {
+    override fun consume(queue: TokenQueue, args: Set<String>): ValidationResult<List<Selector>> {
         if (!queue.canPoll()) return ValidationResult.error(listOf(), "Can't consume a selector list from an empty queue")
         val queuesResult = ComponentValueListGrammar.consume(queue, args)
-        val strict = args.contains("--strict-selector-list")
+        val strict = args.contains(Parser.ARG_STRICT_SELECTORS)
         if (queuesResult.isError() && strict) return ValidationResult.error(listOf(), "Selector list can't be built from invalid component values list: ${queuesResult.getError()}")
         val queues = queuesResult.get()
-        val selectors: MutableList<Token<*>> = mutableListOf()
+        val selectors: MutableList<Selector> = mutableListOf()
         for (queue2 in queues) {
             val result = ComplexSelectorGrammar.consume(queue2, args)
             if (result.isError() && strict) return ValidationResult.error(listOf(), "Selector list can't be built with invalid selector: ${result.getError()}")
-            selectors.addAll(result.get())
+            val resultValue = result.get()
+            if (resultValue.isPresent) {
+                selectors.add(resultValue.get())
+            }
         }
         return ValidationResult.success(selectors)
     }

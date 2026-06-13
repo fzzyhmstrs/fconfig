@@ -19,11 +19,11 @@ import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenProducer
 object LessThanProducer: TokenProducer() {
 
     override fun id(): String {
-        return "minus"
+        return "less-than"
     }
 
     override fun canProduce(reader: StringReader): Boolean {
-        return reader.peek() == '-'
+        return reader.peek() == '<'
     }
 
     override fun produce(context: ParseContext): Boolean {

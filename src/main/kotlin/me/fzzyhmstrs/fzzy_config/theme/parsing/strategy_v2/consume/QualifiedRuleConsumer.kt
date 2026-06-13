@@ -15,6 +15,7 @@ import me.fzzyhmstrs.fzzy_config.theme.parsing.parser.Parser
 import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy_v2.TokenConsumer
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.Token
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenQueue
+import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenType
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import java.util.*
 
@@ -34,15 +35,18 @@ object QualifiedRuleConsumer: TokenConsumer<Token<*>> {
                     return ValidationResult.error(ListOfRulesConsumer.unknownRule(initial.line(), initial.column()), "Unexpected EOF before qualified-rule completed")
                 }
                 CssType.OPEN_BRACE -> {
-                    value = SimpleBlockConsumer(CssType.CLOSE_BRACE).consume(queue, args).also { it.writeError(errors) }.get()
+                    val sb = SimpleBlockConsumer(CssType.CLOSE_BRACE).consume(queue, args)/*.also { it.writeError(errors) }*/.get()
+                    value = StyleBlockConsumer.consume(sb.valueStrict(CssType.SIMPLE_BLOCK).values, args)/*.also { it.writeError(errors) }*/.get()
                     return ValidationResult.predicated(Token(CssType.QUALIFIED_RULE, QualifiedRule(prelude, value), initial.line(), initial.column()), errors.isEmpty(), errors.toString())
                 }
                 else -> {
                     if (peek.type == CssType.SIMPLE_BLOCK && (peek.value as SimpleBlockConsumer.Block).type == CssType.OPEN_BRACE) {
-                        value = queue.poll()
+                        val sb = queue.poll()
+                        val q = sb.valueStrict(CssType.SIMPLE_BLOCK as TokenType<SimpleBlockConsumer.Block>)
+                        value = StyleBlockConsumer.consume(q.values, args)/*.also { it.writeError(errors) }*/.get()
                         return ValidationResult.predicated(Token(CssType.QUALIFIED_RULE, QualifiedRule(prelude, value), initial.line(), initial.column()), errors.isEmpty(), errors.toString())
                     }
-                    prelude.add(ComponentValueConsumer.consume(queue, args).also { it.writeError(errors) }.get())
+                    prelude.add(ComponentValueConsumer.consume(queue, args)/*.also { it.writeError(errors) }*/.get())
                 }
             }
         }

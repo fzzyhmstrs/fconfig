@@ -47,10 +47,10 @@ object TypeSelectorGrammar: TokenConsumer<Optional<Selector>> {
         }
     }
 
-    class Name(private val name: String, queue: TokenQueue /*unused on purpose*/): Selector {
+    private class Name(private val name: String, queue: TokenQueue /*unused on purpose*/): Selector {
 
         override fun matches(context: SelectorContext): Boolean {
-            return context.type == name
+            return context.selectorType() == name
         }
 
         override fun selector(): String {

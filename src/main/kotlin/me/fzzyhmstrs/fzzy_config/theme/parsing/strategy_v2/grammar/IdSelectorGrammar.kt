@@ -38,10 +38,10 @@ object IdSelectorGrammar: TokenConsumer<Optional<Selector>> {
         }
     }
 
-    class Id(private val id: String): Selector {
+    private class Id(private val id: String): Selector {
 
         override fun matches(context: SelectorContext): Boolean {
-            return context.id == id
+            return context.selectorId() == id
         }
 
         override fun selector(): String {

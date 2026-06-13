@@ -35,29 +35,22 @@ object StyleBlockConsumer: TokenConsumer<Token<*>> {
                     return ValidationResult.predicated(Token(CssType.STYLE_BLOCK, StyleBlock(declarations, rules), line, col), errors.isEmpty(), errors.toString())
                 }
                 CssType.AT -> {
-                    rules.add(AtRuleConsumer.consume(queue, args).also { it.writeError(errors) }.get())
+                    rules.add(AtRuleConsumer.consume(queue, args)/*.also { it.writeError(errors) }*/.get())
                 }
                 CssType.IDENT -> {
-                    val list: LinkedList<Token<*>> = LinkedList()
-                    list.add(queue.poll()) //apply the identifier into the declaration
-                    while (queue.canPoll()) {
-                        val peek2 = queue.peek()
+                    queue.sliceTo({ peek2 ->
                         when (peek2.type) {
-                            Parser.EOF, CssType.SEMI_COLON -> {
-                                break
-                            }
-                            else -> {
-                                list.add(queue.poll())
-                            }
+                            Parser.EOF, CssType.SEMI_COLON -> true
+                            else -> false
                         }
-                        val queue2 = TokenQueue.Impl(list)
+                    }, { queue2 ->
                         val decl = DeclarationConsumer.consume(queue2, args)
                         if (decl.isError()) {
                             errors.add(decl.getError())
                         } else {
                             declarations.add(decl.get())
                         }
-                    }
+                    })
                 }
                 CssType.DELIM -> {
                     if (peek.asString() == "&") {

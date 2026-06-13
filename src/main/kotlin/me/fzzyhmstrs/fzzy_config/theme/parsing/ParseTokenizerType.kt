@@ -16,9 +16,4 @@ import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 interface ParseTokenizerType {
     fun id(): String
     fun filterInput(string: String): String
-
-    interface Consumer<T: Any> {
-        fun consumeToken(token: Token<*>)
-        fun finish(): ValidationResult<T>
-    }
 }

@@ -54,7 +54,7 @@ object NamespaceGrammar: TokenConsumer<Optional<Selector>> {
     class InNamespace(private val namespace: String): Selector {
 
         override fun matches(context: SelectorContext): Boolean {
-            return context.namespace == namespace
+            return context.selectorNamespace() == namespace
         }
 
         override fun selector(): String {
@@ -84,7 +84,7 @@ object NamespaceGrammar: TokenConsumer<Optional<Selector>> {
     data object NoNamespace: Selector {
 
         override fun matches(context: SelectorContext): Boolean {
-            return context.namespace == null
+            return context.selectorNamespace() == null
         }
 
         override fun selector(): String {

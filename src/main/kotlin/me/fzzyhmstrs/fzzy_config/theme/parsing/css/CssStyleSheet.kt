@@ -11,22 +11,27 @@
 package me.fzzyhmstrs.fzzy_config.theme.parsing.css
 
 import me.fzzyhmstrs.fzzy_config.theme.parsing.ParsePrinter
+import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy_v2.consume.AtRuleConsumer
+import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy_v2.consume.QualifiedRuleConsumer
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.Token
 import java.util.function.Consumer
 
-class CssStyleSheet(private val tokens: List<Token<*>>): ParsePrinter {
+class CssStyleSheet(private val atRules: List<AtRuleConsumer.AtRule>, private val qualifiedRules: List<QualifiedRuleConsumer.QualifiedRule>): ParsePrinter {
 
-    val length: Int = tokens.size
-
-    fun print() {
-        for (token in tokens) {
-            println(token)
+    val size: Int
+        get() {
+            return atRules.size + qualifiedRules.size
         }
-    }
 
     override fun print(printer: Consumer<String>) {
-        for (token in tokens) {
-            token.print(printer)
+        printer.accept("At-Rules")
+        for (rule in atRules) {
+            printer.accept(rule.toString())
+        }
+        printer.accept("")
+        printer.accept("Qualified Rules")
+        for (rule in qualifiedRules) {
+            printer.accept(rule.toString())
         }
     }
 }

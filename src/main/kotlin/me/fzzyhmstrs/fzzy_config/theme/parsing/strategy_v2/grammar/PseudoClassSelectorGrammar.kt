@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.theme.parsing.strategy_v2.grammar
 
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.*
+import me.fzzyhmstrs.fzzy_config.theme.parsing.parser.Parser
 import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy_v2.TokenConsumer
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.Token
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenQueue
@@ -30,7 +31,7 @@ object PseudoClassSelectorGrammar: TokenConsumer<Optional<Selector>> {
                 if (token2.type == CssType.IDENT) {
                     val key = token2.asString()
                     val pseudo = Pseudo.getPseudo(key) ?: return@attempt ValidationResult.error(Optional.empty(), "Unsupported pseudo-class selector")
-                    ValidationResult.predicated(Optional.of(PseudoClass(pseudo, key)), !args.contains("--user-actions-only") || pseudo.userAction, "Non-user-action pseudo-class selector")
+                    ValidationResult.predicated(Optional.of(PseudoClass(pseudo, key)), !args.contains(Parser.ARG_PSEUDO_USER_ACTIONS_ONLY) || pseudo.userAction, "Non-user-action pseudo-class selector")
                 } else if (token2.value == ":") {
                     ValidationResult.error(Optional.empty(), "Not a pseudo-class selector")
                 } else if (token2.type == CssType.FUNCTION && split.canPoll()) {
@@ -63,7 +64,7 @@ object PseudoClassSelectorGrammar: TokenConsumer<Optional<Selector>> {
     class PseudoClass(private val pseudo: Pseudo, private val name: String): Selector {
 
         override fun matches(context: SelectorContext): Boolean {
-            return pseudo.getterGetter(context.pseudoGetter)
+            return pseudo.pseudoGetter(context)
         }
 
         override fun selector(): String {

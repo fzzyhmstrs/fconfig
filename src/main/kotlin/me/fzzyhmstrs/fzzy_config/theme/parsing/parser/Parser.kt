@@ -50,6 +50,14 @@ object Parser {
     val EOL = TokenType<Unit>("EOL", SPECIAL_TYPE, false, raw = "\n")
     val EOF = TokenType<Unit>("EOF", SPECIAL_TYPE, false, valueCreator = { "" })
 
+    const val ARG_EOL = "--eol"
+    const val ARG_PRINT_TOKENS = "--print-tokens"
+    const val ARG_COUNT_TOKENS = "--count-tokens"
+    const val ARG_STRICT_SELECTORS = "--strict-selector-list"
+    const val ARG_STRICT_RULES = "--strict-rules"
+    const val ARG_QUOTE_STRINGS = "--quote-strings"
+    const val ARG_PSEUDO_USER_ACTIONS_ONLY = "--user-actions-only"
+
     fun <T: Any> parse(input: BufferedReader, type: ParseTokenizerType, consumer: TokenConsumer<T>, vararg args: String): ValidationResult<Result<T>> {
         val argSet = args.toSet()
         val a = System.currentTimeMillis()
@@ -57,6 +65,7 @@ object Parser {
         val lines = input.use { inputReader ->
             inputReader.lines().collect(Collectors.toCollection(::ArrayList))
         }
+
         val b = System.currentTimeMillis()
 
         val tokens: LinkedList<Token<*>> = LinkedList()
@@ -118,7 +127,7 @@ object Parser {
                     unknownBuilder.append(context.reader().read())
                 }
             }
-            if (argSet.contains("--eol")) {
+            if (argSet.contains(ARG_EOL)) {
                 context.token(EOL, context.reader().getLine(), context.reader().getColumn(), "EOL")
             }
             tokens.addAll(lineTokens)
@@ -131,13 +140,13 @@ object Parser {
 
         val size = tokens.size
 
-        if (argSet.contains("--print-tokens")) {
+        if (argSet.contains(ARG_PRINT_TOKENS)) {
             for (token in tokens) {
                 println(token)
             }
         }
 
-        val cs = if (argSet.contains("--count-tokens")) {
+        val cs = if (argSet.contains(ARG_COUNT_TOKENS)) {
             val counts: MutableMap<TokenType<*>, AtomicInteger> = mutableMapOf()
             for (token in ArrayList(tokens)) {
                 counts.computeIfAbsent(token.type) { _ -> AtomicInteger(0) }.incrementAndGet()

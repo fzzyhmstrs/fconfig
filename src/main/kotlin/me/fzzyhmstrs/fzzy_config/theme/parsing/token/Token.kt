@@ -45,6 +45,10 @@ class Token<T: Any> private constructor(val type: TokenType<T>, val value: T, pr
         return if (type == this.type) value as? V else null
     }
 
+    fun <V: Any> valueStrict(type: TokenType<V>): V {
+        return value as V
+    }
+
     override fun toString(): String {
         return if (value == Unit) {
             if (info != TokenInfo.EMPTY) {

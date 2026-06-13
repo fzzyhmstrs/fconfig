@@ -43,10 +43,10 @@ object ClassSelectorGrammar: TokenConsumer<Optional<Selector>> {
         }
     }
 
-    class Class(private val clazz: String): Selector {
+    private class Class(private val clazz: String): Selector {
 
         override fun matches(context: SelectorContext): Boolean {
-            return context.clazz == clazz
+            return context.isSelectorClass(clazz)
         }
 
         override fun selector(): String {

@@ -34,8 +34,9 @@ object DeclarationConsumer: TokenConsumer<Token<*>> {
         queue.consumeWhitespace()
         if (!queue.canPoll()) return ValidationResult.error(ERROR, "Empty declaration for [$identifier]")
         while (queue.canPoll()) {
-            componentValues.add(ComponentValueConsumer.consume(queue, args).also { it.writeError(errors) }.get())
+            componentValues.add(ComponentValueConsumer.consume(queue, args)/*.also { it.writeError(errors) }*/.get())
         }
+        println(componentValues)
         var important = false
         var bang = false
         val itr = componentValues.descendingIterator()

@@ -15,7 +15,7 @@ import me.fzzyhmstrs.fzzy_config.theme.parsing.token.Token
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenQueue
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 
-interface TokenConsumer<T: Any> {
+fun interface TokenConsumer<T: Any> {
     fun consume(queue: TokenQueue, args: Set<String>): ValidationResult<T>
 
     companion object  {

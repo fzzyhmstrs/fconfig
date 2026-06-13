@@ -44,6 +44,15 @@ sealed class TokenQueue(protected val tokens: LinkedList<Token<*>>): ParsePrinte
         return splitConsumer(split)
     }
 
+    fun sliceTo(sliceBefore: Predicate<Token<*>>, sliceConsumer: (Slice) -> Unit) {
+        val sliceIndex = tokens.withIndex().firstOrNull { (_, t) -> sliceBefore.test(t) }?.index ?: return
+        if (sliceIndex < 0) return
+
+        val slice = Slice(LinkedList(tokens.subList(0, sliceIndex + 1)), sliceIndex, this)
+        //println("Slice: $slice")
+        sliceConsumer(slice).also { slice.commit() }
+    }
+
     fun <T: Any, B: ParseStrategy.Builder<T>> slice(sliceBefore: Predicate<Token<*>>, sliceConsumer: (Slice) -> Optional<ValidationResult<B>>): Optional<ValidationResult<B>> {
         val sliceIndex = tokens.withIndex().firstOrNull { (_, t) -> sliceBefore.test(t) }?.index?.minus(1) ?: return Optional.empty()
         if (sliceIndex < 0) return Optional.empty()

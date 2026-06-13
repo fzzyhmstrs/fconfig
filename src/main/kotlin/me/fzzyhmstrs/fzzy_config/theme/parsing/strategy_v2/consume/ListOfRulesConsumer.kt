@@ -36,10 +36,10 @@ object ListOfRulesConsumer: TokenConsumer<List<Token<*>>> {
                     return ValidationResult.predicated(rules, errors.isEmpty(), errors.toString())
                 }
                 CssType.AT -> {
-                    rules.add(AtRuleConsumer.consume(queue, args).also { it.writeError(errors) }.get())
+                    rules.add(AtRuleConsumer.consume(queue, args)/*.also { it.writeError(errors) }*/.get())
                 }
                 else -> {
-                    rules.add(QualifiedRuleConsumer.consume(queue, args).also { it.writeError(errors) }.get())
+                    rules.add(QualifiedRuleConsumer.consume(queue, args)/*.also { it.writeError(errors) }*/.get())
                 }
             }
         }

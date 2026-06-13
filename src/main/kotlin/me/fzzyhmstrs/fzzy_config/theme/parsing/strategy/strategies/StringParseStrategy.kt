@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.theme.parsing.strategy.strategies
 
+import me.fzzyhmstrs.fzzy_config.theme.parsing.parser.Parser
 import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy.ParseStrategy
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.Token
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenType
@@ -34,7 +35,7 @@ class StringParseStrategy private constructor(type: TokenType<String>,
     }
 
     override fun processToken(builder: StrategyBuilder, token: Token<*>, args: Array<String>): Optional<ValidationResult<StrategyBuilder>> {
-        builder.append(if (args.contains("--quote-strings")) token.asString() else token.value as String)
+        builder.append(if (args.contains(Parser.ARG_QUOTE_STRINGS)) token.asString() else token.value as String)
         return Optional.empty()
     }
 
