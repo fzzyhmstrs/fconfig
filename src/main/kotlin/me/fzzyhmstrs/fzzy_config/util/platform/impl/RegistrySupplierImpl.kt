@@ -14,10 +14,6 @@ internal class RegistrySupplierImpl<R: Any, T: R>(private val entry: DeferredHol
         return entry.unwrap().left().get()
     }
 
-    override fun getKey(): ResourceKey<R> {
-        return entry.unwrap().left().get()
-    }
-
     override fun getId(): Identifier {
         return entry.id
     }
