@@ -16,20 +16,20 @@ logoFile = "icon.png"
 [[dependencies.fzzy_config]]
 modId = "neoforge"
 type = "REQUIRED"
-versionRange = "[26.1.0.1-beta,)"
+versionRange = "[26.2.0.1-beta,)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.fzzy_config]]
 modId = "minecraft"
 type = "REQUIRED"
-versionRange = "[26.1,)"
+versionRange = "[26.2,)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.fzzy_config]]
-modId = "kotlinforforge"
+modId = "klf"
 type = "OPTIONAL"
-versionRange = "[6.2.0,)"
+versionRange = "[2.12.1,)"
 ordering = "NONE"
 side = "BOTH"

@@ -89,11 +89,11 @@ dependencies {
     //neoForge("net.neoforged:neoforge:$loaderVersion")
 
 
-    val kotlinForForgeVersion: String by project
-    runtimeOnly("thedarkcolour:kotlinforforge-neoforge:$kotlinForForgeVersion")
+    /*val kotlinForForgeVersion: String by project
+    runtimeOnly("thedarkcolour:kotlinforforge-neoforge:$kotlinForForgeVersion")*/
 
-    /*val klfVersion: String by project
-    modLocalRuntime("dev.nyon:KotlinLangForge:$klfVersion")*/
+    val klfVersion: String by project
+    runtimeOnly("dev.nyon:KotlinLangForge:$klfVersion")
 
     val tomlktVersion: String by project
     implementation("net.peanuuutz.tomlkt:tomlkt-jvm:$tomlktVersion")
