@@ -142,6 +142,10 @@ class LabelWrappedWidget(private val child: AbstractWidget, private val label: C
             return element
         }
 
+        override fun leafComponent(): GuiEventListener {
+            return childPath.leafComponent()
+        }
+
         override fun applyFocus(focused: Boolean) {
             element.isFocused = focused
             childPath.applyFocus(focused)
