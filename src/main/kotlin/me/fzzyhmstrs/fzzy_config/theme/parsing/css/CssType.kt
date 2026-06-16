@@ -55,8 +55,8 @@ object CssType: ParseTokenizerType {
     val DECLARATION = TokenType<DeclarationConsumer.Declaration>("Declaration", this)
     val AT_RULE = TokenType<AtRuleConsumer.AtRule>("At-Rule", this)
     val QUALIFIED_RULE = TokenType<QualifiedRuleConsumer.QualifiedRule>("Qualified Rule", this)
-    val EMPTY_RULE = TokenType<ListOfRulesConsumer.Rule>("Empty Rule", this)
-    val UNKNOWN_RULE = TokenType<ListOfRulesConsumer.Rule>("Unknown Rule", this, true)
+    val EMPTY_RULE = TokenType<Unit>("Empty Rule", this)
+    val UNKNOWN_RULE = TokenType<Unit>("Unknown Rule", this, true)
 
     init {
         Parser.addTokenizer(this, listOf(

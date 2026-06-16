@@ -21,6 +21,10 @@ import java.util.function.Predicate
 sealed class TokenQueue(protected val tokens: LinkedList<Token<*>>): ParsePrinter {
 
     companion object {
+        fun of(tokens: LinkedList<Token<*>>): TokenQueue {
+            return Impl(tokens)
+        }
+
         fun single(token: Token<*>): TokenQueue {
             return Impl(LinkedList(listOf(token)))
         }
@@ -30,7 +34,7 @@ sealed class TokenQueue(protected val tokens: LinkedList<Token<*>>): ParsePrinte
         }
     }
 
-    fun <T: Any> attempt(attempt: (Split) -> ValidationResult<T>): ValidationResult<T> {
+    fun <T: Any> attempt(attempt: (TokenQueue) -> ValidationResult<T>): ValidationResult<T> {
         val split = Split(LinkedList(tokens), this)
         val result = attempt(split)
         if (result.isValid()) {
@@ -39,21 +43,20 @@ sealed class TokenQueue(protected val tokens: LinkedList<Token<*>>): ParsePrinte
         return result
     }
 
-    fun <T: Any> split(splitConsumer: (Split) -> Optional<ValidationResult<out ParseStrategy.Builder<T>>>): Optional<ValidationResult<out ParseStrategy.Builder<T>>> {
+    fun <T: Any> split(splitConsumer: (TokenQueue) -> Optional<ValidationResult<out ParseStrategy.Builder<T>>>): Optional<ValidationResult<out ParseStrategy.Builder<T>>> {
         val split = Split(LinkedList(tokens), this)
         return splitConsumer(split)
     }
 
-    fun sliceTo(sliceBefore: Predicate<Token<*>>, sliceConsumer: (Slice) -> Unit) {
+    fun sliceTo(sliceBefore: Predicate<Token<*>>, sliceConsumer: (TokenQueue) -> Unit) {
         val sliceIndex = tokens.withIndex().firstOrNull { (_, t) -> sliceBefore.test(t) }?.index ?: return
         if (sliceIndex < 0) return
 
         val slice = Slice(LinkedList(tokens.subList(0, sliceIndex + 1)), sliceIndex, this)
-        //println("Slice: $slice")
         sliceConsumer(slice).also { slice.commit() }
     }
 
-    fun <T: Any, B: ParseStrategy.Builder<T>> slice(sliceBefore: Predicate<Token<*>>, sliceConsumer: (Slice) -> Optional<ValidationResult<B>>): Optional<ValidationResult<B>> {
+    fun <T: Any, B: ParseStrategy.Builder<T>> slice(sliceBefore: Predicate<Token<*>>, sliceConsumer: (TokenQueue) -> Optional<ValidationResult<B>>): Optional<ValidationResult<B>> {
         val sliceIndex = tokens.withIndex().firstOrNull { (_, t) -> sliceBefore.test(t) }?.index?.minus(1) ?: return Optional.empty()
         if (sliceIndex < 0) return Optional.empty()
 
@@ -61,9 +64,9 @@ sealed class TokenQueue(protected val tokens: LinkedList<Token<*>>): ParsePrinte
         return sliceConsumer(slice).also { slice.commit() }
     }
 
-    class Impl internal constructor(tokens: LinkedList<Token<*>>): TokenQueue(tokens)
+    private class Impl(tokens: LinkedList<Token<*>>): TokenQueue(tokens)
 
-    class Split internal constructor(tokens: LinkedList<Token<*>>, private val parent: TokenQueue): TokenQueue(tokens) {
+    private class Split(tokens: LinkedList<Token<*>>, private val parent: TokenQueue): TokenQueue(tokens) {
 
         private var commited = false
 
@@ -89,14 +92,17 @@ sealed class TokenQueue(protected val tokens: LinkedList<Token<*>>): ParsePrinte
         }
     }
 
-    class Slice internal constructor(tokens: LinkedList<Token<*>>, private val maxIndex: Int, private val parent: TokenQueue): TokenQueue(tokens) {
+    private class Slice(tokens: LinkedList<Token<*>>, private val maxIndex: Int, private val parent: TokenQueue): TokenQueue(tokens) {
 
         private var commited = false
         private var index = 0
 
         fun commit() {
-            parent.tokens.clear()
-            parent.tokens.addAll(this.tokens)
+            if (maxIndex < parent.tokens.lastIndex) {
+                parent.tokens.subList(0, maxIndex + 1).clear()
+            } else {
+                parent.tokens.clear()
+            }
             commited = true
         }
 

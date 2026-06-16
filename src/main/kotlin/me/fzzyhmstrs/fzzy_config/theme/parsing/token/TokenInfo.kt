@@ -17,7 +17,7 @@ class TokenInfo(val line: Int, val column: Int, val error: String) {
     }
 
     override fun toString(): String {
-        return if (error.isNotEmpty()) "l=$line, c=$column, e=$error" else "l=$line, c=$column"
+        return if (error.isNotEmpty()) "l=$line,c=$column,e=$error" else "l=$line,c=$column"
     }
 
     override fun equals(other: Any?): Boolean {

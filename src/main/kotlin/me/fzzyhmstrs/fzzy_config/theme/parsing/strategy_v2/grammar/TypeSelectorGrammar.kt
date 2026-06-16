@@ -49,7 +49,7 @@ object TypeSelectorGrammar: TokenConsumer<Optional<Selector>> {
 
     private class Name(private val name: String, queue: TokenQueue /*unused on purpose*/): Selector {
 
-        override fun matches(context: SelectorContext): Boolean {
+        override fun matches(screenContext: Selector.Position, context: SelectorContext): Boolean {
             return context.selectorType() == name
         }
 

@@ -42,7 +42,7 @@ object PseudoClassSelectorGrammar: TokenConsumer<Optional<Selector>> {
                         val t = split.poll()
                         if (t.type == CssType.CLOSE_PARENTHESIS) {
                             val raw = funcVals.fold("") { r, tkn -> r + tkn.asString() }
-                            val selector = func.prepare(TokenQueue.Impl(funcVals), args) { f, a -> PseudoFunction(f as Func<Any>, key, a, raw) }
+                            val selector = func.prepare(TokenQueue.of(funcVals), args) { f, a -> PseudoFunction(f as Func<Any>, key, a, raw) }
                             return@attempt if(selector != null)
                                 ValidationResult.success(Optional.of(selector))
                             else
@@ -63,7 +63,7 @@ object PseudoClassSelectorGrammar: TokenConsumer<Optional<Selector>> {
 
     class PseudoClass(private val pseudo: Pseudo, private val name: String): Selector {
 
-        override fun matches(context: SelectorContext): Boolean {
+        override fun matches(screenContext: Selector.Position, context: SelectorContext): Boolean {
             return pseudo.pseudoGetter(context)
         }
 
@@ -78,7 +78,7 @@ object PseudoClassSelectorGrammar: TokenConsumer<Optional<Selector>> {
 
     class PseudoFunction<in T: Any>(private val func: Func<T>, private val name: String, private val args: T, private val raw: String): Selector {
 
-        override fun matches(context: SelectorContext): Boolean {
+        override fun matches(screenContext: Selector.Position, context: SelectorContext): Boolean {
             return func.apply(args, context)
         }
 

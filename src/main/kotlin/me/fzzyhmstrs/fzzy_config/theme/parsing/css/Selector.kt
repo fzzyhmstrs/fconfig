@@ -11,7 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.theme.parsing.css
 
 interface Selector {
-    fun matches(context: SelectorContext): Boolean
+    fun matches(screenContext: Position, context: SelectorContext): Boolean
     fun selector(): String
     fun specificity(): Specificity
     fun flatten(): List<Selector> {
@@ -21,8 +21,13 @@ interface Selector {
         return this
     }
 
+    interface Position {
+        fun w(): Int
+        fun h(): Int
+    }
+
     data object Universal: Selector {
-        override fun matches(context: SelectorContext): Boolean {
+        override fun matches(screenContext: Position, context: SelectorContext): Boolean {
             return true
         }
 
@@ -39,8 +44,8 @@ interface Selector {
 
         private val specificity = selectors.fold(Specificity.ZERO) { sp, s -> sp + s.specificity() }
 
-        override fun matches(context: SelectorContext): Boolean {
-            return selectors.all { it.matches(context) }
+        override fun matches(screenContext: Position, context: SelectorContext): Boolean {
+            return selectors.all { it.matches(screenContext, context) }
         }
 
         override fun selector(): String {
@@ -64,8 +69,8 @@ interface Selector {
 
         private val specificity = selectors.fold(Specificity.ZERO) { sp, s -> sp + s.specificity() }
 
-        override fun matches(context: SelectorContext): Boolean {
-            return selectors.any { it.matches(context) }
+        override fun matches(screenContext: Position, context: SelectorContext): Boolean {
+            return selectors.any { it.matches(screenContext, context) }
         }
 
         override fun selector(): String {
@@ -89,8 +94,8 @@ interface Selector {
 
         private val specificity = left.specificity() + right.specificity()
 
-        override fun matches(context: SelectorContext): Boolean {
-            return left.matches(context) && right.matches(context)
+        override fun matches(screenContext: Position, context: SelectorContext): Boolean {
+            return left.matches(screenContext, context) && right.matches(screenContext, context)
         }
 
         override fun selector(): String {
@@ -114,8 +119,8 @@ interface Selector {
 
         private val specificity = left.specificity() + right.specificity()
 
-        override fun matches(context: SelectorContext): Boolean {
-            return left.matches(context) || right.matches(context)
+        override fun matches(screenContext: Position, context: SelectorContext): Boolean {
+            return left.matches(screenContext, context) || right.matches(screenContext, context)
         }
 
         override fun selector(): String {

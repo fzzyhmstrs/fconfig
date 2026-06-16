@@ -19,7 +19,6 @@ import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenQueue
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import java.util.LinkedList
 
-
 object SelectorListGrammar: TokenConsumer<List<Selector>> {
 
     override fun consume(queue: TokenQueue, args: Set<String>): ValidationResult<List<Selector>> {

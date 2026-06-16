@@ -14,14 +14,10 @@ import me.fzzyhmstrs.fzzy_config.theme.parsing.css.CssType
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.Selector
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.SelectorContext
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.Specificity
-import me.fzzyhmstrs.fzzy_config.theme.parsing.parser.Parser
 import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy_v2.TokenConsumer
-import me.fzzyhmstrs.fzzy_config.theme.parsing.token.Token
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenQueue
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
-import java.util.LinkedList
 import java.util.Optional
-import javax.swing.text.html.HTML.Tag.S
 
 
 object ClassSelectorGrammar: TokenConsumer<Optional<Selector>> {
@@ -45,7 +41,7 @@ object ClassSelectorGrammar: TokenConsumer<Optional<Selector>> {
 
     private class Class(private val clazz: String): Selector {
 
-        override fun matches(context: SelectorContext): Boolean {
+        override fun matches(screenContext: Selector.Position, context: SelectorContext): Boolean {
             return context.isSelectorClass(clazz)
         }
 

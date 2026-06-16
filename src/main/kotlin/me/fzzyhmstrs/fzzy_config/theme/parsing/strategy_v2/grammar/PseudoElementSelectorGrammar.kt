@@ -46,7 +46,7 @@ object PseudoElementSelectorGrammar: TokenConsumer<Optional<Selector>> {
                             val t = split.poll()
                             if (t.type == CssType.CLOSE_PARENTHESIS) {
                                 val raw = funcVals.fold("") { r, tkn -> r + tkn.asString() }
-                                val selector = func.prepare(TokenQueue.Impl(funcVals), args) { f, a ->
+                                val selector = func.prepare(TokenQueue.of(funcVals), args) { f, a ->
                                     PseudoElementFunction(
                                         f as Func<Any>,
                                         key,
@@ -77,7 +77,7 @@ object PseudoElementSelectorGrammar: TokenConsumer<Optional<Selector>> {
 
     class PseudoElement(private val pseudo: Pseudo, private val name: String): Selector {
 
-        override fun matches(context: SelectorContext): Boolean {
+        override fun matches(screenContext: Selector.Position, context: SelectorContext): Boolean {
             return pseudo.pseudoGetter(context)
         }
 
@@ -93,7 +93,7 @@ object PseudoElementSelectorGrammar: TokenConsumer<Optional<Selector>> {
 
     class PseudoElementFunction<in T: Any>(private val func: Func<T>, private val name: String, private val args: T, private val raw: String): Selector {
 
-        override fun matches(context: SelectorContext): Boolean {
+        override fun matches(screenContext: Selector.Position, context: SelectorContext): Boolean {
             return func.apply(args, context)
         }
 

@@ -105,7 +105,7 @@ object AttrSelectorGrammar: TokenConsumer<Optional<Selector>> {
 
     private class AttrName(private val attr: Attr, private val name: String): Selector {
 
-        override fun matches(context: SelectorContext): Boolean {
+        override fun matches(screenContext: Selector.Position, context: SelectorContext): Boolean {
             return context.getAttrValue(attr) != null
         }
 
@@ -136,7 +136,7 @@ object AttrSelectorGrammar: TokenConsumer<Optional<Selector>> {
 
     private class AttrValue(attr: Attr, name: String, value: String, mod: String?): AttrWithMatch(attr, name, value, mod) {
 
-        override fun matches(context: SelectorContext): Boolean {
+        override fun matches(screenContext: Selector.Position, context: SelectorContext): Boolean {
             val v = context.getAttrValue(attr) ?: return false
             val v2 = transformer(v)
             return value == v2
@@ -149,7 +149,7 @@ object AttrSelectorGrammar: TokenConsumer<Optional<Selector>> {
 
     private class AttrListContains(attr: Attr, name: String, value: String, mod: String?): AttrWithMatch(attr, name, value, mod) {
 
-        override fun matches(context: SelectorContext): Boolean {
+        override fun matches(screenContext: Selector.Position, context: SelectorContext): Boolean {
             val v = context.getAttrValue(attr) ?: return false
             val v2 = transformer(v)
             return v2.split(" ").count { s -> s == value } == 1
@@ -162,7 +162,7 @@ object AttrSelectorGrammar: TokenConsumer<Optional<Selector>> {
 
     private class AttrValueDash(attr: Attr, name: String, value: String, mod: String?): AttrWithMatch(attr, name, value, mod) {
 
-        override fun matches(context: SelectorContext): Boolean {
+        override fun matches(screenContext: Selector.Position, context: SelectorContext): Boolean {
             val v = context.getAttrValue(attr) ?: return false
             val v2 = transformer(v)
             return value == v2 ||  v2.startsWith("$value-")
@@ -175,7 +175,7 @@ object AttrSelectorGrammar: TokenConsumer<Optional<Selector>> {
 
     private class AttrValueStarts(attr: Attr, name: String, value: String, mod: String?): AttrWithMatch(attr, name, value, mod) {
 
-        override fun matches(context: SelectorContext): Boolean {
+        override fun matches(screenContext: Selector.Position, context: SelectorContext): Boolean {
             val v = context.getAttrValue(attr) ?: return false
             val v2 = transformer(v)
             return v2.startsWith(value)
@@ -188,7 +188,7 @@ object AttrSelectorGrammar: TokenConsumer<Optional<Selector>> {
 
     private class AttrValueEnds(attr: Attr, name: String, value: String, mod: String?): AttrWithMatch(attr, name, value, mod) {
 
-        override fun matches(context: SelectorContext): Boolean {
+        override fun matches(screenContext: Selector.Position, context: SelectorContext): Boolean {
             val v = context.getAttrValue(attr) ?: return false
             val v2 = transformer(v)
             return v2.endsWith(value)
@@ -201,7 +201,7 @@ object AttrSelectorGrammar: TokenConsumer<Optional<Selector>> {
 
     private class AttrValueContains(attr: Attr, name: String, value: String, mod: String?): AttrWithMatch(attr, name, value, mod) {
 
-        override fun matches(context: SelectorContext): Boolean {
+        override fun matches(screenContext: Selector.Position, context: SelectorContext): Boolean {
             val v = context.getAttrValue(attr) ?: return false
             val v2 = transformer(v)
             return v2.contains(value)

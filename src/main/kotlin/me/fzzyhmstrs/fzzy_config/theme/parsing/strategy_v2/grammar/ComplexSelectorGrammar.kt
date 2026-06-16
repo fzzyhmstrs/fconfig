@@ -14,17 +14,12 @@ import me.fzzyhmstrs.fzzy_config.theme.parsing.css.CssType
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.Selector
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.SelectorContext
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.Specificity
-import me.fzzyhmstrs.fzzy_config.theme.parsing.parser.Parser
 import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy_v2.TokenConsumer
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.Token
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenQueue
-import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenType
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
-import java.util.Deque
 import java.util.LinkedList
 import java.util.Optional
-import java.util.Queue
-import java.util.Stack
 
 
 object ComplexSelectorGrammar: TokenConsumer<Optional<Selector>> {
@@ -144,14 +139,14 @@ object ComplexSelectorGrammar: TokenConsumer<Optional<Selector>> {
 
     private class DescendantSelector(private val left: Selector, private val right: Selector): Selector {
 
-        override fun matches(context: SelectorContext): Boolean {
-            return right.matches(context) && parentMatches(context)
+        override fun matches(screenContext: Selector.Position, context: SelectorContext): Boolean {
+            return right.matches(, context) && parentMatches(context)
         }
 
         private fun parentMatches(context: SelectorContext): Boolean {
             var parent: SelectorContext? = context.selectorParent()
             while (parent != null) {
-                if (left.matches(parent)) return true
+                if (left.matches(, parent)) return true
                 parent = parent.selectorParent()
             }
             return false
@@ -177,12 +172,12 @@ object ComplexSelectorGrammar: TokenConsumer<Optional<Selector>> {
 
     private class ChildSelector(private val left: Selector, private val right: Selector): Selector {
 
-        override fun matches(context: SelectorContext): Boolean {
-            return right.matches(context) && parentMatches(context)
+        override fun matches(screenContext: Selector.Position, context: SelectorContext): Boolean {
+            return right.matches(, context) && parentMatches(context)
         }
 
         private fun parentMatches(context: SelectorContext): Boolean {
-            return context.selectorParent()?.let { left.matches(it) } ?: false
+            return context.selectorParent()?.let { left.matches(, it) } ?: false
         }
 
         override fun selector(): String {

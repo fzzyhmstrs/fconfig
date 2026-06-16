@@ -155,7 +155,7 @@ object Parser {
         } else {
             listOf()
         }
-        val queue = TokenQueue.Impl(tokens)
+        val queue = TokenQueue.of(tokens)
 
         val c = System.currentTimeMillis()
 
@@ -174,6 +174,14 @@ object Parser {
     open class NumberValue(private val value: Number) {
         fun getValue(): Number {
             return value
+        }
+
+        fun getDouble(): Double {
+            return getValue().toDouble()
+        }
+
+        fun getInt(): Int {
+            return getValue().toInt()
         }
 
         override fun toString(): String {

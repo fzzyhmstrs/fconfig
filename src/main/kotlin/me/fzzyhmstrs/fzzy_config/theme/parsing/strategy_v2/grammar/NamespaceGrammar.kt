@@ -14,12 +14,9 @@ import me.fzzyhmstrs.fzzy_config.theme.parsing.css.CssType
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.Selector
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.SelectorContext
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.Specificity
-import me.fzzyhmstrs.fzzy_config.theme.parsing.parser.Parser
 import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy_v2.TokenConsumer
-import me.fzzyhmstrs.fzzy_config.theme.parsing.token.Token
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenQueue
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
-import java.util.LinkedList
 import java.util.Optional
 
 
@@ -53,7 +50,7 @@ object NamespaceGrammar: TokenConsumer<Optional<Selector>> {
 
     class InNamespace(private val namespace: String): Selector {
 
-        override fun matches(context: SelectorContext): Boolean {
+        override fun matches(screenContext: Selector.Position, context: SelectorContext): Boolean {
             return context.selectorNamespace() == namespace
         }
 
@@ -68,7 +65,7 @@ object NamespaceGrammar: TokenConsumer<Optional<Selector>> {
 
     data object AnyNamespace: Selector {
 
-        override fun matches(context: SelectorContext): Boolean {
+        override fun matches(screenContext: Selector.Position, context: SelectorContext): Boolean {
             return true
         }
 
@@ -83,7 +80,7 @@ object NamespaceGrammar: TokenConsumer<Optional<Selector>> {
 
     data object NoNamespace: Selector {
 
-        override fun matches(context: SelectorContext): Boolean {
+        override fun matches(screenContext: Selector.Position, context: SelectorContext): Boolean {
             return context.selectorNamespace() == null
         }
 

@@ -52,15 +52,15 @@ class Token<T: Any> private constructor(val type: TokenType<T>, val value: T, pr
     override fun toString(): String {
         return if (value == Unit) {
             if (info != TokenInfo.EMPTY) {
-                "Token($type | $info)"
+                "T($type | $info)"
             } else {
-                "Token($type)"
+                "T($type)"
             }
         } else {
             if (info != TokenInfo.EMPTY) {
-                "Token($type : $value | $info)"
+                "T($type:$value|$info)"
             } else {
-                "Token($type : $value)"
+                "T($type:$value)"
             }
         }
     }

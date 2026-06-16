@@ -13,12 +13,12 @@ package me.fzzyhmstrs.fzzy_config.theme.parsing.strategy_v2.consume
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.CssType
 import me.fzzyhmstrs.fzzy_config.theme.parsing.parser.Parser
 import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy_v2.TokenConsumer
-import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy_v2.consume.ListOfRulesConsumer.Rule
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.Token
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenQueue
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenType
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import java.util.LinkedList
+import java.util.Optional
 
 object AtRuleConsumer: TokenConsumer<Token<*>> {
 
@@ -27,7 +27,6 @@ object AtRuleConsumer: TokenConsumer<Token<*>> {
         val at = queue.poll()
         val identifier = at.value(CssType.AT) ?: return ValidationResult.error(ListOfRulesConsumer.unknownRule(at.line(), at.column()), "Couldn't read an at-rule, opening token wasn't an AT token")
         val prelude: LinkedList<Token<*>> = LinkedList()
-        var value: Token<*> = Token(CssType.EMPTY_RULE, EmptyRule, at.line(), at.column())
         val errors: MutableList<String> = mutableListOf()
         while (queue.canPoll()) {
             val peek = queue.peek()
@@ -38,11 +37,11 @@ object AtRuleConsumer: TokenConsumer<Token<*>> {
                 }
                 CssType.SEMI_COLON -> {
                     queue.poll()
-                    return ValidationResult.predicated(Token(CssType.AT_RULE, AtRule(identifier, prelude, value), at.line(), at.column()), errors.isEmpty(), errors.toString())
+                    return ValidationResult.predicated(Token(CssType.AT_RULE, AtRule(identifier, prelude), at.line(), at.column()), errors.isEmpty(), errors.toString())
                 }
                 CssType.OPEN_BRACE -> {
-                    val sb = SimpleBlockConsumer(CssType.CLOSE_BRACE).consume(queue, args)/*.also { it.writeError(errors) }*/.get()
-                    value = StyleBlockConsumer.consume(sb.valueStrict(CssType.SIMPLE_BLOCK).values, args)/*.also { it.writeError(errors) }*/.get()
+                    val sb = SimpleBlockConsumer(CssType.CLOSE_BRACE).consume(queue, args).also { it.writeError(errors) }.get()
+                    val value = StyleBlockConsumer.consume(sb.valueStrict(CssType.SIMPLE_BLOCK).values, args).also { it.writeError(errors) }.get()
                     return ValidationResult.predicated(Token(CssType.AT_RULE, AtRule(identifier, prelude, value), at.line(), at.column()), errors.isEmpty(), errors.toString())
                 }
                 else -> {
@@ -50,23 +49,19 @@ object AtRuleConsumer: TokenConsumer<Token<*>> {
                         if ((peek.value as SimpleBlockConsumer.Block).type == CssType.OPEN_BRACE) {
                             val sb = queue.poll()
                             val q = sb.valueStrict(CssType.SIMPLE_BLOCK as TokenType<SimpleBlockConsumer.Block>)
-                            value = StyleBlockConsumer.consume(q.values, args)/*.also { it.writeError(errors) }*/.get()
+                            val value = StyleBlockConsumer.consume(q.values, args).also { it.writeError(errors) }.get()
                             return ValidationResult.predicated(Token(CssType.AT_RULE, AtRule(identifier, prelude, value), at.line(), at.column()), errors.isEmpty(), errors.toString())
                         }
                     }
-                    prelude.add(ComponentValueConsumer.consume(queue, args)/*.also { it.writeError(errors) }*/.get())
+                    prelude.add(ComponentValueConsumer.consume(queue, args).also { it.writeError(errors) }.get())
                 }
             }
         }
         return ValidationResult.error(ListOfRulesConsumer.unknownRule(at.line(), at.column()), "Unclosed at-rule [$identifier] encountered")
     }
 
-    data class AtRule(val identifier: String, override val prelude: TokenQueue, override val values: TokenQueue): Rule {
-        constructor(identifier: String, prelude: LinkedList<Token<*>>, value: Token<*>): this(identifier, TokenQueue.Impl(prelude), TokenQueue.single(value))
-    }
-
-    data object EmptyRule: Rule {
-        override val prelude: TokenQueue = TokenQueue.empty()
-        override val values: TokenQueue = TokenQueue.Impl(LinkedList())
+    data class AtRule(val identifier: String, val prelude: TokenQueue, val value: Optional<StyleBlockConsumer.StyleBlock>) {
+        constructor(identifier: String, prelude: LinkedList<Token<*>>, value: StyleBlockConsumer.StyleBlock): this(identifier, TokenQueue.of(prelude), Optional.of(value))
+        constructor(identifier: String, prelude: LinkedList<Token<*>>): this(identifier, TokenQueue.of(prelude), Optional.empty())
     }
 }

@@ -38,7 +38,7 @@ class SimpleBlockConsumer(private val closing: TokenType<*>): TokenConsumer<Toke
                 }
                 closing -> {
                     queue.poll()
-                    val token = Token(CssType.SIMPLE_BLOCK, Block(opening.type, TokenQueue.Impl(componentValues)), opening.line(), opening.column())
+                    val token = Token(CssType.SIMPLE_BLOCK, Block(opening.type, TokenQueue.of(componentValues)), opening.line(), opening.column())
                     return ValidationResult.predicated(token, errors.isEmpty(), errors.toString())
                 }
                 else -> {

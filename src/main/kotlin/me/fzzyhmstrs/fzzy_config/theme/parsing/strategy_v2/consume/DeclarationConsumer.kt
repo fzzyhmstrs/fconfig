@@ -11,10 +11,8 @@
 package me.fzzyhmstrs.fzzy_config.theme.parsing.strategy_v2.consume
 
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.CssType
-import me.fzzyhmstrs.fzzy_config.theme.parsing.parser.Parser
 import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy_v2.TokenConsumer
 import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy_v2.TokenConsumer.Companion.ERROR
-import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy_v2.consume.SimpleBlockConsumer.Block
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.Token
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenQueue
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
@@ -34,7 +32,7 @@ object DeclarationConsumer: TokenConsumer<Token<*>> {
         queue.consumeWhitespace()
         if (!queue.canPoll()) return ValidationResult.error(ERROR, "Empty declaration for [$identifier]")
         while (queue.canPoll()) {
-            componentValues.add(ComponentValueConsumer.consume(queue, args)/*.also { it.writeError(errors) }*/.get())
+            componentValues.add(ComponentValueConsumer.consume(queue, args).also { it.writeError(errors) }.get())
         }
         println(componentValues)
         var important = false
@@ -58,7 +56,7 @@ object DeclarationConsumer: TokenConsumer<Token<*>> {
         }
         val isImportant = important && bang
 
-        return ValidationResult.predicated(Token(CssType.DECLARATION, Declaration(identifier.asString(), TokenQueue.Impl(componentValues), isImportant), identifier.line(), identifier.column()), errors.isEmpty(), errors.toString())
+        return ValidationResult.predicated(Token(CssType.DECLARATION, Declaration(identifier.asString(), TokenQueue.of(componentValues), isImportant), identifier.line(), identifier.column()), errors.isEmpty(), errors.toString())
     }
 
     data class Declaration(val identifier: String, val values: TokenQueue, val important: Boolean)

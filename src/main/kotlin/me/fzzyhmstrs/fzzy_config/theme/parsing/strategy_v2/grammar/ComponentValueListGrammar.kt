@@ -30,13 +30,13 @@ object ComponentValueListGrammar: TokenConsumer<List<TokenQueue>> {
             when (peek.type) {
                 CssType.COMMA -> {
                     queue.poll()
-                    val q = TokenQueue.Impl(currentList)
+                    val q = TokenQueue.of(currentList)
                     queues.add(q)
                     currentList = LinkedList()
                 }
                 Parser.EOF -> {
                     queue.poll()
-                    val q = TokenQueue.Impl(currentList)
+                    val q = TokenQueue.of(currentList)
                     queues.add(q)
                     return ValidationResult.success(queues)
                 }

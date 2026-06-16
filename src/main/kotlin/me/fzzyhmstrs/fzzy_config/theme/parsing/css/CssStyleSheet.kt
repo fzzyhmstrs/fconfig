@@ -11,12 +11,13 @@
 package me.fzzyhmstrs.fzzy_config.theme.parsing.css
 
 import me.fzzyhmstrs.fzzy_config.theme.parsing.ParsePrinter
+import me.fzzyhmstrs.fzzy_config.theme.parsing.css.rule.Ruleset
 import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy_v2.consume.AtRuleConsumer
 import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy_v2.consume.QualifiedRuleConsumer
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.Token
 import java.util.function.Consumer
 
-class CssStyleSheet(private val atRules: List<AtRuleConsumer.AtRule>, private val qualifiedRules: List<QualifiedRuleConsumer.QualifiedRule>): ParsePrinter {
+class CssStyleSheet(private val rules: List<Ruleset>, private val children: List<CssStyleSheet>): ParsePrinter {
 
     val size: Int
         get() {

@@ -11,9 +11,10 @@
 package me.fzzyhmstrs.fzzy_config.theme.parsing.css
 
 /**
- * Only class a selector context provider *needs* to have support for is type
+ * Only class a selector context provider *needs* to have support for is type and the scope for StyleSheet filtering
  */
 interface SelectorContext {
+    fun selectorScope(): String
     fun selectorType(): String
     fun selectorNamespace(): String? {
         return null

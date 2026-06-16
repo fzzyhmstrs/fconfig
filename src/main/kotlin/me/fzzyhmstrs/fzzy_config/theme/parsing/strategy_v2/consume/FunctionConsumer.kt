@@ -39,7 +39,7 @@ object FunctionConsumer: TokenConsumer<Token<*>> {
                 }
                 CssType.CLOSE_PARENTHESIS -> {
                     queue.poll()
-                    val token = Token(CssType.FUNCTION_CONSUMED, Function(identifier.value as String, TokenQueue.Impl(componentValues)), identifier.line(), identifier.column())
+                    val token = Token(CssType.FUNCTION_CONSUMED, Function(identifier.value as String, TokenQueue.of(componentValues)), identifier.line(), identifier.column())
                     return ValidationResult.predicated(token, errors.isEmpty(), errors.toString())
                 }
                 else -> {

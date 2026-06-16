@@ -24,7 +24,6 @@ object QualifiedRuleConsumer: TokenConsumer<Token<*>> {
     override fun consume(queue: TokenQueue, args: Set<String>): ValidationResult<Token<*>> {
         if (!queue.canPoll()) return ValidationResult.error(ListOfRulesConsumer.unknownRule(0, 0), "Couldn't read a qualified-rule from an exhausted queue")
         val prelude: LinkedList<Token<*>> = LinkedList()
-        val value: Token<*>
         val errors: MutableList<String> = mutableListOf()
         val initial = queue.peek()
         while (queue.canPoll()) {
@@ -36,14 +35,14 @@ object QualifiedRuleConsumer: TokenConsumer<Token<*>> {
                 }
                 CssType.OPEN_BRACE -> {
                     val sb = SimpleBlockConsumer(CssType.CLOSE_BRACE).consume(queue, args)/*.also { it.writeError(errors) }*/.get()
-                    value = StyleBlockConsumer.consume(sb.valueStrict(CssType.SIMPLE_BLOCK).values, args)/*.also { it.writeError(errors) }*/.get()
+                    val value = StyleBlockConsumer.consume(sb.valueStrict(CssType.SIMPLE_BLOCK).values, args)/*.also { it.writeError(errors) }*/.get()
                     return ValidationResult.predicated(Token(CssType.QUALIFIED_RULE, QualifiedRule(prelude, value), initial.line(), initial.column()), errors.isEmpty(), errors.toString())
                 }
                 else -> {
                     if (peek.type == CssType.SIMPLE_BLOCK && (peek.value as SimpleBlockConsumer.Block).type == CssType.OPEN_BRACE) {
                         val sb = queue.poll()
                         val q = sb.valueStrict(CssType.SIMPLE_BLOCK as TokenType<SimpleBlockConsumer.Block>)
-                        value = StyleBlockConsumer.consume(q.values, args)/*.also { it.writeError(errors) }*/.get()
+                        val value = StyleBlockConsumer.consume(q.values, args)/*.also { it.writeError(errors) }*/.get()
                         return ValidationResult.predicated(Token(CssType.QUALIFIED_RULE, QualifiedRule(prelude, value), initial.line(), initial.column()), errors.isEmpty(), errors.toString())
                     }
                     prelude.add(ComponentValueConsumer.consume(queue, args)/*.also { it.writeError(errors) }*/.get())
@@ -53,7 +52,7 @@ object QualifiedRuleConsumer: TokenConsumer<Token<*>> {
         return ValidationResult.error(ListOfRulesConsumer.unknownRule(initial.line(), initial.column()), "Unclosed qualified-rule encountered")
     }
 
-    data class QualifiedRule(override val prelude: TokenQueue, override val values: TokenQueue): ListOfRulesConsumer.Rule {
-        constructor(prelude: LinkedList<Token<*>>, value: Token<*>): this(TokenQueue.Impl(prelude), TokenQueue.single(value))
+    data class QualifiedRule(val prelude: TokenQueue, val value: StyleBlockConsumer.StyleBlock) {
+        constructor(prelude: LinkedList<Token<*>>, value: StyleBlockConsumer.StyleBlock): this(TokenQueue.of(prelude), value)
     }
 }

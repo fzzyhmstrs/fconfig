@@ -18,24 +18,25 @@ import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenQueue
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import java.util.*
 
-object StyleBlockConsumer: TokenConsumer<Token<*>> {
+object StyleBlockConsumer: TokenConsumer<StyleBlockConsumer.StyleBlock> {
 
-    override fun consume(queue: TokenQueue, args: Set<String>): ValidationResult<Token<*>> {
+    override fun consume(queue: TokenQueue, args: Set<String>): ValidationResult<StyleBlock> {
         val (line, col) = if (!queue.canPoll()) 0 to 0 else queue.peek().line() to queue.peek().column()
         val declarations: LinkedList<Token<*>> = LinkedList()
         val rules: LinkedList<Token<*>> = LinkedList()
         val errors: MutableList<String> = mutableListOf()
         while (queue.canPoll()) {
             val peek = queue.peek()
+
             when (peek.type) {
                 CssType.WHITESPACE, Parser.EOL -> {
                     queue.poll()
                 }
                 Parser.EOF -> {
-                    return ValidationResult.predicated(Token(CssType.STYLE_BLOCK, StyleBlock(declarations, rules), line, col), errors.isEmpty(), errors.toString())
+                    return ValidationResult.predicated(StyleBlock(declarations, rules), errors.isEmpty(), errors.toString())
                 }
                 CssType.AT -> {
-                    rules.add(AtRuleConsumer.consume(queue, args)/*.also { it.writeError(errors) }*/.get())
+                    rules.add(AtRuleConsumer.consume(queue, args).also { it.writeError(errors) }.get())
                 }
                 CssType.IDENT -> {
                     queue.sliceTo({ peek2 ->
@@ -44,6 +45,7 @@ object StyleBlockConsumer: TokenConsumer<Token<*>> {
                             else -> false
                         }
                     }, { queue2 ->
+                        //println("Slice is: $queue2")
                         val decl = DeclarationConsumer.consume(queue2, args)
                         if (decl.isError()) {
                             errors.add(decl.getError())
@@ -74,7 +76,7 @@ object StyleBlockConsumer: TokenConsumer<Token<*>> {
                             queue.poll()
                             break
                         } else if (peek2.type == Parser.EOF) {
-                            return ValidationResult.error(Token(CssType.STYLE_BLOCK, StyleBlock(declarations, rules), line, col), errors.toString())
+                            return ValidationResult.error(StyleBlock(declarations, rules), errors.toString())
                         } else {
                             val f2 = queue.poll()
                             if (f2.message().isNotEmpty()) {
@@ -85,10 +87,10 @@ object StyleBlockConsumer: TokenConsumer<Token<*>> {
                 }
             }
         }
-        return ValidationResult.predicated(Token(CssType.STYLE_BLOCK, StyleBlock(TokenQueue.Impl(declarations), TokenQueue.Impl(rules)), line, col), errors.isEmpty(), errors.toString())
+        return ValidationResult.predicated(StyleBlock(TokenQueue.of(declarations), TokenQueue.of(rules)), errors.isEmpty(), errors.toString())
     }
 
     data class StyleBlock(val declarations: TokenQueue, val rules: TokenQueue) {
-        constructor(declarations: LinkedList<Token<*>>, rules: LinkedList<Token<*>>): this(TokenQueue.Impl(declarations), TokenQueue.Impl(rules))
+        constructor(declarations: LinkedList<Token<*>>, rules: LinkedList<Token<*>>): this(TokenQueue.of(declarations), TokenQueue.of(rules))
     }
 }
