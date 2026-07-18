@@ -23,6 +23,7 @@ import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.Shorthand.validated
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedList
+import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedSet
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIngredient
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedTagKey
@@ -56,6 +57,7 @@ class TestConfigImpl: Config(Identifier.of("fzzy_config_test","test_config"), su
 
     var section1 = TestSectionImpl()
     class TestSectionImpl: ConfigSection() {
+        var testSet: ValidatedSet<Int> = ValidatedInt(1).toSet(1, 2, 3)
         @ValidatedFloat.Restrict(-500f, 500f)
         var float1 = 1f
         @RequiresRestart
