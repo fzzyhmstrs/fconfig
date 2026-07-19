@@ -177,6 +177,12 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
         return validator.validateEntry(input, type)
     }
 
+    @Internal
+    override fun trySetFromString(input: String?) {
+        if (input == null) return
+        trySet(Identifier.tryParse(input))
+    }
+
     /**
      * creates a deep copy of this ValidatedIdentifier
      * @return ValidatedIdentifier wrapping a deep copy of the currently stored identifier, as well as this validations validator
