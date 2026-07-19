@@ -10,7 +10,6 @@
 
 package me.fzzyhmstrs.fzzy_config.validation
 
-import com.ibm.icu.impl.CurrencyData.provider
 import com.mojang.serialization.Codec
 import com.mojang.serialization.DataResult
 import me.fzzyhmstrs.fzzy_config.entry.Entry
@@ -37,16 +36,20 @@ import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.TranslatableEntry
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.also
-import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.ofMutable
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.outmap
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.predicated
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
+import me.fzzyhmstrs.fzzy_config.validation.ValidatedField.Companion.attachProvider
+import me.fzzyhmstrs.fzzy_config.validation.ValidatedField.Companion.descriptionProvider
+import me.fzzyhmstrs.fzzy_config.validation.ValidatedField.Companion.translationProvider
+import me.fzzyhmstrs.fzzy_config.validation.ValidatedField.Companion.withListener
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedList
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedSet
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedCondition
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedCondition.*
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedMapped
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedPair
+import net.minecraft.client.MinecraftClient
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
@@ -339,6 +342,10 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
         }
     }
 
+    protected open fun trySetFromString(input: String?) {
+        trySet(input)
+    }
+
     override fun trySetQuiet(input: Any?) {
         try {
             @Suppress("UNCHECKED_CAST")
@@ -626,11 +633,17 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
     protected open fun contextActionBuilder(context: EntryCreator.CreatorContext): MutableMap<String, MutableMap<ContextType, ContextAction.Builder>> {
         val map: MutableMap<ContextType, ContextAction.Builder> = mutableMapOf()
         val copy = ContextAction.Builder("fc.button.copy".translate()) {
+            ConfigApiImpl.setClipboard(this.get())
             context.misc.get(EntryCreators.COPY_BUFFER)?.set(this.get())
             true }
             .icon(TextureDeco.CONTEXT_COPY)
         val paste = ContextAction.Builder("fc.button.paste".translate()) {
-            context.misc.get(EntryCreators.COPY_BUFFER)?.get()?.let { this.trySet(it) }
+            val p1 = context.misc.get(EntryCreators.COPY_BUFFER)?.get()
+            if (isValidEntry(p1)) {
+                this.trySet(p1)
+            } else {
+                ConfigApiImpl.getClipboard().let { this.trySetFromString(it) }
+            }
             true }
             .active { this.isValidEntry(context.misc.get(EntryCreators.COPY_BUFFER)?.get()) }
             .icon(TextureDeco.CONTEXT_PASTE)
