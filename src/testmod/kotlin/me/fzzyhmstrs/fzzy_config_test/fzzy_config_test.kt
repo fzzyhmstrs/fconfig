@@ -31,6 +31,7 @@ import me.fzzyhmstrs.fzzy_config_test.loot.ConfigLootNumberProvider
 import me.fzzyhmstrs.fzzy_config_test.test.TestConfig
 import me.fzzyhmstrs.fzzy_config_test.test.TestConfig.gson
 import me.fzzyhmstrs.fzzy_config_test.test.TestConfigClient
+import me.fzzyhmstrs.fzzy_config_test.test.TestConfigImpl
 import me.fzzyhmstrs.fzzy_config_test.test.TestConfigImplAny
 import me.fzzyhmstrs.fzzy_config_test.test.TestLateConfigImpl
 import me.fzzyhmstrs.fzzy_config_test.test.screen.TestPopupScreen
@@ -69,7 +70,7 @@ object FC: ModInitializer {
     }
 
     @Translatable.Name("Test Status 1")
-    val TEST_STATUS_1 = TEST_REGISTRAR.register("test_1") { object: StatusEffect(StatusEffectCategory.NEUTRAL, 0xFFFFFF){} }
+    val TEST_STATUS_1 = TEST_REGISTRAR.register("test_1") { TestStatusEffect() }
     @Translatable.Name("Test Status 2")
     val TEST_STATUS_2 = TEST_REGISTRAR.register("test_2") { object: StatusEffect(StatusEffectCategory.NEUTRAL, 0xFFFFFF){} }
     @Translatable.Name("Test Direct Status")
@@ -156,7 +157,7 @@ object FC: ModInitializer {
             testObj.add(key, JsonPrimitive(value))
         }
 
-        ConfigApi.buildTranslations(TestConfigImplAny::class, Identifier.of("fzzy_config_test","test_config_any"), lang, true, ::add)
+        ConfigApi.buildTranslations(TestConfigImpl::class, Identifier.of("fzzy_config_test","test_config"), lang, true, ::add)
 
         LOGGER.info("Test translation for $lang")
         LOGGER.info(gson.toJson(testObj))
@@ -206,6 +207,10 @@ object FC: ModInitializer {
             other.tests += tests
             other.fails += fails
         }
+    }
+
+    class TestStatusEffect(): StatusEffect(StatusEffectCategory.NEUTRAL, 0xFFFFFF) {
+
     }
 }
 
