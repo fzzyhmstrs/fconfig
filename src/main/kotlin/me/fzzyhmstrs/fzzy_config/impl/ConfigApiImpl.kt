@@ -119,6 +119,17 @@ internal object ConfigApiImpl {
     private val walkableClass = Walkable::class
     private val entryDelegateClass = EntryDelegate::class
 
+    internal fun setClipboard(value: Any?) {
+        if (isClient)
+            ConfigApiImplClient.setClipboard(value)
+    }
+
+    internal fun getClipboard(): String? {
+        if (isClient)
+            return ConfigApiImplClient.getClipboard()
+        return null
+    }
+
     internal fun openScreen(scope: String) {
         if (isClient)
             ConfigApiImplClient.openScreen(scope)
