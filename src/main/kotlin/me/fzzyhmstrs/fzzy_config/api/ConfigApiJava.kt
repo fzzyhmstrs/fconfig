@@ -21,6 +21,7 @@ import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.event.api.EventApi
 import me.fzzyhmstrs.fzzy_config.event.impl.EventApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
+import me.fzzyhmstrs.fzzy_config.impl.TranslationImpl
 import me.fzzyhmstrs.fzzy_config.networking.api.NetworkApi
 import me.fzzyhmstrs.fzzy_config.networking.impl.NetworkApiImpl
 import me.fzzyhmstrs.fzzy_config.result.api.ResultApiJava
@@ -218,7 +219,7 @@ object ConfigApiJava {
      */
     @JvmStatic
     fun <T: Any> buildTranslations(jClass: Class<T>, id: Identifier, lang: String, logWarnings: Boolean, builder: BiConsumer<String, String>) {
-        ConfigApiImpl.buildTranslations(jClass, id, lang, builder, logWarnings)
+        TranslationImpl.buildTranslations(jClass, id, lang, builder, logWarnings)
     }
 
     /**
