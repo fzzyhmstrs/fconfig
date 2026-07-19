@@ -36,9 +36,9 @@ interface Registrar<T> {
      * Registers a game object. On fabric, will use direct registration. On (Neo)Forge, will use deferred registration under the hood.
      * @param name The id path of the object. The namespace is supplied when creating the registrar.
      * @author fzzyhmstrs
-     * @since 0.5.9
+     * @since 0.5.9, updated generic approach 0.7.7
      */
-    fun register(name: String, entrySupplier: Supplier<out T>): RegistrySupplier<T>
+    fun <F: T> register(name: String, entrySupplier: Supplier<F>): RegistrySupplier<F>
 
     /**
      * Returns the registry instance this registrar was linked to
