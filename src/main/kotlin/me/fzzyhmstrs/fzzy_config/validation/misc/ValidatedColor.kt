@@ -261,6 +261,16 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
         validateAndSet(get().fromInt(colorInt))
     }
 
+    @Internal
+    override fun trySetFromString(input: String?) {
+        if (input == null) return
+        try {
+            setAndUpdate(get().fromInt(Integer.parseUnsignedInt(input, 16)))
+        } catch (e: Exception) {
+            //noop
+        }
+    }
+
     /**
      * returns ARGB color int representing this color
      * @return Int - ARGB formatted integer storing this color
