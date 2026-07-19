@@ -20,6 +20,8 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomPressableWidget
 import me.fzzyhmstrs.fzzy_config.simpleId
 import me.fzzyhmstrs.fzzy_config.util.FcText
+import me.fzzyhmstrs.fzzy_config.util.PortingUtils.isShiftDown
+import me.fzzyhmstrs.fzzy_config.util.StringReader
 import me.fzzyhmstrs.fzzy_config.util.TomlOps
 import me.fzzyhmstrs.fzzy_config.util.TriState
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
@@ -27,7 +29,6 @@ import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.attachTo
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.map
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.input.KeyCodes
 import net.minecraft.text.MutableText
@@ -159,6 +160,51 @@ open class ValidatedKeybind(defaultValue: FzzyKeybind): ValidatedField<FzzyKeybi
             FzzyKeybindUnbound -> {
                 return ValidationResult.success(TomlLiteral("unbound"))
             }
+        }
+    }
+
+    @Internal
+    override fun trySetFromString(input: String?) {
+        if (input == null) return
+        val reader = StringReader(input)
+        var spaceIndex = reader.peekTo { it == ' '|| it == '+' || it == '-' }
+        var key2Int = key2int.get()
+        if (key2Int.isNullOrEmpty()) {
+            key2Int = initKey2Int()
+        }
+        if (spaceIndex == null) {
+            val key = input.lowercase()
+            val int = key2Int[key] ?: return
+            val type = if (int in 0..7) ContextInput.MOUSE else ContextInput.KEYBOARD
+            trySet(FzzyKeybindSimple(int, type, ctrl = false, shift = false, alt = false))
+            return
+        }
+        var ctrl: Boolean = false
+        var shift: Boolean = false
+        var alt: Boolean = false
+        while(spaceIndex != null) {
+            val fragment = reader.readTo(spaceIndex - 1).trim()
+            if (fragment.isEmpty() || fragment == "+" || fragment == "-") {
+                spaceIndex = reader.peekTo { it == ' ' }
+                continue
+            }
+            val key = input.lowercase()
+            val int = key2Int[key] ?: return
+            if (int == GLFW.GLFW_KEY_LEFT_CONTROL || int == GLFW.GLFW_KEY_RIGHT_CONTROL) {
+                ctrl = true
+                spaceIndex = reader.peekTo { it == ' ' }
+                continue
+            } else if (int == GLFW.GLFW_KEY_LEFT_SHIFT || int == GLFW.GLFW_KEY_RIGHT_SHIFT) {
+                shift = true
+                spaceIndex = reader.peekTo { it == ' ' }
+                continue
+            } else if (int == GLFW.GLFW_KEY_LEFT_ALT || int == GLFW.GLFW_KEY_RIGHT_ALT) {
+                alt = true
+                spaceIndex = reader.peekTo { it == ' ' }
+                continue
+            }
+            val type = if (int in 0..7) ContextInput.MOUSE else ContextInput.KEYBOARD
+            trySet(FzzyKeybindSimple(int, type, ctrl, shift, alt))
         }
     }
 
@@ -313,7 +359,7 @@ open class ValidatedKeybind(defaultValue: FzzyKeybind): ValidatedField<FzzyKeybi
         override fun onPress() {
             resetting = true
             justCLickedToggle = true
-            if (Screen.hasShiftDown() && this@ValidatedKeybind.storedValue != FzzyKeybindUnbound) {
+            if (isShiftDown() && this@ValidatedKeybind.storedValue != FzzyKeybindUnbound) {
                 justClickedShift = true
                 compounding = true
             }
@@ -665,6 +711,10 @@ open class ValidatedKeybind(defaultValue: FzzyKeybind): ValidatedField<FzzyKeybi
                 "slash"           to GLFW.GLFW_KEY_SLASH,
                 "space"           to GLFW.GLFW_KEY_SPACE,
                 "tab"             to GLFW.GLFW_KEY_TAB,
+                "alt"             to GLFW.GLFW_KEY_LEFT_ALT,
+                "control"         to GLFW.GLFW_KEY_LEFT_CONTROL,
+                "ctrl"            to GLFW.GLFW_KEY_LEFT_CONTROL,
+                "shift"           to GLFW.GLFW_KEY_LEFT_SHIFT,
                 "left.alt"        to GLFW.GLFW_KEY_LEFT_ALT,
                 "left.control"    to GLFW.GLFW_KEY_LEFT_CONTROL,
                 "left.shift"      to GLFW.GLFW_KEY_LEFT_SHIFT,
