@@ -58,6 +58,11 @@ open class ValidatedBoolean(defaultValue: Boolean): ValidatedField<Boolean>(defa
         return ValidationResult.success(TomlLiteral(input))
     }
 
+    @Internal
+    override fun trySetFromString(input: String?) {
+        trySet(input?.lowercase()?.toBooleanStrictOrNull())
+    }
+
     /**
      * creates a deep copy of this ValidatedBoolean
      * return ValidatedBoolean wrapping the current boolean value
