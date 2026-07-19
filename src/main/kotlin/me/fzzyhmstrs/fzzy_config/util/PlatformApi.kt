@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.util
 
 import me.fzzyhmstrs.fzzy_config.annotations.Comment
+import me.fzzyhmstrs.fzzy_config.util.platform.Platform
 import me.fzzyhmstrs.fzzy_config.util.platform.Registrar
 import me.fzzyhmstrs.fzzy_config.util.platform.RegistryBuilder
 import net.minecraft.registry.Registry
@@ -123,4 +124,12 @@ interface PlatformApi {
      * @since 0.6.3
      */
     fun testVersion(id: String, version: String): Optional<Int>
+
+    /**
+     * Provides what platform the game is running on
+     * @return [Platform] that the game is running on
+     * @author fzzyhmstrs
+     * @since 0.7.7
+     */
+    fun platform(): Platform
 }
