@@ -13,6 +13,7 @@ package me.fzzyhmstrs.fzzy_config.util.platform.impl
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.util.PlatformApi
 import me.fzzyhmstrs.fzzy_config.util.Translatable
+import me.fzzyhmstrs.fzzy_config.util.platform.Platform
 import me.fzzyhmstrs.fzzy_config.util.platform.Registrar
 import me.fzzyhmstrs.fzzy_config.util.platform.RegistryBuilder
 import me.fzzyhmstrs.fzzy_config.util.platform.RegistrySupplier
@@ -62,6 +63,10 @@ internal object PlatformApiImpl: PlatformApi {
         return RegistryBuilderImpl(namespace)
     }
 
+    override fun <T : Any> buildRegistryTranslations(obj: T, prefix: String, lang: String, logWarnings: Boolean, builder: BiConsumer<String, String>) {
+        buildRegistryTranslations(obj, prefix, lang, builder, logWarnings)
+    }
+
     override fun testVersion(id: String, version: String): Optional<Int> {
         return try {
             ModList.get().getModContainerById(id).map { container ->
@@ -74,8 +79,8 @@ internal object PlatformApiImpl: PlatformApi {
         }
     }
 
-    override fun <T : Any> buildRegistryTranslations(obj: T, prefix: String, lang: String, logWarnings: Boolean, builder: BiConsumer<String, String>) {
-        buildRegistryTranslations(obj, prefix, lang, builder, logWarnings)
+    override fun platform(): Platform {
+        return Platform.FABRIC
     }
 
     private val regSupplierClass = RegistrySupplier::class.java
