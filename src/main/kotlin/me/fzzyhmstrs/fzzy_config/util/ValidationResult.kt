@@ -200,6 +200,18 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
     }
 
     /**
+     * Gets the wrapped result value if the result is valid, otherwise returns null
+     *
+     * @return T, nullable. The result being wrapped and passed by this ValidationResult if it is valid. Null otherwise.
+     * @author fzzyhmstrs
+     * @since 0.7.7
+     */
+    fun getOrNull(): T? {
+        if (isError()) return null
+        return get()
+    }
+
+    /**
      * Writes an error log to console if this validation result is errored
      *
      * @param errors List<String> of secondary errors to add to the log
