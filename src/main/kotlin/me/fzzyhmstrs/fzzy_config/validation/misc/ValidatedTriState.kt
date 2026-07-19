@@ -66,6 +66,16 @@ open class ValidatedTriState @JvmOverloads constructor(defaultValue: TriState, p
     }
 
     @Internal
+    override fun trySetFromString(input: String?) {
+        if (input == null) return
+        try {
+            setAndUpdate(TriState.valueOf(input.uppercase()))
+        } catch (e: Exception) {
+            //noop
+        }
+    }
+
+    @Internal
     //client
     override fun widgetEntry(choicePredicate: ChoiceValidator<TriState>): ClickableWidget {
         return when(widgetType) {
