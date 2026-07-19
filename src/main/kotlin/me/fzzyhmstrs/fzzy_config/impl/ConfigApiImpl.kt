@@ -114,10 +114,8 @@ internal object ConfigApiImpl {
 
     internal const val MAX_CONFIG_SERIALIZATION_LENGTH = Int.MAX_VALUE
 
-    private val configClass = Config::class
-    private val configSectionClass = ConfigSection::class
-    private val walkableClass = Walkable::class
-    private val entryDelegateClass = EntryDelegate::class
+    internal val configClass = Config::class
+    internal val configSectionClass = ConfigSection::class
 
     internal fun setClipboard(value: Any?) {
         if (isClient)
@@ -1108,144 +1106,6 @@ internal object ConfigApiImpl {
         } catch (_: Throwable) {
             null
         }
-    }
-
-    @Deprecated("Move by 0.8.0")
-    internal fun <T: Any> buildTranslations(jclazz: Class<T>, id: Identifier, lang: String, builder: BiConsumer<String, String>, logWarnings: Boolean = true) {
-        buildTranslations(jclazz.kotlin, id, lang, builder, logWarnings)
-    }
-
-    @Deprecated("Move by 0.8.0")
-    internal fun <T: Any> buildTranslations(clazz: KClass<T>, id: Identifier, lang: String, builder: BiConsumer<String, String>, logWarnings: Boolean = true) {
-        buildTranslations(clazz, id.toTranslationKey(), lang, builder, logWarnings)
-    }
-
-    @Deprecated("Move by 0.8.0")
-    private fun buildTranslations(clazz: KClass<*>, prefix: String, lang: String, builder: BiConsumer<String, String>, logWarnings: Boolean, keyComposer: (String, String) -> String = { a, b -> "$a.$b" }) {
-
-        try {
-            val orderById =
-                clazz.java.declaredFields.filter { !isTransient(it.modifiers) }.withIndex().associate { it.value.name to it.index }.toMutableMap()
-            for (sup in clazz.allSuperclasses) {
-                if (sup == configClass) continue //ignore Config itself, as that has state we don't need
-                if (sup == configSectionClass) continue //ignore ConfigSection itself, as that has state we don't need
-                orderById.putAll(sup.java.declaredFields.filter { !isTransient(it.modifiers) }.withIndex().associate { it.value.name to it.index })
-            }
-
-            val props = clazz.memberProperties.filter {
-                it is KMutableProperty<*> && !isTransient(it.javaField?.modifiers ?: Modifier.TRANSIENT)
-            }.sortedBy { orderById[it.name] }
-
-            FC.LOGGER.info("Building $lang entries for ${clazz.simpleName} @ $prefix")
-
-            //base config lang itself
-            val clazzAnnotations = clazz.annotations
-            val clazzPrefix = clazzPrefix(prefix, clazzAnnotations)
-            if (configClass.java.isAssignableFrom(clazz.java))
-                applyTranslation(clazzPrefix, clazzAnnotations, lang, builder, logWarnings)
-
-            for (prop in props) {
-                try {
-                    val name = prop.name
-                    val annotations = prop.annotations
-                    val propPrefix = getPrefix(prefix, annotations, clazzAnnotations)
-                    val key = keyComposer(propPrefix, name)
-                    applyTranslation(key, annotations, lang, builder, logWarnings)
-                    val propClass = prop.javaField?.type
-                    if (propClass != null && (configSectionClass.java.isAssignableFrom(propClass) || walkableClass.java.isAssignableFrom(propClass))) {
-                        //burrow into sections and walkables
-                        buildTranslations(propClass.kotlin, key, lang, builder, logWarnings)
-                    } else if (propClass != null && entryDelegateClass.java.isAssignableFrom(propClass)) {
-                        try {
-                            val instance = clazz.constructors.singleOrNull { it.parameters.all(KParameter::isOptional) }?.callBy(emptyMap())
-                            if (instance == null) {
-                                FC.LOGGER.error("Delegate validation [$key] found in config without empty constructor. Fzzy Config won't be able to apply translations")
-                                continue
-                            }
-                            val thing = prop.cast<KMutableProperty1<Any, *>>().get(instance) as? EntryDelegate
-                            thing?.delegateClass()?.let {
-                                buildTranslations(it, key, lang, builder, logWarnings)
-                            }
-                        } catch (e: Exception) {
-                            FC.LOGGER.error("Exception while building translations for delegate validation [$key]", e)
-                        }
-                    }
-                } catch (e: Exception) {
-                    FC.LOGGER.error("Critical error building translation for ${prop.name} in ${clazz.simpleName}", e)
-                }
-            }
-        } catch (e: Exception) {
-            FC.LOGGER.error("Exception while building translations for ${clazz.simpleName}", e)
-        }
-    }
-
-    @Deprecated("Move by 0.8.0")
-    private fun applyTranslation(key: String, annotations: List<Annotation>, lang: String, builder: BiConsumer<String, String>, logWarnings: Boolean) {
-        annotations.filterIsInstance<Translatable.Name>().firstOrNull { it.lang == lang }.also {
-            if (it == null) FC.LOGGER.error("  No $lang name entry for $key")
-        }?.apply {
-            builder.accept(key, value)
-        }
-        annotations.filterIsInstance<Translatable.Desc>().firstOrNull { it.lang == lang }.also {
-            if (it == null) {
-                val comment = annotations.firstNotNullOfOrNull { a -> a.nullCast<Comment>() }
-                if (comment != null && lang == "en_us") {
-                    builder.accept("$key.desc", comment.value)
-                } else {
-                    val tomlComment = annotations.firstNotNullOfOrNull { a -> a.nullCast<TomlComment>() }
-                    if (tomlComment != null && lang == "en_us") {
-                        builder.accept("$key.desc", tomlComment.text)
-                    } else if (logWarnings) {
-                        FC.LOGGER.warn("  No $lang description entry for $key")
-                    }
-                }
-            }
-        }?.apply {
-            builder.accept("$key.desc", value)
-        }
-        annotations.filterIsInstance<Translatable.Prefix>().firstOrNull { it.lang == lang }.also {
-            if (it == null && logWarnings) FC.LOGGER.warn("  No $lang prefix entry for $key")
-        }?.apply {
-            builder.accept("$key.prefix", value)
-        }
-    }
-
-    @Deprecated("Move by 0.8.0")
-    private fun getPrefix(basePrefix: String, annotations: List<Annotation>, globalAnnotations: List<Annotation>): String {
-        for (annotation in annotations) {
-            if (annotation is Translation) {
-                for (ga in globalAnnotations) {
-                    if (ga is Translation) {
-                        return if (ga.negate) {
-                            basePrefix
-                        } else {
-                            annotation.prefix
-                        }
-                    }
-                }
-                return if (annotation.negate) {
-                    basePrefix
-                } else {
-                    annotation.prefix
-                }
-            }
-        }
-        for (ga in globalAnnotations) {
-            if (ga is Translation && !ga.negate) {
-                return ga.prefix
-            }
-        }
-        return basePrefix
-    }
-
-    @Deprecated("Move by 0.8.0")
-    private fun clazzPrefix(basePrefix: String, globalAnnotations: List<Annotation>): String {
-        for (ga in globalAnnotations) {
-            if (ga is Translation && !ga.negate) {
-                return ga.prefix
-            }
-        }
-        return basePrefix
     }
 
     ///////////////// END Utilities //////////////////////////////////////////////////////
