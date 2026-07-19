@@ -132,6 +132,12 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
         return true
     }
 
+    override fun trySetFromString(input: String?) {
+        if (input == null) return
+        val d = input.toDoubleOrNull() ?: return
+        trySet(convert(d).getOrNull() ?: return)
+    }
+
     @Internal
     protected abstract fun minBound(): T
 
