@@ -23,7 +23,7 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomPressableWidget
 import me.fzzyhmstrs.fzzy_config.simpleId
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.PortingUtils.isShiftDown
-import me.fzzyhmstrs.fzzy_config.util.StringReader
+import me.fzzyhmstrs.fzzy_config.util.style.StringReader
 import me.fzzyhmstrs.fzzy_config.util.TomlOps
 import me.fzzyhmstrs.fzzy_config.util.TriState
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
