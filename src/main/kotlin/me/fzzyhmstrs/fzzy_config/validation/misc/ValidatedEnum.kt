@@ -97,6 +97,12 @@ open class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, 
     }
 
     @Internal
+    override fun trySetFromString(input: String?) {
+        if (input == null) return
+        trySet(valuesMap[input])
+    }
+
+    @Internal
     //client
     override fun widgetEntry(choicePredicate: ChoiceValidator<T>): ClickableWidget {
         return when(widgetType) {
