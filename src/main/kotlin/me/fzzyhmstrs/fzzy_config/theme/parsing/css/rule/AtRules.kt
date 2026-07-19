@@ -12,6 +12,12 @@ package me.fzzyhmstrs.fzzy_config.theme.parsing.css.rule
 
 object AtRules {
 
-    fun register(identifier: String, )
+    fun register(identifier: String, ruleContext: RuleContext, )
 
+
+    enum class RuleContext(val topLevel: Boolean, val nested: Boolean) {
+        TOP_LEVEL(true, false),
+        NESTED(true, false),
+        BOTH(true, true)
+    }
 }

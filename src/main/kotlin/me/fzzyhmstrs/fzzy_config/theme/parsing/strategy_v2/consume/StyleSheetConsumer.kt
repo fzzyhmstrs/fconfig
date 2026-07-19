@@ -33,6 +33,7 @@ object StyleSheetConsumer: TokenConsumer<Optional<CssStyleSheet>> {
                 qualifiedRules.add(rule.valueStrict(CssType.QUALIFIED_RULE))
             }
         }
+
         return ValidationResult.success(Optional.of(CssStyleSheet(atRules, qualifiedRules)))
     }
 }

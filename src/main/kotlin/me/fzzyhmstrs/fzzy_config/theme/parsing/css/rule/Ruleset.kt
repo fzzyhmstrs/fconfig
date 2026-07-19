@@ -18,6 +18,7 @@ import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy_v2.grammar.SelectorListG
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import java.util.Optional
 
+//Pair is IMPORTANT to RULE
 class Ruleset(val selectors: List<Selector>, val rules: Map<RuleKey<*, *>, Pair<Boolean, Rule<*, *>>>, val children: List<Ruleset>) {
 
     companion object {
@@ -27,9 +28,11 @@ class Ruleset(val selectors: List<Selector>, val rules: Map<RuleKey<*, *>, Pair<
             if (selectorResult.isError()) {
                 return ValidationResult.error(Optional.empty(), "Error creating Ruleset: ${selectorResult.getError()}")
             }
+
             val selectors = selectorResult.get()
             val rules: MutableMap<RuleKey<*, *>, Pair<Boolean, Rule<*, *>>> = mutableMapOf()
             val children: MutableList<Ruleset> = mutableListOf()
+
             val errors: MutableList<String> = mutableListOf()
             val styleBlock = rule.value
             val styleRules = styleBlock.rules
@@ -47,6 +50,7 @@ class Ruleset(val selectors: List<Selector>, val rules: Map<RuleKey<*, *>, Pair<
                     errors.add("Unknown or errored input found: ${styleRule.asString()}")
                 }
             }
+
             val styleDeclarations = styleBlock.declarations
             while (styleDeclarations.canPoll()) {
                 val styleDeclaration = styleDeclarations.poll()
