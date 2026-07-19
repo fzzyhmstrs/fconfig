@@ -95,6 +95,8 @@ class TestConfigImpl: Config(Identifier.fromNamespaceAndPath("fzzy_config_test",
             var testInt = 1
             var testValidated = ValidatedFloat(3f, 6f, 1f)
             var testValidated2 = listOf(1, 3, 5, 7).validated()
+            var testSet: ValidatedSet<Int> = ValidatedInt(1).toSet(1, 2, 3)
+            var testSet2 = setOf(2, 3, 4)
         }
     }
 

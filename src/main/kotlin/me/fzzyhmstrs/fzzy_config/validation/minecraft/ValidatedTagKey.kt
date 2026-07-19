@@ -73,6 +73,11 @@ open class ValidatedTagKey<T: Any> @JvmOverloads constructor(defaultValue: TagKe
         }
     }
 
+    @Internal
+    override fun trySetFromString(input: String?) {
+        if (input == null) return
+        trySet(Identifier.tryParse(input.trimStart('#')))
+    }
 
     /**
      * creates a deep copy of this ValidatedTagKey

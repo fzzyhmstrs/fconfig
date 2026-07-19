@@ -249,6 +249,9 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
 
             val prepareResult = if (thing is EntryCreator) {
                 entryCreator = thing
+                if (thing is EntryKeyed) {
+                    thing.setEntryKey(new)
+                }
                 thing.prepare(new, groups, annotations, globalAnnotations)
                 ConfigApiImplClient.prepare(thing, ConfigApiImplClient.getPlayerPermissionLevel(), newThing, prefix, new, annotations, globalAnnotations, false, flags)
             } else if (thing != null) {

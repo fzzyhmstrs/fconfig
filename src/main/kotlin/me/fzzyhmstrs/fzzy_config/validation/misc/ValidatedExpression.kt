@@ -129,6 +129,15 @@ open class ValidatedExpression @JvmOverloads constructor(
         return validator.validateEntry(input, type)
     }
 
+    @Internal
+    override fun trySetFromString(input: String?) {
+        if (input == null) return
+        val r = validateEntry(input, EntryValidator.ValidationType.STRONG)
+        if (r.isValid()) {
+            setAndUpdate(r.get())
+        }
+    }
+
     /**
      * creates a deep copy of this ValidatedExpression
      * return ValidatedExpression wrapping a deep copy of the currently stored expression, valid variable, and validation
