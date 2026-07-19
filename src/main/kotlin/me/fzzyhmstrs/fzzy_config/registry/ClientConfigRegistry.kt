@@ -231,8 +231,8 @@ internal object ClientConfigRegistry {
             ConfigScreenManager(
                 namespaceScope,
                 validSubScopes[namespaceScope].map { "$namespaceScope.$it" },
-                clientConfigs.filterKeys {
-                    s -> s.startsWith(namespaceScope)
+                clientConfigs.filter { (s, e) ->
+                    s.startsWith(namespaceScope) && !e.noGui
                 }.mapValues {
                     ConfigSet(it.value.config, it.value.base, !SyncedConfigRegistry.hasConfig(it.key), ConfigApiImpl.isRootConfig(it.value.config::class))
                 })
@@ -407,13 +407,13 @@ internal object ClientConfigRegistry {
         }
         val id = config.getId().toTranslationKey()
         SyncedConfigRegistry.notServerOnly(id)
-        val entry = ClientConfigEntry(config, baseConfig, configCreator)
+        val entry = ClientConfigEntry(config, baseConfig, configCreator, noGui)
         clientConfigs[id] = entry
         ThreadingUtils.register(entry)
         EventApiImpl.fireOnRegisteredClient(config.getId(), config)
     }
 
-    private class ClientConfigEntry<T: Config>(private val _active: T, val base: T, override val configCreator: () -> T): ConfigEntry<T> {
+    private class ClientConfigEntry<T: Config>(private val _active: T, val base: T, override val configCreator: () -> T, val noGui: Boolean): ConfigEntry<T> {
         var i: Boolean = false
         override val client: Boolean = true
 
