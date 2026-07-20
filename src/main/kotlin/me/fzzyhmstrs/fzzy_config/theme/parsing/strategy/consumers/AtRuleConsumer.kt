@@ -1,0 +1,67 @@
+/*
+ * Copyright (c) 2026 Fzzyhmstrs
+ *
+ * This file is part of Fzzy Config, a mod made for minecraft; as such it falls under the license of Fzzy Config.
+ *
+ * Fzzy Config is free software provided under the terms of the Timefall Development License - Modified (TDL-M).
+ * You should have received a copy of the TDL-M with this software.
+ * If you did not, see <https://github.com/fzzyhmstrs/Timefall-Development-Licence-Modified>.
+ */
+
+package me.fzzyhmstrs.fzzy_config.theme.parsing.strategy.consumers
+
+import me.fzzyhmstrs.fzzy_config.theme.parsing.css.CssType
+import me.fzzyhmstrs.fzzy_config.theme.parsing.parser.Parser
+import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy.TokenConsumer
+import me.fzzyhmstrs.fzzy_config.theme.parsing.token.Token
+import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenQueue
+import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenType
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult
+import java.util.LinkedList
+import java.util.Optional
+
+object AtRuleConsumer: TokenConsumer<Token<*>> {
+
+    override fun consume(queue: TokenQueue, args: Set<String>): ValidationResult<Token<*>> {
+        if (!queue.canPoll()) return ValidationResult.error(ListOfRulesConsumer.unknownRule(0, 0), "Couldn't read an at-rule from an exhausted queue")
+        val at = queue.poll()
+        val identifier = at.value(CssType.AT) ?: return ValidationResult.error(ListOfRulesConsumer.unknownRule(at.line(), at.column()), "Couldn't read an at-rule, opening token wasn't an AT token")
+        val prelude: LinkedList<Token<*>> = LinkedList()
+        val errors: MutableList<String> = mutableListOf()
+        while (queue.canPoll()) {
+            val peek = queue.peek()
+            when (peek.type) {
+                Parser.EOF -> {
+                    queue.poll()
+                    return ValidationResult.error(ListOfRulesConsumer.unknownRule(at.line(), at.column()), "Unexpected EOF before at-rule [$identifier] completed")
+                }
+                CssType.SEMI_COLON -> {
+                    queue.poll()
+                    return ValidationResult.predicated(Token(CssType.AT_RULE, AtRule(identifier, prelude), at.line(), at.column()), errors.isEmpty(), errors.toString())
+                }
+                CssType.OPEN_BRACE -> {
+                    val sb = SimpleBlockConsumer(CssType.CLOSE_BRACE).consume(queue, args).also { it.writeError(errors) }.get()
+                    val value = StyleBlockConsumer.consume(sb.valueStrict(CssType.SIMPLE_BLOCK).values, args).also { it.writeError(errors) }.get()
+                    return ValidationResult.predicated(Token(CssType.AT_RULE, AtRule(identifier, prelude, value), at.line(), at.column()), errors.isEmpty(), errors.toString())
+                }
+                else -> {
+                    if (peek.type == CssType.SIMPLE_BLOCK) {
+                        if ((peek.value as SimpleBlockConsumer.Block).type == CssType.OPEN_BRACE) {
+                            val sb = queue.poll()
+                            val q = sb.valueStrict(CssType.SIMPLE_BLOCK as TokenType<SimpleBlockConsumer.Block>)
+                            val value = StyleBlockConsumer.consume(q.values, args).also { it.writeError(errors) }.get()
+                            return ValidationResult.predicated(Token(CssType.AT_RULE, AtRule(identifier, prelude, value), at.line(), at.column()), errors.isEmpty(), errors.toString())
+                        }
+                    }
+                    prelude.add(ComponentValueConsumer.consume(queue, args).also { it.writeError(errors) }.get())
+                }
+            }
+        }
+        return ValidationResult.error(ListOfRulesConsumer.unknownRule(at.line(), at.column()), "Unclosed at-rule [$identifier] encountered")
+    }
+
+    data class AtRule(val identifier: String, val prelude: TokenQueue, val value: Optional<StyleBlockConsumer.StyleBlock>) {
+        constructor(identifier: String, prelude: LinkedList<Token<*>>, value: StyleBlockConsumer.StyleBlock): this(identifier, TokenQueue.of(prelude), Optional.of(value))
+        constructor(identifier: String, prelude: LinkedList<Token<*>>): this(identifier, TokenQueue.of(prelude), Optional.empty())
+    }
+}

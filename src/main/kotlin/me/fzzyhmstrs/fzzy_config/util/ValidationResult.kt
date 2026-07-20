@@ -715,7 +715,6 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
      * @author fzzyhmstrs
      * @since 0.7.0
      */
-     @JvmDefaultWithoutCompatibility
     sealed interface ErrorEntry {
         /**
          * Whether the entry contains an errored state. This is usually true for textual error types, false for empty entries or entries containing non-text information.

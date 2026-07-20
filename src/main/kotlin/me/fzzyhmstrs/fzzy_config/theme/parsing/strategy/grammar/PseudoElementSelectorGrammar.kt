@@ -1,0 +1,109 @@
+/*
+ * Copyright (c) 2026 Fzzyhmstrs
+ *
+ * This file is part of Fzzy Config, a mod made for minecraft; as such it falls under the license of Fzzy Config.
+ *
+ * Fzzy Config is free software provided under the terms of the Timefall Development License - Modified (TDL-M).
+ * You should have received a copy of the TDL-M with this software.
+ * If you did not, see <https://github.com/fzzyhmstrs/Timefall-Development-Licence-Modified>.
+ */
+
+package me.fzzyhmstrs.fzzy_config.theme.parsing.strategy.grammar
+
+import me.fzzyhmstrs.fzzy_config.theme.parsing.css.*
+import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy.TokenConsumer
+import me.fzzyhmstrs.fzzy_config.theme.parsing.token.Token
+import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenQueue
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult
+import java.util.LinkedList
+import java.util.Optional
+
+
+object PseudoElementSelectorGrammar: TokenConsumer<Optional<Selector>> {
+
+    override fun consume(queue: TokenQueue, args: Set<String>): ValidationResult<Optional<Selector>> {
+        if (!queue.canPoll()) return ValidationResult.error(Optional.empty(), "Can't consume a pseudo-class selector from an empty queue")
+        return queue.attempt { split ->
+            val token = split.poll()
+            if (token.value == ":" && split.canPoll()) {
+                val token2 = split.poll()
+                if (token2.value == ":" && split.canPoll()) {
+                    val token3 = split.poll()
+                    if (token3.type == CssType.IDENT) {
+                        val key = token3.asString()
+                        val pseudo = Pseudo.getPseudo(key) ?: return@attempt ValidationResult.error(Optional.empty(), "Unsupported pseudo-class selector")
+                        ValidationResult.success(Optional.of(
+                            PseudoElement(
+                                pseudo,
+                                key
+                            )
+                        ))
+                    } else if (token2.type == CssType.FUNCTION && split.canPoll()) {
+                        val key = token2.value as String
+                        val func = Func.getFunc(key) ?: return@attempt ValidationResult.error(Optional.empty(), "Invalid pseudo-class selector")
+                        val funcVals: LinkedList<Token<*>> = LinkedList()
+                        while (split.canPoll()) {
+                            val t = split.poll()
+                            if (t.type == CssType.CLOSE_PARENTHESIS) {
+                                val raw = funcVals.fold("") { r, tkn -> r + tkn.asString() }
+                                val selector = func.prepare(TokenQueue.of(funcVals), args) { f, a ->
+                                    PseudoElementFunction(
+                                        f as Func<Any>,
+                                        key,
+                                        a,
+                                        raw
+                                    )
+                                }
+                                return@attempt if(selector != null)
+                                    ValidationResult.success(Optional.of(selector))
+                                else
+                                    ValidationResult.error(Optional.empty(), "Invalid pseudo-class selector")
+                            } else {
+                                funcVals.add(t)
+                            }
+                        }
+                        ValidationResult.error(Optional.empty(), "Not a pseudo-class selector")
+                    } else {
+                        ValidationResult.error(Optional.empty(), "Not a pseudo-class selector")
+                    }
+                } else {
+                    ValidationResult.error(Optional.empty(), "Not a pseudo-class selector")
+                }
+            } else {
+                ValidationResult.error(Optional.empty(), "Not a pseudo-class selector")
+            }
+        }
+    }
+
+    class PseudoElement(private val pseudo: Pseudo, private val name: String): Selector {
+
+        override fun matches(screenContext: Selector.Position, context: SelectorContext): Boolean {
+            return pseudo.pseudoGetter(context)
+        }
+
+        override fun selector(): String {
+            return "::$name"
+        }
+
+
+        override fun specificity(): Specificity {
+            return Specificity.TYPE
+        }
+    }
+
+    class PseudoElementFunction<in T: Any>(private val func: Func<T>, private val name: String, private val args: T, private val raw: String): Selector {
+
+        override fun matches(screenContext: Selector.Position, context: SelectorContext): Boolean {
+            return func.apply(args, context)
+        }
+
+        override fun selector(): String {
+            return "::$name($raw)"
+        }
+
+
+        override fun specificity(): Specificity {
+            return Specificity.TYPE
+        }
+    }
+}
