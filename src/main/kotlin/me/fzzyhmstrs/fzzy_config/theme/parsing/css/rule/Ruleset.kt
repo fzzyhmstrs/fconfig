@@ -10,7 +10,6 @@
 
 package me.fzzyhmstrs.fzzy_config.theme.parsing.css.rule
 
-import kotlinx.coroutines.NonCancellable.children
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.CssType
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.Errors
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.Errors.cssCritical
@@ -25,11 +24,11 @@ import java.util.Collections
 import java.util.Optional
 
 //Pair is IMPORTANT to RULE
-class Ruleset(val selectors: List<Selector>, val rules: Map<RuleKey<*, *>, Pair<Boolean, Rule<*, *>>>, val children: List<Ruleset>) {
+class Ruleset(val selectors: List<Selector>, val rules: Map<DeclarationKey<*>, Pair<Boolean, Declaration<*>>>, val children: List<Ruleset>) {
 
     class Builder {
         private val selectors: MutableList<Selector> = mutableListOf()
-        private val rules: MutableMap<RuleKey<*, *>, Pair<Boolean, Rule<*, *>>> = mutableMapOf()
+        private val rules: MutableMap<DeclarationKey<*>, Pair<Boolean, Declaration<*>>> = mutableMapOf()
         private val children: MutableList<Ruleset> = mutableListOf()
 
         fun selector(selector: Selector): Builder {
@@ -42,12 +41,12 @@ class Ruleset(val selectors: List<Selector>, val rules: Map<RuleKey<*, *>, Pair<
             return this
         }
 
-        fun rule(key: RuleKey<*, *>, important: Boolean, rule: Rule<*, *>): Builder {
-            rules[key] = important to rule
+        fun rule(key: DeclarationKey<*>, important: Boolean, declaration: Declaration<*>): Builder {
+            rules[key] = important to declaration
             return this
         }
 
-        fun rules(): Map<RuleKey<*, *>, Pair<Boolean, Rule<*, *>>> {
+        fun rules(): Map<DeclarationKey<*>, Pair<Boolean, Declaration<*>>> {
             return rules
         }
 
@@ -101,7 +100,7 @@ class Ruleset(val selectors: List<Selector>, val rules: Map<RuleKey<*, *>, Pair<
                     val declId = declaration.identifier
                     val declValues = declaration.values
                     val declImportant = declaration.important
-                    val declResult = RuleKey.parseRule(declId, declValues, builder.rules()).attachTo(errors)
+                    val declResult = DeclarationKey.parseDecl(declId, declValues, builder.rules()).attachTo(errors)
                     if (declResult.cssCritical() || declResult.get().isEmpty) {
                         continue
                     }

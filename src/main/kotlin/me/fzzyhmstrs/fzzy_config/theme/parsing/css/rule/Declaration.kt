@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.theme.parsing.css.rule
 
-interface Rule<I: Any, O: Any> {
-    fun ruleValue(input: I): O?
+interface Declaration<O: Any> {
+    fun ruleValue(): O?
+    fun layer(lower: Declaration<O>): Declaration<O>
 }

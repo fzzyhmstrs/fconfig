@@ -10,11 +10,15 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget.custom
 
-import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.screen.widget.RepositioningWidget
+import me.fzzyhmstrs.fzzy_config.theme.parsing.css.Errors
+import me.fzzyhmstrs.fzzy_config.theme.parsing.css.rule.Declaration
+import me.fzzyhmstrs.fzzy_config.theme.parsing.css.rule.DeclarationKey
+import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenQueue
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.function.ConstSupplier
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.Click
@@ -28,13 +32,13 @@ import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.input.CharInput
 import net.minecraft.client.input.KeyInput
-import net.minecraft.client.input.MouseInput
 import net.minecraft.client.sound.PositionedSoundInstance
 import net.minecraft.screen.ScreenTexts
 import net.minecraft.sound.SoundEvents
 import net.minecraft.util.Identifier
 import net.minecraft.util.math.MathHelper
 import org.jetbrains.annotations.ApiStatus.Internal
+import java.util.Optional
 import java.util.function.Supplier
 
 /**
@@ -769,9 +773,100 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
         abstract fun scrollBottom(bottom: Int): Int
         abstract fun mouseOverUp(mouseY: Double, top: Int, bottom: Int): Boolean
         abstract fun mouseOverDown(mouseY: Double, top: Int, bottom: Int): Boolean
+
+        companion object {
+
+        }
     }
 
     private class ScrollBarPosition(val top: Int, val bot: Int, val over: Boolean)
+
+    protected data class ScrollBar(
+        val scrollWidth: Int = 6,
+        private val scrollWidthDefault: Boolean = true,
+        val scrollButtonHeight: Int = 6,
+        private val scrollButtonHeightDefault: Boolean = true,
+        val scrollType: ScrollBarType = ScrollBarType.DYNAMIC,
+        private val scrollTypeDefault: Boolean = true,
+        val scrollFixedHeight: Int = 8,
+        private val scrollFixedHeightDefault: Boolean = true,
+        val scrollButtonType: ScrollBarButtons = ScrollBarButtons.SPLIT,
+        private val scrollButtonTypeDefault: Boolean = true,
+        val scrollBarBackground: Identifier = "widget/scroll/vanilla/scroller_background".fcId(),
+        private val scrollBarBackgroundDefault: Boolean = true,
+        val scrollBarScroller: Identifier = "widget/scroll/vanilla/scroller".fcId(),
+        private val scrollBarScrollerDefault: Boolean = true,
+        val scrollBarHighlighted: Identifier = "widget/scroll/vanilla/scroller_highlighted".fcId(),
+        private val scrollBarHighlightedDefault: Boolean = true,
+        val scrollBarDown: Identifier = "widget/scroll/vanilla/scroll_down".fcId(),
+        private val scrollBarDownDefault: Boolean = true,
+        val scrollBarDownHighlighted: Identifier =  "widget/scroll/vanilla/scroll_down_highlighted".fcId(),
+        private val scrollBarDownHighlightedDefault: Boolean = true,
+        val scrollBarUp: Identifier = "widget/scroll/vanilla/scroll_up".fcId(),
+        private val scrollBarUpDefault: Boolean = true,
+        val scrollBarUpHighlighted: Identifier = "widget/scroll/vanilla/scroll_up_highlighted".fcId(),
+        private val scrollBarUpHighlightedDefault: Boolean = true)
+    {
+        fun layer(lower: ScrollBar): ScrollBar {
+            val scrollWidth = if (scrollWidthDefault) lower.scrollWidth else scrollWidth
+            val scrollButtonHeight = if (scrollButtonHeightDefault) lower.scrollButtonHeight else scrollButtonHeight
+            val scrollType = if (scrollTypeDefault) lower.scrollType else scrollType
+            val scrollFixedHeight = if (scrollFixedHeightDefault) lower.scrollFixedHeight else scrollFixedHeight
+            val scrollButtonType = if (scrollButtonTypeDefault) lower.scrollButtonType else scrollButtonType
+            val scrollBarBackground = if (scrollBarBackgroundDefault) lower.scrollBarBackground else scrollBarBackground
+            val scrollBarScroller = if (scrollBarScrollerDefault) lower.scrollBarScroller else scrollBarScroller
+            val scrollBarHighlighted = if (scrollBarHighlightedDefault) lower.scrollBarHighlighted else scrollBarHighlighted
+            val scrollBarDown = if(scrollBarDownDefault) lower.scrollBarDown else scrollBarDown
+            val scrollBarDownHighlighted = if(scrollBarDownHighlightedDefault) lower.scrollBarDownHighlighted else scrollBarDownHighlighted
+            val scrollBarUp = if(scrollBarUpDefault) lower.scrollBarUp else scrollBarUp
+            val scrollBarUpHighlighted = if(scrollBarUpHighlightedDefault) lower.scrollBarUpHighlighted else scrollBarUpHighlighted
+            return ScrollBar(
+                scrollWidth, scrollWidthDefault && lower.scrollWidthDefault,
+                scrollButtonHeight, scrollButtonHeightDefault && lower.scrollButtonHeightDefault,
+                scrollType, scrollTypeDefault && lower.scrollTypeDefault,
+                scrollFixedHeight, scrollFixedHeightDefault && lower.scrollFixedHeightDefault,
+                scrollButtonType, scrollButtonTypeDefault && lower.scrollButtonTypeDefault,
+                scrollBarBackground, scrollBarBackgroundDefault && lower.scrollBarBackgroundDefault,
+                scrollBarScroller, scrollBarScrollerDefault && lower.scrollBarScrollerDefault,
+                scrollBarHighlighted, scrollBarHighlightedDefault && lower.scrollBarHighlightedDefault,
+                scrollBarDown, scrollBarDownDefault && lower.scrollBarDownDefault,
+                scrollBarDownHighlighted, scrollBarDownHighlightedDefault && lower.scrollBarDownHighlightedDefault,
+                scrollBarUp, scrollBarUpDefault && lower.scrollBarUpDefault,
+                scrollBarUpHighlighted, scrollBarUpHighlightedDefault && lower.scrollBarUpHighlightedDefault)
+        }
+
+    }
+
+    private class ScrollBarDeclaration(private val scrollBar: ScrollBar): Declaration<ScrollBar> {
+        override fun ruleValue(): ScrollBar {
+            return scrollBar
+        }
+
+        override fun layer(lower: Declaration<ScrollBar>): Declaration<ScrollBar> {
+            return ScrollBarDeclaration(scrollBar.layer(lower.ruleValue()!!))
+        }
+    }
+
+    private object ScrollBarDeclarationKey: DeclarationKey<ScrollBar> {
+        override fun createDecl(
+            decl: String,
+            queue: TokenQueue,
+            previous: Declaration<ScrollBar>?
+        ): ValidationResult<Optional<Declaration<ScrollBar>>> {
+            return when (decl) {
+                "scroll-bar" -> {
+
+                }
+                else -> {
+                    ValidationResult.error(Optional.empty(), Errors.INVALID_DECL) { b -> b.message("Scroll Bar").content(decl) }
+                }
+            }
+        }
+
+        override fun defaultValue(): ScrollBar {
+            return ScrollBar()
+        }
+    }
 
     /**
      * A list entry. This is responsible for managing its own position, rendering of the list row, management of any children widgets, providing correct navigation, narration, and so on.
