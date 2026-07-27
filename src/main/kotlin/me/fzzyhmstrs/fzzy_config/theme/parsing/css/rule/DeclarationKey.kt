@@ -11,23 +11,28 @@
 package me.fzzyhmstrs.fzzy_config.theme.parsing.css.rule
 
 import me.fzzyhmstrs.fzzy_config.FC
+import me.fzzyhmstrs.fzzy_config.cast
+import me.fzzyhmstrs.fzzy_config.theme.parsing.css.Errors
+import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy.builder.Creator
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenQueue
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.map
 import java.util.Optional
 
-interface DeclarationKey<O: Any> {
-    fun createDecl(decl: String, queue: TokenQueue, previous: Declaration<O>?): ValidationResult<Optional<Declaration<O>>>
-    fun createDeclSafe(decl: String, queue: TokenQueue, previous: Declaration<*>?): ValidationResult<Optional<Declaration<O>>> {
-        return createDecl(decl, queue, previous as? Declaration<O>)
+interface DeclarationKey<O: Any, C: Creator<out Declaration<O>>> {
+    fun createDecl(decl: String, queue: TokenQueue, builder: C): ValidationResult<Optional<C>>
+    fun createDeclSafe(decl: String, queue: TokenQueue, builder: Creator<out Declaration<*>>): ValidationResult<Optional<C>> {
+        return createDecl(decl, queue, (builder as? C) ?: builder())
     }
     fun defaultValue(): O
+    fun autoValue(): O? = null
+    fun builder(): C
 
     companion object {
-        private val declarationKeys: MutableMap<String, DeclarationKey<*>> = mutableMapOf()
+        private val declarationKeys: MutableMap<String, DeclarationKey<*, *>> = mutableMapOf()
         private val aliases: MutableMap<String, String> = mutableMapOf()
 
-        fun register(declaration: String, key: DeclarationKey<*>, vararg alias: String) {
+        fun register(declaration: String, key: DeclarationKey<*, *>, vararg alias: String) {
             val k = declarationKeys.put(declaration, key)
             if (k != null) {
                 FC.LOGGER.error("RuleKey for $declaration already registered")
@@ -39,17 +44,15 @@ interface DeclarationKey<O: Any> {
             }
         }
 
-        fun parseDecl(declaration: String, values: TokenQueue, soFar: Map<DeclarationKey<*>, Pair<Boolean, Declaration<*>>>): ValidationResult<Optional<Pair<DeclarationKey<*>, Declaration<*>>>> {
-            val realDecl = aliases[declaration] ?: return ValidationResult.error(Optional.empty(), "Unknown rule declaration $declaration")
-            val key = declarationKeys[realDecl] ?: return ValidationResult.error(Optional.empty(), "Unknown rule declaration $declaration")
-            val previous = soFar[key]?.second
+        fun parseDecl(declaration: String, values: TokenQueue, soFar: Map<DeclarationKey<*, *>, Pair<Boolean, Creator<Declaration<*>>>>): ValidationResult<Optional<Pair<DeclarationKey<*, *>, Creator<Declaration<*>>>>> {
+            val realDecl = aliases[declaration] ?: return ValidationResult.error(Optional.empty(), Errors.INVALID_DECL, declaration)
+            val key = declarationKeys[realDecl] ?: return ValidationResult.error(Optional.empty(), Errors.INVALID_DECL, declaration)
+            val previous = soFar[key]?.second ?: key.builder()
             val ruleResult = key.createDeclSafe(declaration, values, previous)
             if (ruleResult.isError()) {
-                return ValidationResult.error(Optional.empty(), "Invalid rule declaration: ${ruleResult.getError()}")
+                return ruleResult.map { Optional.empty() }
             }
-            return ruleResult.map { o -> o.map { r -> key to r } }
+            return ruleResult.map { o -> o.map { r -> key to r.cast() } }
         }
-
-
     }
 }

@@ -31,6 +31,10 @@ object Errors {
         return ValidationResult.error(value, INVALID_TOKEN, "Expected $expected, got $got")
     }
 
+    fun <T> invalidToken(value: T, expected: List<TokenType<*>>, got: TokenType<*>): ValidationResult<T> {
+        return ValidationResult.error(value, INVALID_TOKEN, "Expected one of $expected, got $got")
+    }
+
     fun <T> uppercase(value: T, ident: String): ValidationResult<T> {
         return ValidationResult.error(value, UPPERCASE, ident)
     }

@@ -14,6 +14,7 @@ import me.fzzyhmstrs.fzzy_config.theme.parsing.css.CssType
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.Errors
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.Errors.cssCritical
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.Selector
+import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy.builder.Creator
 import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy.consumers.AtRuleConsumer
 import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy.consumers.DeclarationConsumer
 import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy.consumers.QualifiedRuleConsumer
@@ -24,11 +25,11 @@ import java.util.Collections
 import java.util.Optional
 
 //Pair is IMPORTANT to RULE
-class Ruleset(val selectors: List<Selector>, val rules: Map<DeclarationKey<*>, Pair<Boolean, Declaration<*>>>, val children: List<Ruleset>) {
+class Ruleset(val selectors: List<Selector>, val rules: Map<DeclarationKey<*, *>, Pair<Boolean, Declaration<*>>>, val children: List<Ruleset>) {
 
     class Builder {
         private val selectors: MutableList<Selector> = mutableListOf()
-        private val rules: MutableMap<DeclarationKey<*>, Pair<Boolean, Declaration<*>>> = mutableMapOf()
+        private val rules: MutableMap<DeclarationKey<*, *>, Pair<Boolean, Creator<Declaration<*>>>> = mutableMapOf()
         private val children: MutableList<Ruleset> = mutableListOf()
 
         fun selector(selector: Selector): Builder {
@@ -41,12 +42,12 @@ class Ruleset(val selectors: List<Selector>, val rules: Map<DeclarationKey<*>, P
             return this
         }
 
-        fun rule(key: DeclarationKey<*>, important: Boolean, declaration: Declaration<*>): Builder {
+        fun rule(key: DeclarationKey<*, *>, important: Boolean, declaration: Creator<Declaration<*>>): Builder {
             rules[key] = important to declaration
             return this
         }
 
-        fun rules(): Map<DeclarationKey<*>, Pair<Boolean, Declaration<*>>> {
+        fun rules(): Map<DeclarationKey<*, *>, Pair<Boolean, Creator<Declaration<*>>>> {
             return rules
         }
 
@@ -57,7 +58,7 @@ class Ruleset(val selectors: List<Selector>, val rules: Map<DeclarationKey<*>, P
 
         fun build(): Ruleset {
             return Ruleset(Collections.unmodifiableList(selectors),
-                Collections.unmodifiableMap(rules),
+                Collections.unmodifiableMap(rules.mapValues { (key, value) -> Pair(value.first, value.second.create()) }),
                 Collections.unmodifiableList(children))
         }
     }

@@ -137,6 +137,10 @@ enum class TriState(private val state: String): TriStateProvider, EnumTranslatab
     companion object {
 
         val CODEC: Codec<TriState> = StringIdentifiable.createCodec { TriState.entries.toTypedArray() }
+        val MAP: Map<String, TriState> = mapOf(
+            "true" to TRUE,
+            "false" to FALSE,
+            "default" to DEFAULT)
 
         /**
          * Gets the corresponding tri-state from a boolean value.

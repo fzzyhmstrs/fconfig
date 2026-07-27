@@ -15,6 +15,12 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.RepositioningWidget
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.Errors
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.rule.Declaration
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.rule.DeclarationKey
+import me.fzzyhmstrs.fzzy_config.theme.parsing.css.value.LengthValue
+import me.fzzyhmstrs.fzzy_config.theme.parsing.css.value.ScrollBar
+import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy.builder.Creator
+import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy.builder.Creator.Companion.applyValue
+import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy.builder.SequencedValueBuilder
+import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy.builder.SingleValueBuilders
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenQueue
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
@@ -70,9 +76,9 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
     protected open val rightPadding: Int = 10
     protected val scrollWidth: Int = 6
     protected val scrollButtonHeight: Int = 6
-    protected val scrollType: Supplier<ScrollBarType> = ConstSupplier(ScrollBarType.DYNAMIC)
+    protected val scrollType: Supplier<ScrollBar.ScrollBarType> = ConstSupplier(ScrollBar.ScrollBarType.DYNAMIC)
     protected val scrollFixedHeight: Int = 8
-    protected val scrollButtonType: Supplier<ScrollBarButtons> = ConstSupplier(ScrollBarButtons.SPLIT)
+    protected val scrollButtonType: Supplier<ScrollBar.ScrollBarButtons> = ConstSupplier(ScrollBar.ScrollBarButtons.SPLIT)
     protected val scrollBarBackground: Identifier = "widget/scroll/vanilla/scroller_background".fcId()
     protected val scrollBar: Identifier = "widget/scroll/vanilla/scroller".fcId()
     protected val scrollBarHighlighted: Identifier = "widget/scroll/vanilla/scroller_highlighted".fcId()
@@ -350,7 +356,7 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
         if (button != 0) return
         this.scrollingY = mouseY
         if (scrollingY > 0.0) {
-            if (scrollType.get() == ScrollBarType.DYNAMIC) {
+            if (scrollType.get() == ScrollBar.ScrollBarType.DYNAMIC) {
                 val sH = scrollHeight()
                 val cH = contentHeight()
                 val contentFraction = (sH.toDouble() / cH.toDouble())
@@ -384,7 +390,7 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
         if (button != 0) return 0
         if (mouseY < scrollTop() || mouseY > scrollBottom()) return 0
         when (scrollType.get()) {
-            ScrollBarType.DYNAMIC -> {
+            ScrollBar.ScrollBarType.DYNAMIC -> {
                 val contentFraction = (scrollHeight().toDouble() / contentHeight().toDouble())
                 val topGap = topDelta() * contentFraction
                 val bottomGap = bottomDelta() * contentFraction
@@ -396,7 +402,7 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
                 val midPoint = MathHelper.lerp(progress.toFloat(), scrollTop() + halfBarHeight, scrollBottom() - halfBarHeight)
                 return ((midPoint - mouseY)/contentFraction).toInt()
             }
-            ScrollBarType.FIXED -> {
+            ScrollBar.ScrollBarType.FIXED -> {
                 val progress = topDelta().toDouble() / (topDelta() - bottomDelta()).toDouble()
                 val halfBarHeight = scrollFixedHeight / 2
                 val midPoint = MathHelper.lerp(progress.toFloat(), scrollTop() + halfBarHeight, scrollBottom() - halfBarHeight)
@@ -408,13 +414,13 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
 
     private fun scrollBarPosition(mouseY: Double): ScrollBarPosition {
         return when (scrollType.get()) {
-            ScrollBarType.DYNAMIC -> {
+            ScrollBar.ScrollBarType.DYNAMIC -> {
                 val contentFraction = (scrollHeight().toDouble() / contentHeight().toDouble())
                 val topGap = -topDelta() * contentFraction
                 val bottomGap = bottomDelta() * contentFraction
                 ScrollBarPosition((scrollTop() + topGap).toInt(),  (scrollBottom() - bottomGap).toInt(), (mouseY >= scrollTop() + topGap) && (mouseY < scrollBottom() - bottomGap))
             }
-            ScrollBarType.FIXED -> {
+            ScrollBar.ScrollBarType.FIXED -> {
                 val progress = topDelta().toDouble() / (topDelta() - bottomDelta()).toDouble()
                 val halfBarHeight = scrollFixedHeight / 2
                 val midPoint = MathHelper.lerp(progress.toFloat(), scrollTop() + halfBarHeight, scrollBottom() - halfBarHeight)
@@ -631,242 +637,7 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
         builder.put(NarrationPart.USAGE, FcText.translatable("narration.component_list.usage"))
     }
 
-    /**
-     * The visual style of the scroll bar itself
-     * @author fzzyhmstrs
-     * @since 0.6.0
-     */
-    protected enum class ScrollBarType {
-        /**
-         * The scroll bar changes height based on the amount of scroll available.
-         * @author fzzyhmstrs
-         * @since 0.6.0
-         */
-        DYNAMIC,
-        /**
-         * The scroll bar is a set height no matter the scroll amount.
-         * @author fzzyhmstrs
-         * @since 0.6.0
-         */
-        FIXED
-    }
-
-    protected enum class ScrollBarButtons {
-        NONE {
-            override fun renderButtons(): Boolean {
-                return false
-            }
-            override fun upY(top: Int, bottom: Int): Int {
-                return 0
-            }
-
-            override fun downY(top: Int, bottom: Int): Int {
-                return 0
-            }
-
-            override fun scrollTop(top: Int): Int {
-                return top
-            }
-
-            override fun scrollBottom(bottom: Int): Int {
-                return bottom
-            }
-
-            override fun mouseOverUp(mouseY: Double, top: Int, bottom: Int): Boolean {
-                return false
-            }
-
-            override fun mouseOverDown(mouseY: Double, top: Int, bottom: Int): Boolean {
-                return false
-            }
-        },
-        TOP {
-            override fun renderButtons(): Boolean {
-                return true
-            }
-            override fun upY(top: Int, bottom: Int): Int {
-                return top
-            }
-
-            override fun downY(top: Int, bottom: Int): Int {
-                return top + 6
-            }
-
-            override fun scrollTop(top: Int): Int {
-                return top + 12
-            }
-
-            override fun scrollBottom(bottom: Int): Int {
-                return bottom
-            }
-
-            override fun mouseOverUp(mouseY: Double, top: Int, bottom: Int): Boolean {
-                return mouseY < (top + 6) && mouseY >= top
-            }
-
-            override fun mouseOverDown(mouseY: Double, top: Int, bottom: Int): Boolean {
-                return mouseY < scrollTop(top) && mouseY >= (top + 6)
-            }
-        },
-        BOTTOM {
-            override fun renderButtons(): Boolean {
-                return true
-            }
-            override fun upY(top: Int, bottom: Int): Int {
-                return bottom - 12
-            }
-
-            override fun downY(top: Int, bottom: Int): Int {
-                return bottom - 6
-            }
-
-            override fun scrollTop(top: Int): Int {
-                return top
-            }
-
-            override fun scrollBottom(bottom: Int): Int {
-                return bottom - 12
-            }
-
-            override fun mouseOverUp(mouseY: Double, top: Int, bottom: Int): Boolean {
-                return mouseY < (bottom - 6) && mouseY >= scrollBottom(bottom)
-            }
-
-            override fun mouseOverDown(mouseY: Double, top: Int, bottom: Int): Boolean {
-                return mouseY < bottom && mouseY >= (bottom - 6)
-            }
-        },
-        SPLIT {
-            override fun renderButtons(): Boolean {
-                return true
-            }
-
-            override fun upY(top: Int, bottom: Int): Int {
-                return top
-            }
-
-            override fun downY(top: Int, bottom: Int): Int {
-                return bottom - 6
-            }
-
-            override fun scrollTop(top: Int): Int {
-                return top + 6
-            }
-
-            override fun scrollBottom(bottom: Int): Int {
-                return bottom - 6
-            }
-
-            override fun mouseOverUp(mouseY: Double, top: Int, bottom: Int): Boolean {
-                return mouseY < scrollTop(top) && mouseY >= top
-            }
-
-            override fun mouseOverDown(mouseY: Double, top: Int, bottom: Int): Boolean {
-                return mouseY < bottom && mouseY >= scrollBottom(bottom)
-            }
-        };
-
-        abstract fun renderButtons(): Boolean
-        abstract fun upY(top: Int, bottom: Int): Int
-        abstract fun downY(top: Int, bottom: Int): Int
-        abstract fun scrollTop(top: Int): Int
-        abstract fun scrollBottom(bottom: Int): Int
-        abstract fun mouseOverUp(mouseY: Double, top: Int, bottom: Int): Boolean
-        abstract fun mouseOverDown(mouseY: Double, top: Int, bottom: Int): Boolean
-
-        companion object {
-
-        }
-    }
-
     private class ScrollBarPosition(val top: Int, val bot: Int, val over: Boolean)
-
-    protected data class ScrollBar(
-        val scrollWidth: Int = 6,
-        private val scrollWidthDefault: Boolean = true,
-        val scrollButtonHeight: Int = 6,
-        private val scrollButtonHeightDefault: Boolean = true,
-        val scrollType: ScrollBarType = ScrollBarType.DYNAMIC,
-        private val scrollTypeDefault: Boolean = true,
-        val scrollFixedHeight: Int = 8,
-        private val scrollFixedHeightDefault: Boolean = true,
-        val scrollButtonType: ScrollBarButtons = ScrollBarButtons.SPLIT,
-        private val scrollButtonTypeDefault: Boolean = true,
-        val scrollBarBackground: Identifier = "widget/scroll/vanilla/scroller_background".fcId(),
-        private val scrollBarBackgroundDefault: Boolean = true,
-        val scrollBarScroller: Identifier = "widget/scroll/vanilla/scroller".fcId(),
-        private val scrollBarScrollerDefault: Boolean = true,
-        val scrollBarHighlighted: Identifier = "widget/scroll/vanilla/scroller_highlighted".fcId(),
-        private val scrollBarHighlightedDefault: Boolean = true,
-        val scrollBarDown: Identifier = "widget/scroll/vanilla/scroll_down".fcId(),
-        private val scrollBarDownDefault: Boolean = true,
-        val scrollBarDownHighlighted: Identifier =  "widget/scroll/vanilla/scroll_down_highlighted".fcId(),
-        private val scrollBarDownHighlightedDefault: Boolean = true,
-        val scrollBarUp: Identifier = "widget/scroll/vanilla/scroll_up".fcId(),
-        private val scrollBarUpDefault: Boolean = true,
-        val scrollBarUpHighlighted: Identifier = "widget/scroll/vanilla/scroll_up_highlighted".fcId(),
-        private val scrollBarUpHighlightedDefault: Boolean = true)
-    {
-        fun layer(lower: ScrollBar): ScrollBar {
-            val scrollWidth = if (scrollWidthDefault) lower.scrollWidth else scrollWidth
-            val scrollButtonHeight = if (scrollButtonHeightDefault) lower.scrollButtonHeight else scrollButtonHeight
-            val scrollType = if (scrollTypeDefault) lower.scrollType else scrollType
-            val scrollFixedHeight = if (scrollFixedHeightDefault) lower.scrollFixedHeight else scrollFixedHeight
-            val scrollButtonType = if (scrollButtonTypeDefault) lower.scrollButtonType else scrollButtonType
-            val scrollBarBackground = if (scrollBarBackgroundDefault) lower.scrollBarBackground else scrollBarBackground
-            val scrollBarScroller = if (scrollBarScrollerDefault) lower.scrollBarScroller else scrollBarScroller
-            val scrollBarHighlighted = if (scrollBarHighlightedDefault) lower.scrollBarHighlighted else scrollBarHighlighted
-            val scrollBarDown = if(scrollBarDownDefault) lower.scrollBarDown else scrollBarDown
-            val scrollBarDownHighlighted = if(scrollBarDownHighlightedDefault) lower.scrollBarDownHighlighted else scrollBarDownHighlighted
-            val scrollBarUp = if(scrollBarUpDefault) lower.scrollBarUp else scrollBarUp
-            val scrollBarUpHighlighted = if(scrollBarUpHighlightedDefault) lower.scrollBarUpHighlighted else scrollBarUpHighlighted
-            return ScrollBar(
-                scrollWidth, scrollWidthDefault && lower.scrollWidthDefault,
-                scrollButtonHeight, scrollButtonHeightDefault && lower.scrollButtonHeightDefault,
-                scrollType, scrollTypeDefault && lower.scrollTypeDefault,
-                scrollFixedHeight, scrollFixedHeightDefault && lower.scrollFixedHeightDefault,
-                scrollButtonType, scrollButtonTypeDefault && lower.scrollButtonTypeDefault,
-                scrollBarBackground, scrollBarBackgroundDefault && lower.scrollBarBackgroundDefault,
-                scrollBarScroller, scrollBarScrollerDefault && lower.scrollBarScrollerDefault,
-                scrollBarHighlighted, scrollBarHighlightedDefault && lower.scrollBarHighlightedDefault,
-                scrollBarDown, scrollBarDownDefault && lower.scrollBarDownDefault,
-                scrollBarDownHighlighted, scrollBarDownHighlightedDefault && lower.scrollBarDownHighlightedDefault,
-                scrollBarUp, scrollBarUpDefault && lower.scrollBarUpDefault,
-                scrollBarUpHighlighted, scrollBarUpHighlightedDefault && lower.scrollBarUpHighlightedDefault)
-        }
-
-    }
-
-    private class ScrollBarDeclaration(private val scrollBar: ScrollBar): Declaration<ScrollBar> {
-        override fun ruleValue(): ScrollBar {
-            return scrollBar
-        }
-
-        override fun layer(lower: Declaration<ScrollBar>): Declaration<ScrollBar> {
-            return ScrollBarDeclaration(scrollBar.layer(lower.ruleValue()!!))
-        }
-    }
-
-    private object ScrollBarDeclarationKey: DeclarationKey<ScrollBar> {
-        override fun createDecl(
-            decl: String,
-            queue: TokenQueue,
-            previous: Declaration<ScrollBar>?
-        ): ValidationResult<Optional<Declaration<ScrollBar>>> {
-            return when (decl) {
-                "scroll-bar" -> {
-
-                }
-                else -> {
-                    ValidationResult.error(Optional.empty(), Errors.INVALID_DECL) { b -> b.message("Scroll Bar").content(decl) }
-                }
-            }
-        }
-
-        override fun defaultValue(): ScrollBar {
-            return ScrollBar()
-        }
-    }
 
     /**
      * A list entry. This is responsible for managing its own position, rendering of the list row, management of any children widgets, providing correct navigation, narration, and so on.

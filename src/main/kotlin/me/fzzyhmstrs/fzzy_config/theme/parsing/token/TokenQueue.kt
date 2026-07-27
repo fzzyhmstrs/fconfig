@@ -11,7 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.theme.parsing.token
 
 import me.fzzyhmstrs.fzzy_config.theme.parsing.ParsePrinter
-import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy.ParseStrategy
+
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import java.lang.IllegalStateException
 import java.util.*
@@ -43,25 +43,12 @@ sealed class TokenQueue(protected val tokens: LinkedList<Token<*>>): ParsePrinte
         return result
     }
 
-    fun <T: Any> split(splitConsumer: (TokenQueue) -> Optional<ValidationResult<out ParseStrategy.Builder<T>>>): Optional<ValidationResult<out ParseStrategy.Builder<T>>> {
-        val split = Split(LinkedList(tokens), this)
-        return splitConsumer(split)
-    }
-
     fun sliceTo(sliceBefore: Predicate<Token<*>>, sliceConsumer: (TokenQueue) -> Unit) {
         val sliceIndex = tokens.withIndex().firstOrNull { (_, t) -> sliceBefore.test(t) }?.index ?: return
         if (sliceIndex < 0) return
 
         val slice = Slice(LinkedList(tokens.subList(0, sliceIndex + 1)), sliceIndex, this)
         sliceConsumer(slice).also { slice.commit() }
-    }
-
-    fun <T: Any, B: ParseStrategy.Builder<T>> slice(sliceBefore: Predicate<Token<*>>, sliceConsumer: (TokenQueue) -> Optional<ValidationResult<B>>): Optional<ValidationResult<B>> {
-        val sliceIndex = tokens.withIndex().firstOrNull { (_, t) -> sliceBefore.test(t) }?.index?.minus(1) ?: return Optional.empty()
-        if (sliceIndex < 0) return Optional.empty()
-
-        val slice = Slice(LinkedList(tokens.subList(0, sliceIndex)), sliceIndex, this)
-        return sliceConsumer(slice).also { slice.commit() }
     }
 
     private class Impl(tokens: LinkedList<Token<*>>): TokenQueue(tokens)
@@ -159,6 +146,10 @@ sealed class TokenQueue(protected val tokens: LinkedList<Token<*>>): ParsePrinte
 
     open fun poll(): Token<*> {
         return tokens.remove()
+    }
+
+    fun size(): Int {
+        return tokens.size
     }
 
     override fun toString(): String {
