@@ -61,6 +61,11 @@ class LengthValue(private val value: Double, private val unit: UnitType) {
             override fun applyUnit(value: Double): Int {
                 return (((value * 96) / 101.6) / MinecraftClient.getInstance().window.scaleFactor).toInt()
             }
+        },
+        PERCENTAGE {
+            override fun applyUnit(value: Double): Int {
+                return TODO()
+            }
         };
     }
 
@@ -72,7 +77,8 @@ class LengthValue(private val value: Double, private val unit: UnitType) {
             "pt" to Unit.POINTS,
             "cm" to Unit.CMS,
             "mm" to Unit.MMS,
-            "Q" to Unit.QS)
+            "Q" to Unit.QS,
+            "%" to Unit.PERCENTAGE)
 
         private val UNKNOWN_UNIT = ValidationResult.ErrorEntry.Type<String>("Unknown Length Unit")
 

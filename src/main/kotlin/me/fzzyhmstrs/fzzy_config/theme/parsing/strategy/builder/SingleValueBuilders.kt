@@ -15,11 +15,14 @@ import me.fzzyhmstrs.fzzy_config.theme.parsing.css.Errors
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.rule.DeclarationKey
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.value.LengthValue
 import me.fzzyhmstrs.fzzy_config.theme.parsing.parser.Parser
+import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenQueue
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenType
 import me.fzzyhmstrs.fzzy_config.util.TriState
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.map
 import net.minecraft.util.Identifier
 import java.util.function.Supplier
+import kotlin.jvm.optionals.getOrNull
 
 object SingleValueBuilders {
     val STRING = SingleValueBuilder.create<String, String>(CssType.STRING).safeConverter { v -> v }.build()
@@ -82,12 +85,53 @@ object SingleValueBuilders {
         return lengthValueBuilder(LengthValue(fallback.toDouble(), LengthValue.Unit.PIXELS))
     }
 
-    fun dimensionValueBuilder(): ValueBuilder<LengthValue> {
+    fun dimensionValueBuilder(autoValue: () -> DeclarationKey<LengthValue, *>): ValueBuilder<LengthValue> {
+        val creator = DimensionCreator()
+        val sequence = SequencedValueBuilder.create<LengthValue, DimensionCreator>()
+            .sequence(autoValueBuilder(autoValue)) { t, c -> c.lengthValue = t }
+            .sequence(lengthValueBuilder()) { t, c -> c.lengthValue = t }
+            .sequence(identValueBuilder("stretch")) { t, c -> c.lengthValue = LengthValue(1.0, StretchUnit()) }
+            .oneOf()
+            .build()
+        return object: ValueBuilder<LengthValue> {
+            override fun build(input: TokenQueue): ValidationResult<LengthValue?> {
+                val result = sequence.applyValue(input, creator)
+                val v = result.get().getOrNull()?.create()
+                if (result.isError()) return result.map { v }
+                return ValidationResult.success(v)
+            }
+        }
+    }
+
+    private class StretchUnit: LengthValue.UnitType {
+        override fun applyUnit(value: Double): Int {
+            TODO("Not yet implemented")
+        }
 
     }
 
-    fun <T: Any> autoValueBuilder(key: DeclarationKey<T, *>): ValueBuilder<T> {
+    private class DimensionCreator: Creator<LengthValue> {
+        var lengthValue: LengthValue = LengthValue(0)
+        override fun create(): LengthValue {
+            return lengthValue
+        }
 
+    }
+
+    fun <T: Any> autoValueBuilder(autoValue: () -> DeclarationKey<T, *>): ValueBuilder<T> {
+        return SingleValueBuilder.create<T, String>(CssType.IDENT).converter { s ->
+            val key = autoValue()
+            if (s == "auto") {
+                val a = key.autoValue()
+                if (a == null) {
+                    ValidationResult.error(null, Errors.NON_AUTO, DeclarationKey.declName(key))
+                } else {
+                    ValidationResult.success(a)
+                }
+            } else {
+                ValidationResult.error(null, Errors.NON_AUTO, DeclarationKey.declName(key))
+            }
+        }.build()
     }
 
     fun <T: Enum<T>> createMap(clazz: Class<T>): Map<String, T> {

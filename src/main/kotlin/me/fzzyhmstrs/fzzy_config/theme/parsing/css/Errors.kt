@@ -22,6 +22,7 @@ object Errors {
     val END_OF_QUEUE = Type<String>("Unexpected End of Token Queue")
     val INVALID_TOKEN = Type<String>("Invalid Token Type")
     val UPPERCASE = Type<String>("Identifier with Improper Uppercase Letters")
+    val NON_AUTO = Type<String>("CSS Property Without 'auto' Capabilities")
 
     fun <T> endOfQueue(value: T, message: String = ""): ValidationResult<T> {
         return ValidationResult.error(value, END_OF_QUEUE, message)

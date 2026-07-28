@@ -17,6 +17,7 @@ import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy.builder.Creator
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenQueue
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.map
+import java.util.IdentityHashMap
 import java.util.Optional
 
 interface DeclarationKey<O: Any, C: Creator<out Declaration<O>>> {
@@ -30,10 +31,12 @@ interface DeclarationKey<O: Any, C: Creator<out Declaration<O>>> {
 
     companion object {
         private val declarationKeys: MutableMap<String, DeclarationKey<*, *>> = mutableMapOf()
+        private val keysDeclaration: IdentityHashMap<DeclarationKey<*, *>, String> = IdentityHashMap()
         private val aliases: MutableMap<String, String> = mutableMapOf()
 
         fun register(declaration: String, key: DeclarationKey<*, *>, vararg alias: String) {
             val k = declarationKeys.put(declaration, key)
+            keysDeclaration[key] = declaration
             if (k != null) {
                 FC.LOGGER.error("RuleKey for $declaration already registered")
             } else {
@@ -53,6 +56,10 @@ interface DeclarationKey<O: Any, C: Creator<out Declaration<O>>> {
                 return ruleResult.map { Optional.empty() }
             }
             return ruleResult.map { o -> o.map { r -> key to r.cast() } }
+        }
+
+        fun declName(key: DeclarationKey<*, *>): String {
+            return keysDeclaration[key] ?: "Unknown"
         }
     }
 }
