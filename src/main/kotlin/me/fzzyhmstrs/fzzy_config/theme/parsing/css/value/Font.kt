@@ -116,4 +116,15 @@ object FontDeclarationKey: DeclarationKey<Style, FontCreator> {
     override fun builder(): FontCreator {
         return FontCreator()
     }
+
+    val ALIASES = arrayOf("font-family", 
+                          "color", 
+                          "color-shadow", 
+                          "font-bold", 
+                          "font-weight", 
+                          "font-italic", 
+                          "font-style", 
+                          "font-underline", 
+                          "font-strikethrough", 
+                          "font-obfuscated")
 }
