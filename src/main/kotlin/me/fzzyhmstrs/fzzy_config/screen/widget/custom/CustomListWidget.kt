@@ -12,19 +12,9 @@ package me.fzzyhmstrs.fzzy_config.screen.widget.custom
 
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.screen.widget.RepositioningWidget
-import me.fzzyhmstrs.fzzy_config.theme.parsing.css.Errors
-import me.fzzyhmstrs.fzzy_config.theme.parsing.css.rule.Declaration
-import me.fzzyhmstrs.fzzy_config.theme.parsing.css.rule.DeclarationKey
-import me.fzzyhmstrs.fzzy_config.theme.parsing.css.value.LengthValue
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.value.ScrollBar
-import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy.builder.Creator
-import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy.builder.Creator.Companion.applyValue
-import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy.builder.SequencedValueBuilder
-import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy.builder.SingleValueBuilders
-import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenQueue
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
-import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.function.ConstSupplier
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.Click
@@ -44,7 +34,6 @@ import net.minecraft.sound.SoundEvents
 import net.minecraft.util.Identifier
 import net.minecraft.util.math.MathHelper
 import org.jetbrains.annotations.ApiStatus.Internal
-import java.util.Optional
 import java.util.function.Supplier
 
 /**

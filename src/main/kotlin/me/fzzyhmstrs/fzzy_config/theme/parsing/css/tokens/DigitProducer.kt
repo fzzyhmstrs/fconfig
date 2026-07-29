@@ -11,13 +11,13 @@
 package me.fzzyhmstrs.fzzy_config.theme.parsing.css.tokens
 
 import me.fzzyhmstrs.fzzy_config.theme.parsing.ParseContext
-import me.fzzyhmstrs.fzzy_config.theme.parsing.parser.StringReader
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.CssType
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.CssType.BAD_NUMBER
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.CssType.NUMBER
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.CssType.NUMBER_DIMENSION
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.CssType.NUMBER_PERCENTAGE
 import me.fzzyhmstrs.fzzy_config.theme.parsing.parser.Parser
+import me.fzzyhmstrs.fzzy_config.theme.parsing.parser.StringReader
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.Token
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenProducer
 

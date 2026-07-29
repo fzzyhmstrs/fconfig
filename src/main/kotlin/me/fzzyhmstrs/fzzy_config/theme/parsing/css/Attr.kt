@@ -10,8 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.theme.parsing.css
 
-import java.lang.IllegalStateException
-import java.util.IdentityHashMap
+import java.util.*
 
 class Attr(val caseSensitive: Boolean = false) {
 

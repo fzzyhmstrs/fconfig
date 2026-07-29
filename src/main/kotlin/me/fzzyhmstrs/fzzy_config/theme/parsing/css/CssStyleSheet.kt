@@ -12,7 +12,7 @@ package me.fzzyhmstrs.fzzy_config.theme.parsing.css
 
 import me.fzzyhmstrs.fzzy_config.theme.parsing.ParsePrinter
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.rule.Ruleset
-import java.util.Collections
+import java.util.*
 import java.util.function.Consumer
 
 class CssStyleSheet(private val rules: List<Ruleset>, private val children: List<CssStyleSheet>): ParsePrinter {

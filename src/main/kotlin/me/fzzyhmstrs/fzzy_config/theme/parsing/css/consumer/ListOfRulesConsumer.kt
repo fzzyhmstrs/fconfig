@@ -1,0 +1,51 @@
+/*
+ * Copyright (c) 2026 Fzzyhmstrs
+ *
+ * This file is part of Fzzy Config, a mod made for minecraft; as such it falls under the license of Fzzy Config.
+ *
+ * Fzzy Config is free software provided under the terms of the Timefall Development License - Modified (TDL-M).
+ * You should have received a copy of the TDL-M with this software.
+ * If you did not, see <https://github.com/fzzyhmstrs/Timefall-Development-Licence-Modified>.
+ */
+
+package me.fzzyhmstrs.fzzy_config.theme.parsing.css.consumer
+
+import me.fzzyhmstrs.fzzy_config.theme.parsing.css.CssType
+import me.fzzyhmstrs.fzzy_config.theme.parsing.parser.Parser
+import me.fzzyhmstrs.fzzy_config.theme.parsing.token.Token
+import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenConsumer
+import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenQueue
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.attachTo
+import java.util.*
+
+object ListOfRulesConsumer: TokenConsumer<List<Token<*>>> {
+
+    override fun consume(queue: TokenQueue, args: Set<String>): ValidationResult<List<Token<*>>> {
+        val rules: LinkedList<Token<*>> = LinkedList()
+        val errors = ValidationResult.createMutable()
+        while(queue.canPoll()) {
+            val peek = queue.peek()
+            when (peek.type) {
+                CssType.CDC, CssType.CDO, Parser.EOL, CssType.WHITESPACE -> {
+                    queue.poll()
+                    continue
+                }
+                Parser.EOF -> {
+                    return ValidationResult.ofMutable(rules, errors)
+                }
+                CssType.AT -> {
+                    rules.add(AtRuleConsumer.consume(queue, args).attachTo(errors).get())
+                }
+                else -> {
+                    rules.add(QualifiedRuleConsumer.consume(queue, args).attachTo(errors).get())
+                }
+            }
+        }
+        return ValidationResult.ofMutable(rules, errors)
+    }
+
+    fun unknownRule(line: Int, col: Int): Token<*> {
+        return Token.unit(CssType.UNKNOWN_RULE, line, col, "Unknown Rule")
+    }
+}

@@ -20,9 +20,12 @@ object Errors {
     val INVALID_AT = Type<String>("At-rule in Invalid Context")
     val INVALID_DECL = Type<String>("Invalid or Unknown Declaration")
     val END_OF_QUEUE = Type<String>("Unexpected End of Token Queue")
+    val END_OF_FILE = Type<String>("Unexpected End of File")
     val INVALID_TOKEN = Type<String>("Invalid Token Type")
+    val ERROR_TOKEN = Type<String>("Errored Token")
     val UPPERCASE = Type<String>("Identifier with Improper Uppercase Letters")
     val NON_AUTO = Type<String>("CSS Property Without 'auto' Capabilities")
+    val SYNTAX = Type<String>("Syntax Error")
 
     fun <T> endOfQueue(value: T, message: String = ""): ValidationResult<T> {
         return ValidationResult.error(value, END_OF_QUEUE, message)

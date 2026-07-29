@@ -11,9 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.theme.parsing.css
 
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenQueue
-import java.lang.IllegalStateException
 import java.util.*
-import kotlin.collections.HashMap
 
 interface Func<T: Any> {
     fun apply(args: T, context: SelectorContext): Boolean

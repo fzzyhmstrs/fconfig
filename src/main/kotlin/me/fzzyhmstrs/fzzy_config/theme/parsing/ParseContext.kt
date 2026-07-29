@@ -11,8 +11,8 @@
 package me.fzzyhmstrs.fzzy_config.theme.parsing
 
 import me.fzzyhmstrs.fzzy_config.theme.parsing.parser.StringReader
-import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenType
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.Token
+import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenType
 
 abstract class ParseContext {
     abstract fun reader(): StringReader

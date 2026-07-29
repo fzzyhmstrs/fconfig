@@ -10,19 +10,18 @@
 
 package me.fzzyhmstrs.fzzy_config.theme.parsing.css.rule
 
+import me.fzzyhmstrs.fzzy_config.theme.parsing.builder.Creator
+import me.fzzyhmstrs.fzzy_config.theme.parsing.css.consumer.AtRuleConsumer
+import me.fzzyhmstrs.fzzy_config.theme.parsing.css.consumer.DeclarationConsumer
+import me.fzzyhmstrs.fzzy_config.theme.parsing.css.consumer.QualifiedRuleConsumer
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.CssType
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.Errors
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.Errors.cssCritical
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.Selector
-import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy.builder.Creator
-import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy.consumers.AtRuleConsumer
-import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy.consumers.DeclarationConsumer
-import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy.consumers.QualifiedRuleConsumer
-import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy.grammar.SelectorListGrammar
+import me.fzzyhmstrs.fzzy_config.theme.parsing.css.grammar.SelectorListGrammar
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.attachTo
-import java.util.Collections
-import java.util.Optional
+import java.util.*
 
 //Pair is IMPORTANT to RULE
 class Ruleset(val selectors: List<Selector>, val rules: Map<DeclarationKey<*, *>, Pair<Boolean, Declaration<*>>>, val children: List<Ruleset>) {

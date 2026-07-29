@@ -12,13 +12,12 @@ package me.fzzyhmstrs.fzzy_config.theme.parsing.css.rule
 
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.cast
+import me.fzzyhmstrs.fzzy_config.theme.parsing.builder.Creator
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.Errors
-import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy.builder.Creator
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenQueue
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.map
-import java.util.IdentityHashMap
-import java.util.Optional
+import java.util.*
 
 interface DeclarationKey<O: Any, C: Creator<out Declaration<O>>> {
     fun createDecl(decl: String, queue: TokenQueue, builder: C): ValidationResult<Optional<C>>

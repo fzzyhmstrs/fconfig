@@ -11,9 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.theme.parsing.token
 
 import me.fzzyhmstrs.fzzy_config.theme.parsing.ParsePrinter
-
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
-import java.lang.IllegalStateException
 import java.util.*
 import java.util.function.Consumer
 import java.util.function.Predicate
@@ -23,6 +21,13 @@ sealed class TokenQueue(protected val tokens: LinkedList<Token<*>>): ParsePrinte
     companion object {
         fun of(tokens: LinkedList<Token<*>>): TokenQueue {
             return Impl(tokens)
+        }
+
+        /**
+         * Filters out whitespace tokens
+         */
+        fun ofFiltered(tokens: LinkedList<Token<*>>): TokenQueue {
+            return Impl(LinkedList(tokens.filter { !it.type.isWhitespace() }))
         }
 
         fun single(token: Token<*>): TokenQueue {

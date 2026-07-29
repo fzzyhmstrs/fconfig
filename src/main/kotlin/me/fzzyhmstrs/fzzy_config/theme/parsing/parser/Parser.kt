@@ -12,16 +12,13 @@ package me.fzzyhmstrs.fzzy_config.theme.parsing.parser
 
 import me.fzzyhmstrs.fzzy_config.theme.parsing.ParseContext
 import me.fzzyhmstrs.fzzy_config.theme.parsing.ParseTokenizerType
-import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy.TokenConsumer
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.*
-import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenType
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.map
 import java.io.BufferedReader
 import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.stream.Collectors
-import kotlin.collections.ArrayList
 
 object Parser {
     private val parseSpecs: MutableMap<ParseTokenizerType, Spec> = hashMapOf()

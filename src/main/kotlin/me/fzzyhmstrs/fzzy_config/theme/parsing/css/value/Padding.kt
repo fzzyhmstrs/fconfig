@@ -10,15 +10,15 @@
 
 package me.fzzyhmstrs.fzzy_config.theme.parsing.css.value
 
+import me.fzzyhmstrs.fzzy_config.theme.parsing.builder.Creator
+import me.fzzyhmstrs.fzzy_config.theme.parsing.builder.Creator.Companion.applyValue
+import me.fzzyhmstrs.fzzy_config.theme.parsing.builder.ValueBuilders
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.Errors
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.rule.Declaration
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.rule.DeclarationKey
-import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy.builder.Creator
-import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy.builder.Creator.Companion.applyValue
-import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy.builder.SingleValueBuilders
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenQueue
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
-import java.util.Optional
+import java.util.*
 
 data class Padding(val top: Int = 0, val right: Int = 0, val bottom: Int = 0, val left: Int = 0)
 
@@ -91,7 +91,7 @@ object PaddingDeclarationKey: DeclarationKey<Padding, PaddingDeclarationCreator>
             "padding" -> {
                 when (queue.size()) {
                     1 -> {
-                        builder.applyValue(queue, SingleValueBuilders.lengthValueBuilder(0)) { t, c ->
+                        builder.applyValue(queue, ValueBuilders.lengthValueBuilder(0)) { t, c ->
                             c.top = t
                             c.right = t
                             c.bottom = t
@@ -99,28 +99,28 @@ object PaddingDeclarationKey: DeclarationKey<Padding, PaddingDeclarationCreator>
                         }
                     }
                     2 -> {
-                        builder.applyValue(queue, SingleValueBuilders.lengthValueBuilder(0)) { t, c ->
+                        builder.applyValue(queue, ValueBuilders.lengthValueBuilder(0)) { t, c ->
                             c.top = t
                             c.bottom = t
                         }
-                        builder.applyValue(queue, SingleValueBuilders.lengthValueBuilder(0)) { t, c ->
+                        builder.applyValue(queue, ValueBuilders.lengthValueBuilder(0)) { t, c ->
                             c.left = t
                             c.right = t
                         }
                     }
                     3 -> {
-                        builder.applyValue(queue, SingleValueBuilders.lengthValueBuilder(0)) { t, c -> c.top = t }
-                        builder.applyValue(queue, SingleValueBuilders.lengthValueBuilder(0)) { t, c ->
+                        builder.applyValue(queue, ValueBuilders.lengthValueBuilder(0)) { t, c -> c.top = t }
+                        builder.applyValue(queue, ValueBuilders.lengthValueBuilder(0)) { t, c ->
                             c.left = t
                             c.right = t
                         }
-                        builder.applyValue(queue, SingleValueBuilders.lengthValueBuilder(0)) { t, c -> c.bottom = t }
+                        builder.applyValue(queue, ValueBuilders.lengthValueBuilder(0)) { t, c -> c.bottom = t }
                     }
                     4 -> {
-                        builder.applyValue(queue, SingleValueBuilders.lengthValueBuilder(0)) { t, c -> c.top = t }
-                        builder.applyValue(queue, SingleValueBuilders.lengthValueBuilder(0)) { t, c -> c.right = t }
-                        builder.applyValue(queue, SingleValueBuilders.lengthValueBuilder(0)) { t, c -> c.bottom = t }
-                        builder.applyValue(queue, SingleValueBuilders.lengthValueBuilder(0)) { t, c -> c.left = t }
+                        builder.applyValue(queue, ValueBuilders.lengthValueBuilder(0)) { t, c -> c.top = t }
+                        builder.applyValue(queue, ValueBuilders.lengthValueBuilder(0)) { t, c -> c.right = t }
+                        builder.applyValue(queue, ValueBuilders.lengthValueBuilder(0)) { t, c -> c.bottom = t }
+                        builder.applyValue(queue, ValueBuilders.lengthValueBuilder(0)) { t, c -> c.left = t }
 
                     }
                     else -> {
@@ -129,16 +129,16 @@ object PaddingDeclarationKey: DeclarationKey<Padding, PaddingDeclarationCreator>
                 }
             }
             "padding-top" -> {
-                builder.applyValue(queue, SingleValueBuilders.lengthValueBuilder(0)) { t, c -> c.top = t }
+                builder.applyValue(queue, ValueBuilders.lengthValueBuilder(0)) { t, c -> c.top = t }
             }
             "padding-right" -> {
-                builder.applyValue(queue, SingleValueBuilders.lengthValueBuilder(0)) { t, c -> c.right = t }
+                builder.applyValue(queue, ValueBuilders.lengthValueBuilder(0)) { t, c -> c.right = t }
             }
             "padding-bottom" -> {
-                builder.applyValue(queue, SingleValueBuilders.lengthValueBuilder(0)) { t, c -> c.bottom = t }
+                builder.applyValue(queue, ValueBuilders.lengthValueBuilder(0)) { t, c -> c.bottom = t }
             }
             "padding-left" -> {
-                builder.applyValue(queue, SingleValueBuilders.lengthValueBuilder(0)) { t, c -> c.left = t }
+                builder.applyValue(queue, ValueBuilders.lengthValueBuilder(0)) { t, c -> c.left = t }
             }
             else -> {
                 ValidationResult.error(Optional.empty(), Errors.INVALID_DECL) { b -> b.message("Padding").content(decl) }
@@ -154,4 +154,5 @@ object PaddingDeclarationKey: DeclarationKey<Padding, PaddingDeclarationCreator>
         return PaddingDeclarationCreator()
     }
 
+    val ALIASES = arrayOf("padding-top", "padding-right", "padding-bottom", "padding-left")
 }

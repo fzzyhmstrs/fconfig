@@ -10,17 +10,17 @@
 
 package me.fzzyhmstrs.fzzy_config.theme.parsing.css.value
 
+import me.fzzyhmstrs.fzzy_config.theme.parsing.builder.Creator
+import me.fzzyhmstrs.fzzy_config.theme.parsing.builder.Creator.Companion.applyValue
+import me.fzzyhmstrs.fzzy_config.theme.parsing.builder.ValueBuilder
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.Errors
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.rule.Declaration
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.rule.DeclarationKey
-import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy.builder.Creator
-import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy.builder.Creator.Companion.applyValue
-import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy.builder.ValueBuilder
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenQueue
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
-import java.util.Optional
+import java.util.*
 
-class SimpleValueKey<O: Any>(private val decl: String, private val default: O, private val valueBuilder: ValueBuilder<O>,): DeclarationKey<O, SimpleValueCreator<O>> {
+class SimpleValueKey<O: Any>(private val decl: String, private val default: O, private val valueBuilder: ValueBuilder<O>, private val auto: O? = default): DeclarationKey<O, SimpleValueCreator<O>> {
 
     override fun createDecl(
         decl: String,
@@ -31,6 +31,10 @@ class SimpleValueKey<O: Any>(private val decl: String, private val default: O, p
             return ValidationResult.error(Optional.empty(), Errors.INVALID_DECL) { b -> b.content("Expected: ${this.decl}, got: $decl") }
         }
         return builder.applyValue(queue, valueBuilder) { t, c -> c.value = t }
+    }
+
+    override fun autoValue(): O? {
+        return auto
     }
 
     override fun defaultValue(): O {

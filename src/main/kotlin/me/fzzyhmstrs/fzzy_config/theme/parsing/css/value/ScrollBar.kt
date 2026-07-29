@@ -11,17 +11,17 @@
 package me.fzzyhmstrs.fzzy_config.theme.parsing.css.value
 
 import me.fzzyhmstrs.fzzy_config.fcId
+import me.fzzyhmstrs.fzzy_config.theme.parsing.builder.Creator
+import me.fzzyhmstrs.fzzy_config.theme.parsing.builder.Creator.Companion.applyValue
+import me.fzzyhmstrs.fzzy_config.theme.parsing.builder.SequencedValueBuilder
+import me.fzzyhmstrs.fzzy_config.theme.parsing.builder.ValueBuilders
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.Errors
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.rule.Declaration
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.rule.DeclarationKey
-import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy.builder.Creator
-import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy.builder.Creator.Companion.applyValue
-import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy.builder.SequencedValueBuilder
-import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy.builder.SingleValueBuilders
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenQueue
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import net.minecraft.util.Identifier
-import java.util.Optional
+import java.util.*
 
 data class ScrollBar(
     val scrollWidth: Int = 6,
@@ -186,7 +186,7 @@ data class ScrollBar(
         abstract fun mouseOverDown(mouseY: Double, top: Int, bottom: Int): Boolean
 
         companion object {
-            val MAP = SingleValueBuilders.createMap(ScrollBarButtons::class.java)
+            val MAP = ValueBuilders.createMap(ScrollBarButtons::class.java)
         }
     }
 }
@@ -362,95 +362,95 @@ object ScrollBarDeclarationKey: DeclarationKey<ScrollBar, ScrollBarDeclarationCr
         return when (decl) {
             "scroll-bar" -> {
                 SequencedValueBuilder.create<ScrollBarDeclaration, ScrollBarDeclarationCreator>()
-                    .sequence(SingleValueBuilders.lengthValueBuilder(6)) { t, c -> c.scrollWidth = t }
-                    .sequence(SingleValueBuilders.lengthValueBuilder(6)) { t, c -> c.scrollButtonHeight = t }
-                    .sequence(SingleValueBuilders.enumValueBuilder(ScrollBar.ScrollBarType.MAP, fallback = ScrollBar.ScrollBarType.DYNAMIC)) { t, c -> c.scrollType = t }
-                    .sequence(SingleValueBuilders.lengthValueBuilder(8)) { t, c -> c.scrollFixedHeight = t }
-                    .sequence(SingleValueBuilders.enumValueBuilder(ScrollBar.ScrollBarButtons.MAP, fallback = ScrollBar.ScrollBarButtons.SPLIT)) { t, c -> c.scrollButtonType = t }
-                    .sequence(SingleValueBuilders.boolValueBuilder()) { t, c -> c.scrollShowHoverOnly = t }
-                    .sequence(SingleValueBuilders.identifierValueBuilder(fallback = "widget/scroll/vanilla/scroller_background".fcId())) { t, c -> c.scrollBarBackground = t }
-                    .sequence(SingleValueBuilders.identifierValueBuilder(fallback = "widget/scroll/vanilla/scroller".fcId())) { t, c -> c.scrollBarScroller = t }
-                    .sequence(SingleValueBuilders.identifierValueBuilder(fallback = "widget/scroll/vanilla/scroller_highlighted".fcId())) { t, c -> c.scrollBarBackground = t }
-                    .sequence(SingleValueBuilders.identifierValueBuilder(fallback = "widget/scroll/vanilla/scroll_down".fcId())) { t, c -> c.scrollBarDown = t }
-                    .sequence(SingleValueBuilders.identifierValueBuilder(fallback = "widget/scroll/vanilla/scroll_down_highlighted".fcId())) { t, c -> c.scrollBarDownHighlighted = t }
-                    .sequence(SingleValueBuilders.identifierValueBuilder(fallback = "widget/scroll/vanilla/scroll_up".fcId())) { t, c -> c.scrollBarUp = t }
-                    .sequence(SingleValueBuilders.identifierValueBuilder(fallback = "widget/scroll/vanilla/scroll_up_highlighted".fcId())) { t, c -> c.scrollBarUpHighlighted = t }
+                    .sequence(ValueBuilders.lengthValueBuilder(6)) { t, c -> c.scrollWidth = t }
+                    .sequence(ValueBuilders.lengthValueBuilder(6)) { t, c -> c.scrollButtonHeight = t }
+                    .sequence(ValueBuilders.enumValueBuilder(ScrollBar.ScrollBarType.MAP, fallback = ScrollBar.ScrollBarType.DYNAMIC)) { t, c -> c.scrollType = t }
+                    .sequence(ValueBuilders.lengthValueBuilder(8)) { t, c -> c.scrollFixedHeight = t }
+                    .sequence(ValueBuilders.enumValueBuilder(ScrollBar.ScrollBarButtons.MAP, fallback = ScrollBar.ScrollBarButtons.SPLIT)) { t, c -> c.scrollButtonType = t }
+                    .sequence(ValueBuilders.boolValueBuilder()) { t, c -> c.scrollShowHoverOnly = t }
+                    .sequence(ValueBuilders.identifierValueBuilder(fallback = "widget/scroll/vanilla/scroller_background".fcId())) { t, c -> c.scrollBarBackground = t }
+                    .sequence(ValueBuilders.identifierValueBuilder(fallback = "widget/scroll/vanilla/scroller".fcId())) { t, c -> c.scrollBarScroller = t }
+                    .sequence(ValueBuilders.identifierValueBuilder(fallback = "widget/scroll/vanilla/scroller_highlighted".fcId())) { t, c -> c.scrollBarBackground = t }
+                    .sequence(ValueBuilders.identifierValueBuilder(fallback = "widget/scroll/vanilla/scroll_down".fcId())) { t, c -> c.scrollBarDown = t }
+                    .sequence(ValueBuilders.identifierValueBuilder(fallback = "widget/scroll/vanilla/scroll_down_highlighted".fcId())) { t, c -> c.scrollBarDownHighlighted = t }
+                    .sequence(ValueBuilders.identifierValueBuilder(fallback = "widget/scroll/vanilla/scroll_up".fcId())) { t, c -> c.scrollBarUp = t }
+                    .sequence(ValueBuilders.identifierValueBuilder(fallback = "widget/scroll/vanilla/scroll_up_highlighted".fcId())) { t, c -> c.scrollBarUpHighlighted = t }
                     .build().applyValue(queue, builder)
             }
             "scroll-bar-width" -> {
-                builder.applyValue(queue, SingleValueBuilders.lengthValueBuilder(6)) { t, c -> c.scrollWidth = t }
+                builder.applyValue(queue, ValueBuilders.lengthValueBuilder(6)) { t, c -> c.scrollWidth = t }
             }
             "scroll-bar-button-height" -> {
-                builder.applyValue(queue, SingleValueBuilders.lengthValueBuilder(6)) { t, c -> c.scrollButtonHeight = t }
+                builder.applyValue(queue, ValueBuilders.lengthValueBuilder(6)) { t, c -> c.scrollButtonHeight = t }
             }
             "scroll-bar-type" -> {
                 builder.applyValue(
-                    queue, SingleValueBuilders.enumValueBuilder(ScrollBar.ScrollBarType.MAP, fallback = ScrollBar.ScrollBarType.DYNAMIC)
+                    queue, ValueBuilders.enumValueBuilder(ScrollBar.ScrollBarType.MAP, fallback = ScrollBar.ScrollBarType.DYNAMIC)
                 ) { t, c -> c.scrollType = t }
             }
             "scroll-bar-fixed-height" -> {
-                builder.applyValue(queue, SingleValueBuilders.lengthValueBuilder(8)) { t, c -> c.scrollFixedHeight = t }
+                builder.applyValue(queue, ValueBuilders.lengthValueBuilder(8)) { t, c -> c.scrollFixedHeight = t }
             }
             "scroll-bar-button-type" -> {
                 builder.applyValue(
                     queue,
-                    SingleValueBuilders.enumValueBuilder(ScrollBar.ScrollBarButtons.MAP, fallback = ScrollBar.ScrollBarButtons.SPLIT)
+                    ValueBuilders.enumValueBuilder(ScrollBar.ScrollBarButtons.MAP, fallback = ScrollBar.ScrollBarButtons.SPLIT)
                 ) { t, c -> c.scrollButtonType = t }
             }
             "scroll-bar-show-on-hover-only" -> {
-                builder.applyValue(queue, SingleValueBuilders.boolValueBuilder()) { t, c -> c.scrollShowHoverOnly = t }
+                builder.applyValue(queue, ValueBuilders.boolValueBuilder()) { t, c -> c.scrollShowHoverOnly = t }
             }
             "scroll-bar-texture" -> {
                 SequencedValueBuilder.create<ScrollBarDeclaration, ScrollBarDeclarationCreator>()
-                    .sequence(SingleValueBuilders.identifierValueBuilder(fallback = "widget/scroll/vanilla/scroller_background".fcId())) { t, c -> c.scrollBarBackground = t }
-                    .sequence(SingleValueBuilders.identifierValueBuilder(fallback = "widget/scroll/vanilla/scroller".fcId())) { t, c -> c.scrollBarScroller = t }
-                    .sequence(SingleValueBuilders.identifierValueBuilder(fallback = "widget/scroll/vanilla/scroller_highlighted".fcId())) { t, c -> c.scrollBarBackground = t }
-                    .sequence(SingleValueBuilders.identifierValueBuilder(fallback = "widget/scroll/vanilla/scroll_down".fcId())) { t, c -> c.scrollBarDown = t }
-                    .sequence(SingleValueBuilders.identifierValueBuilder(fallback = "widget/scroll/vanilla/scroll_down_highlighted".fcId())) { t, c -> c.scrollBarDownHighlighted = t }
-                    .sequence(SingleValueBuilders.identifierValueBuilder(fallback = "widget/scroll/vanilla/scroll_up".fcId())) { t, c -> c.scrollBarUp = t }
-                    .sequence(SingleValueBuilders.identifierValueBuilder(fallback = "widget/scroll/vanilla/scroll_up_highlighted".fcId())) { t, c -> c.scrollBarUpHighlighted = t }
+                    .sequence(ValueBuilders.identifierValueBuilder(fallback = "widget/scroll/vanilla/scroller_background".fcId())) { t, c -> c.scrollBarBackground = t }
+                    .sequence(ValueBuilders.identifierValueBuilder(fallback = "widget/scroll/vanilla/scroller".fcId())) { t, c -> c.scrollBarScroller = t }
+                    .sequence(ValueBuilders.identifierValueBuilder(fallback = "widget/scroll/vanilla/scroller_highlighted".fcId())) { t, c -> c.scrollBarBackground = t }
+                    .sequence(ValueBuilders.identifierValueBuilder(fallback = "widget/scroll/vanilla/scroll_down".fcId())) { t, c -> c.scrollBarDown = t }
+                    .sequence(ValueBuilders.identifierValueBuilder(fallback = "widget/scroll/vanilla/scroll_down_highlighted".fcId())) { t, c -> c.scrollBarDownHighlighted = t }
+                    .sequence(ValueBuilders.identifierValueBuilder(fallback = "widget/scroll/vanilla/scroll_up".fcId())) { t, c -> c.scrollBarUp = t }
+                    .sequence(ValueBuilders.identifierValueBuilder(fallback = "widget/scroll/vanilla/scroll_up_highlighted".fcId())) { t, c -> c.scrollBarUpHighlighted = t }
                     .build().applyValue(queue, builder)
             }
             "scroll-bar-background" -> {
                 builder.applyValue(
                     queue,
-                    SingleValueBuilders.identifierValueBuilder(fallback = "widget/scroll/vanilla/scroller_background".fcId())
+                    ValueBuilders.identifierValueBuilder(fallback = "widget/scroll/vanilla/scroller_background".fcId())
                 ) { t, c -> c.scrollBarBackground = t }
             }
             "scroll-bar-scroller" -> {
                 builder.applyValue(
                     queue,
-                    SingleValueBuilders.identifierValueBuilder(fallback = "widget/scroll/vanilla/scroller".fcId())
+                    ValueBuilders.identifierValueBuilder(fallback = "widget/scroll/vanilla/scroller".fcId())
                 ) { t, c -> c.scrollBarScroller = t }
             }
             "scroll-bar-scroller-highlighted" -> {
                 builder.applyValue(
                     queue,
-                    SingleValueBuilders.identifierValueBuilder(fallback = "widget/scroll/vanilla/scroller_highlighted".fcId())
+                    ValueBuilders.identifierValueBuilder(fallback = "widget/scroll/vanilla/scroller_highlighted".fcId())
                 ) { t, c -> c.scrollBarHighlighted = t }
             }
             "scroll-bar-down" -> {
                 builder.applyValue(
                     queue,
-                    SingleValueBuilders.identifierValueBuilder(fallback = "widget/scroll/vanilla/scroll_down".fcId())
+                    ValueBuilders.identifierValueBuilder(fallback = "widget/scroll/vanilla/scroll_down".fcId())
                 ) { t, c -> c.scrollBarDown = t }
             }
             "scroll-bar-down-highlighted" -> {
                 builder.applyValue(
                     queue,
-                    SingleValueBuilders.identifierValueBuilder(fallback = "widget/scroll/vanilla/scroll_down_highlighted".fcId())
+                    ValueBuilders.identifierValueBuilder(fallback = "widget/scroll/vanilla/scroll_down_highlighted".fcId())
                 ) { t, c -> c.scrollBarDownHighlighted = t }
             }
             "scroll-bar-up" -> {
                 builder.applyValue(
                     queue,
-                    SingleValueBuilders.identifierValueBuilder(fallback = "widget/scroll/vanilla/scroll_up".fcId())
+                    ValueBuilders.identifierValueBuilder(fallback = "widget/scroll/vanilla/scroll_up".fcId())
                 ) { t, c -> c.scrollBarUp = t }
             }
             "scroll-bar-up-highlighted" -> {
                 builder.applyValue(
                     queue,
-                    SingleValueBuilders.identifierValueBuilder(fallback = "widget/scroll/vanilla/scroll_up_highlighted".fcId())
+                    ValueBuilders.identifierValueBuilder(fallback = "widget/scroll/vanilla/scroll_up_highlighted".fcId())
                 ) { t, c -> c.scrollBarUpHighlighted = t }
             }
             else -> {
@@ -466,4 +466,20 @@ object ScrollBarDeclarationKey: DeclarationKey<ScrollBar, ScrollBarDeclarationCr
     override fun defaultValue(): ScrollBar {
         return ScrollBar()
     }
+
+    val ALIASES = arrayOf(
+        "scroll-bar-width",
+        "scroll-bar-button-height",
+        "scroll-bar-type",
+        "scroll-bar-fixed-height",
+        "scroll-bar-button-type",
+        "scroll-bar-show-on-hover-only",
+        "scroll-bar-texture",
+        "scroll-bar-background",
+        "scroll-bar-scroller",
+        "scroll-bar-scroller-highlighted",
+        "scroll-bar-down",
+        "scroll-bar-down-highlighted",
+        "scroll-bar-up",
+        "scroll-bar-up-highlighted")
 }

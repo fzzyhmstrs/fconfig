@@ -11,8 +11,8 @@
 package me.fzzyhmstrs.fzzy_config.theme.parsing.css.tokens
 
 import me.fzzyhmstrs.fzzy_config.theme.parsing.ParseContext
-import me.fzzyhmstrs.fzzy_config.theme.parsing.parser.StringReader
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.CssType.WHITESPACE
+import me.fzzyhmstrs.fzzy_config.theme.parsing.parser.StringReader
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenProducer
 
 object WhitespaceProducer: TokenProducer() {

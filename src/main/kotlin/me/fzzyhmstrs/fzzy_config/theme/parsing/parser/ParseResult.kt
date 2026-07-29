@@ -12,6 +12,7 @@ package me.fzzyhmstrs.fzzy_config.theme.parsing.parser
 
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext
+import me.fzzyhmstrs.fzzy_config.theme.parsing.parser.ParseResult.Companion.error
 import java.util.function.Function
 
 /**

@@ -13,13 +13,13 @@ package me.fzzyhmstrs.fzzy_config.theme.parsing.css.rule
 import com.google.common.collect.Multimap
 import com.google.common.collect.MultimapBuilder
 import me.fzzyhmstrs.fzzy_config.FC
+import me.fzzyhmstrs.fzzy_config.theme.parsing.css.consumer.AtRuleConsumer
+import me.fzzyhmstrs.fzzy_config.theme.parsing.css.consumer.StyleBlockConsumer
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.Errors
-import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy.consumers.AtRuleConsumer
-import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy.consumers.StyleBlockConsumer
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenQueue
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.attachTo
-import java.util.Optional
+import java.util.*
 
 interface AtRuleKey<I: Any> {
     fun createRule(prelude: TokenQueue, value: Optional<StyleBlockConsumer.StyleBlock>): ValidationResult<Optional<AtRule<I>>>

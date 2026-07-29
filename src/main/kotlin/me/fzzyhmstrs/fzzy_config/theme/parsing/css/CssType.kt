@@ -11,10 +11,15 @@
 package me.fzzyhmstrs.fzzy_config.theme.parsing.css
 
 import me.fzzyhmstrs.fzzy_config.theme.parsing.ParseTokenizerType
+import me.fzzyhmstrs.fzzy_config.theme.parsing.css.consumer.AtRuleConsumer
+import me.fzzyhmstrs.fzzy_config.theme.parsing.css.consumer.DeclarationConsumer
+import me.fzzyhmstrs.fzzy_config.theme.parsing.css.consumer.FunctionConsumer
+import me.fzzyhmstrs.fzzy_config.theme.parsing.css.consumer.QualifiedRuleConsumer
+import me.fzzyhmstrs.fzzy_config.theme.parsing.css.consumer.SimpleBlockConsumer
+import me.fzzyhmstrs.fzzy_config.theme.parsing.css.consumer.StyleBlockConsumer
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.tokens.*
 import me.fzzyhmstrs.fzzy_config.theme.parsing.parser.Parser
 import me.fzzyhmstrs.fzzy_config.theme.parsing.parser.StringReader
-import me.fzzyhmstrs.fzzy_config.theme.parsing.strategy.consumers.*
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.Token
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenProducer
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenType

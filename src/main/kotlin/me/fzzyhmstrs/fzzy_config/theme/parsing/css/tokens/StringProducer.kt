@@ -11,10 +11,10 @@
 package me.fzzyhmstrs.fzzy_config.theme.parsing.css.tokens
 
 import me.fzzyhmstrs.fzzy_config.theme.parsing.ParseContext
-import me.fzzyhmstrs.fzzy_config.theme.parsing.parser.StringReader
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.CssType
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.CssType.BAD_STRING
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.CssType.STRING
+import me.fzzyhmstrs.fzzy_config.theme.parsing.parser.StringReader
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenProducer
 
 object StringProducer: TokenProducer() {

@@ -11,7 +11,6 @@
 package me.fzzyhmstrs.fzzy_config.theme.parsing.css.tokens
 
 import me.fzzyhmstrs.fzzy_config.theme.parsing.ParseContext
-import me.fzzyhmstrs.fzzy_config.theme.parsing.parser.StringReader
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.CssType.BAD_URL
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.CssType.FUNCTION
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.CssType.IDENT
@@ -20,8 +19,8 @@ import me.fzzyhmstrs.fzzy_config.theme.parsing.css.CssType.consumeEscape
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.CssType.consumeIdent
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.CssType.isIdentStartCodePoint
 import me.fzzyhmstrs.fzzy_config.theme.parsing.css.CssType.isValidEscape
+import me.fzzyhmstrs.fzzy_config.theme.parsing.parser.StringReader
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenProducer
-import java.lang.StringBuilder
 
 object IdentProducer: TokenProducer() {
 

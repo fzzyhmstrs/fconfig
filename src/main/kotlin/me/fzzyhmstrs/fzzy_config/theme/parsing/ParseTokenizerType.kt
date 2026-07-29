@@ -10,9 +10,6 @@
 
 package me.fzzyhmstrs.fzzy_config.theme.parsing
 
-import me.fzzyhmstrs.fzzy_config.theme.parsing.token.Token
-import me.fzzyhmstrs.fzzy_config.util.ValidationResult
-
 interface ParseTokenizerType {
     fun id(): String
     fun filterInput(string: String): String

@@ -10,9 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.theme.parsing.css
 
-import java.lang.IllegalStateException
 import java.util.*
-import kotlin.collections.HashMap
 
 class Pseudo(val pseudoGetter: (SelectorContext) -> Boolean, val userAction: Boolean) {
 
