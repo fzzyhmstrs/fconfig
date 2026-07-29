@@ -66,9 +66,9 @@ object FontDeclarationKey: DeclarationKey<Style, FontCreator> {
             "font" -> {
                 SequencedValueBuilder.create<FontDeclaration, FontCreator>()
                     .sequence(fontFamilyBuilder) { t, c -> c.apply { style -> style.withFont(StyleSpriteSource.Font(t)) } }
+                    .sequence(ValueBuilders.colorValueBuilder()) { t, c -> c.apply { style -> style.withColor(t) }}
+                    .sequence(ValueBuilders.colorValueBuilder()) { t, c -> c.apply { style -> style.withShadowColor(t) }}
                     .sequence(ValueBuilders.twoValueValueBuilder("bold", "normal")) { t, c -> c.apply { style -> style.withBold(t) }}
-                    //.sequence("COLOR")
-                    //.sequence("COLOR-SHADOW")
                     .sequence(ValueBuilders.twoValueValueBuilder("italic", "normal")) { t, c -> c.apply { style -> style.withItalic(t) }}
                     .sequence(ValueBuilders.twoValueValueBuilder("underline", "normal")) { t, c -> c.apply { style -> style.withUnderline(t) }}
                     .sequence(ValueBuilders.twoValueValueBuilder("strikethrough", "normal")) { t, c -> c.apply { style -> style.withStrikethrough(t) }}
@@ -79,10 +79,10 @@ object FontDeclarationKey: DeclarationKey<Style, FontCreator> {
                 builder.applyValue(queue, fontFamilyBuilder) { t, c -> c.apply { style -> style.withFont(StyleSpriteSource.Font(t)) } }
             }
             "color" -> {
-                TODO()
+                builder.applyValue(queue, ValueBuilders.colorValueBuilder()) { t, c -> c.apply { style -> style.withColor(t) }}
             }
             "color-shadow" -> {
-                TODO()
+                builder.applyValue(queue, ValueBuilders.colorValueBuilder()) { t, c -> c.apply { style -> style.withShadowColor(t) }}
             }
             "font-bold", "font-weight" -> {
                 builder.applyValue(queue, ValueBuilders.twoValueValueBuilder("bold", "normal")) { t, c -> c.apply { style -> style.withBold(t) }}
