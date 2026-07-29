@@ -32,15 +32,7 @@ object DeclarationKeys {
         "width",
         LengthValue(100.0, LengthValue.Unit.PERCENTAGE),
         ValueBuilders.dimensionValueBuilder(::width)).register("width")
-    val FONT_FAMILY = SimpleValueKey("font-family",
-        "minecraft:default".fcId(),
-        ValueBuilders.oneOfValueBuilder("minecraft:default".fcId(),
-            ValueBuilders.autoValueBuilder(::fontFamily),
-            ValueBuilders.keyedIdentValueBuilder("minecraft:default".fcId(), "default"),
-            ValueBuilders.keyedIdentValueBuilder("minecraft:uniform".fcId(), "uniform"),
-            ValueBuilders.keyedIdentValueBuilder("minecraft:alt".fcId(), "alt"),
-            ValueBuilders.keyedIdentValueBuilder("minecraft:illageralt".fcId(), "illager"),
-            ValueBuilders.identifierValueBuilder())).register("font-family")
+    val FONT = FontDeclarationKey.register("font", *FontDeclarationKey.ALIASES)
 
 
     private fun height(): DeclarationKey<LengthValue, *> {
