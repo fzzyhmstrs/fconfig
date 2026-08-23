@@ -19,7 +19,7 @@ import net.minecraft.network.packet.CustomPayload.Id
 
 internal class ConfigSyncS2CCustomPayload(val id: String, val serializedConfig: String): CustomPayload {
 
-    constructor(buf: PacketByteBuf): this(buf.readString(), buf.readString())
+    constructor(buf: PacketByteBuf): this(buf.readString(), buf.readString(ConfigApiImpl.MAX_CONFIG_SERIALIZATION_LENGTH))
 
     fun write(buf: PacketByteBuf) {
         buf.writeString(id)
