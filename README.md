@@ -22,9 +22,14 @@ maven {
     }
 }
 
-//for (neo)forge
+//for (neo)forge (kotlin for forge)
 maven {
     url = URI("https://thedarkcolour.github.io/KotlinForForge/")
+}
+
+//for (neo)forge (Kotlin lang forge)
+maven {
+    url = URI("https://repo.nyon.dev/releases")
 }
 ```
 ```groovy
@@ -45,9 +50,14 @@ maven {
     }
 }
 
-//for (neo)forge
+//for (neo)forge (kotlin for forge)
 maven {
     url = "https://thedarkcolour.github.io/KotlinForForge/"
+}
+
+//for (neo)forge (Kotlin lang forge)
+maven {
+    url = "https://repo.nyon.dev/releases"
 }
 ```
 
