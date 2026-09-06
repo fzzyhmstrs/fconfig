@@ -27,7 +27,6 @@ import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigEntry
 import me.fzzyhmstrs.fzzy_config.config.ConfigSection
 import me.fzzyhmstrs.fzzy_config.entry.*
-import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
 import me.fzzyhmstrs.fzzy_config.result.impl.ResultApiImpl
 import me.fzzyhmstrs.fzzy_config.screen.ConfigScreenProvider
@@ -45,6 +44,9 @@ import net.minecraft.nbt.NbtElement
 import net.minecraft.nbt.NbtEnd
 import net.minecraft.nbt.NbtOps
 import net.minecraft.registry.BuiltinRegistries
+import net.minecraft.registry.DynamicRegistryManager
+import net.minecraft.registry.Registries
+import net.minecraft.registry.RegistryBuilder
 import net.minecraft.registry.RegistryWrapper.WrapperLookup
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.Identifier
@@ -58,7 +60,6 @@ import java.lang.reflect.Modifier.isTransient
 import java.nio.file.Path
 import java.util.*
 import java.util.concurrent.CompletableFuture
-import java.util.function.BiConsumer
 import java.util.function.Supplier
 import kotlin.experimental.and
 import kotlin.experimental.or
@@ -93,7 +94,19 @@ internal object ConfigApiImpl {
     }
 
     internal fun getWrapperLookup(): WrapperLookup {
-        return wrapperLookup ?: BuiltinRegistries.createWrapperLookup().also { wrapperLookup = it }
+        return wrapperLookup ?: run {
+            try {
+                val immutable = DynamicRegistryManager.of(Registries.REGISTRIES)
+                val clazz = BuiltinRegistries::class.java
+                val fld = clazz.getDeclaredField("REGISTRY_BUILDER")
+                fld.isAccessible = true
+                val builder = fld.get(null) as RegistryBuilder
+                FC.DEVLOG.warn("Created my own lookup without validation")
+                builder.createWrapperLookup(immutable)
+            } catch (e: Exception) {
+                FC.DEVLOG.error("couldn't create my own wrapper lookup")
+                BuiltinRegistries.createWrapperLookup()
+            }}.also { wrapperLookup = it }
     }
 
     internal const val CHECK_NON_SYNC: Byte = 0
