@@ -27,7 +27,6 @@ import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigEntry
 import me.fzzyhmstrs.fzzy_config.config.ConfigSection
 import me.fzzyhmstrs.fzzy_config.entry.*
-import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
 import me.fzzyhmstrs.fzzy_config.result.impl.ResultApiImpl
 import me.fzzyhmstrs.fzzy_config.screen.ConfigScreenProvider
@@ -47,6 +46,9 @@ import net.minecraft.nbt.EndTag
 import net.minecraft.nbt.NbtOps
 import net.minecraft.data.registries.VanillaRegistries
 import net.minecraft.core.HolderLookup.Provider
+import net.minecraft.core.RegistryAccess
+import net.minecraft.core.RegistrySetBuilder
+import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.resources.Identifier
 import net.minecraft.util.Mth
@@ -59,7 +61,6 @@ import java.lang.reflect.Modifier.isTransient
 import java.nio.file.Path
 import java.util.*
 import java.util.concurrent.CompletableFuture
-import java.util.function.BiConsumer
 import java.util.function.Supplier
 import kotlin.experimental.and
 import kotlin.experimental.or
@@ -94,7 +95,19 @@ internal object ConfigApiImpl {
     }
 
     internal fun getWrapperLookup(): Provider {
-        return wrapperLookup ?: VanillaRegistries.createLookup().also { wrapperLookup = it }
+        return wrapperLookup ?: run {
+            try {
+                val immutable = RegistryAccess.fromRegistryOfRegistries(BuiltInRegistries.REGISTRY)
+                val clazz = VanillaRegistries::class.java
+                val fld = clazz.getDeclaredField("BUILDER")
+                fld.isAccessible = true
+                val builder = fld.get(null) as RegistrySetBuilder
+                FC.DEVLOG.warn("Created my own lookup without validation")
+                builder.build(immutable)
+            } catch (e: Exception) {
+                FC.DEVLOG.error("couldn't create my own wrapper lookup")
+                VanillaRegistries.createLookup()
+            }}.also { wrapperLookup = it }
     }
 
     internal const val CHECK_NON_SYNC: Byte = 0
