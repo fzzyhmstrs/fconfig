@@ -370,7 +370,7 @@ open class ValidatedKeybind(defaultValue: FzzyKeybind): ValidatedField<FzzyKeybi
         override fun onPress() {
             resetting = true
             justCLickedToggle = true
-            if (Screen.hasShiftDown() && this@ValidatedKeybind.storedValue != FzzyKeybindUnbound) {
+            if (isShiftDown() && this@ValidatedKeybind.storedValue != FzzyKeybindUnbound) {
                 justClickedShift = true
                 compounding = true
             }
