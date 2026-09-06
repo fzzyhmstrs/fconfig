@@ -15,7 +15,7 @@ internal class RegistrarImpl<T>(private val namespace: String, private val regis
     }
 
     override fun <F : T> register(name: String, entrySupplier: Supplier<F>): RegistrySupplier<F> {
-        return RegistrySupplierImpl(Registry.registerReference(registry, namespace.nsId(name), entrySupplier.get()))
+        return RegistrySupplierImpl(Registry.registerReference(registry, namespace.nsId(name), entrySupplier.get())) as RegistrySupplier<F>
     }
 
     override fun getRegistry(): Registry<T> {
