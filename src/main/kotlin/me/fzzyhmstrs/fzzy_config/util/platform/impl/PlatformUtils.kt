@@ -65,11 +65,7 @@ internal object PlatformUtils {
             val map = if (map1 != null) {
                 map1
             } else {
-                val map2 = container.config.getConfigElement<Map<String, Any>>("modproperties").orElse(emptyMap())
-                if (map2.isNotEmpty()) {
-                    FC.LOGGER.error("Mod ${container.modId} uses outdated modproperties format. See https://github.com/fzzyhmstrs/fconfig/blob/master/wiki/config-design/Troubleshooting.mdx for proper 1.21.1+ syntax")
-                }
-                map2
+                container.config.getConfigElement<Map<String, Any>>("modproperties").orElse(emptyMap())
             }
             val customValue = map["fzzy_config"]
             if (customValue is String) {
