@@ -23,7 +23,7 @@ import org.jetbrains.annotations.ApiStatus
 interface CustomWidget {
 
     fun isMouse(event: MouseEvent): Boolean {
-        return event.button() == 0
+        return event.button() == InputConstants.MOUSE_BUTTON_LEFT
     }
 
     /**

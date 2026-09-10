@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget.custom
 
+import com.mojang.blaze3d.platform.InputConstants
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.screen.widget.RepositioningWidget
@@ -300,7 +301,7 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
      * @since 0.6.0
      */
     protected open fun isSelectButton(button: Int): Boolean {
-        return button == 0 || button == 1
+        return button == InputConstants.MOUSE_BUTTON_LEFT || button == InputConstants.MOUSE_BUTTON_RIGHT
     }
 
     /**
@@ -377,7 +378,7 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
 
     private fun jumpScrollBarToMouse(mouseY: Double, button: Int): Int {
         if (noScroll()) return 0
-        if (button != 0) return 0
+        if (button != InputConstants.MOUSE_BUTTON_LEFT) return 0
         if (mouseY < scrollTop() || mouseY > scrollBottom()) return 0
         when (scrollType.get()) {
             ScrollBarType.DYNAMIC -> {
@@ -480,7 +481,7 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
     }
 
     override fun onMouseDrag(event: CustomWidget.MouseEvent): Boolean {
-         if (event.button() == 0 && this.scrollingY >= 0.0) {
+         if (event.button() == InputConstants.MOUSE_BUTTON_LEFT && this.scrollingY >= 0.0) {
             val mouseDelta = event.y() - scrollingY
             return if (event.y() < y.toDouble()) {
                 this.scrollToTop()
