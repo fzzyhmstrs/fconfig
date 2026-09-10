@@ -68,7 +68,6 @@ import net.minecraft.util.ARGB
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
 import org.jetbrains.annotations.ApiStatus.Internal
-import org.lwjgl.glfw.GLFW
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.function.*

@@ -27,7 +27,6 @@ import net.minecraft.network.chat.MutableComponent
 import net.minecraft.network.chat.Component
 import net.minecraft.resources.Identifier
 import net.minecraft.util.Mth
-import org.lwjgl.glfw.GLFW
 import java.util.function.Consumer
 import java.util.function.Supplier
 

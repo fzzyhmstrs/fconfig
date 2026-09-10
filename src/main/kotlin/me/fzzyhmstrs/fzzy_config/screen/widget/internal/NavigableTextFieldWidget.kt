@@ -20,7 +20,6 @@ import net.minecraft.client.input.KeyEvent
 import net.minecraft.network.chat.Component
 import net.minecraft.ChatFormatting
 import net.minecraft.util.Mth
-import org.lwjgl.glfw.GLFW
 
 internal class NavigableTextFieldWidget(private val textRenderer: Font, width: Int, height: Int, text: Component) : EditBox(textRenderer, width, height, text) {
 
