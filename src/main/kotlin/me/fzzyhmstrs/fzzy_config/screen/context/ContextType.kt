@@ -5,7 +5,6 @@ import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.TriState
 import com.mojang.blaze3d.platform.InputConstants
 import net.minecraft.network.chat.Component
-import org.lwjgl.glfw.GLFW
 import java.util.*
 
 /**

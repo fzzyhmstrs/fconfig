@@ -24,7 +24,6 @@ import net.minecraft.client.Minecraft
 import net.minecraft.client.input.MouseButtonEvent
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.input.KeyEvent
-import org.lwjgl.glfw.GLFW
 import java.util.concurrent.CompletableFuture
 import java.util.function.Consumer
 import java.util.function.Supplier
