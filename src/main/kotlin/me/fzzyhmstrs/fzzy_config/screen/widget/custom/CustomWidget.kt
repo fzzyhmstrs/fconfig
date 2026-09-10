@@ -294,7 +294,7 @@ interface CustomWidget {
             return input.key
         }
         fun scancode(): Int {
-            return input.scancode
+            return input.keycode
         }
         fun modifiers(): Int {
             return input.modifiers

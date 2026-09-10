@@ -1218,7 +1218,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
         }
 
         override fun keyPressed(input: KeyEvent): Boolean {
-            val bl = window?.keyPressed(input.input(), input.scancode, input.modifiers) ?: super.keyPressed(input)
+            val bl = window?.keyPressed(input.input(), input.keycode, input.modifiers) ?: super.keyPressed(input)
             if (closeWindow) {
                 pendingSuggestions = null
                 window = null
