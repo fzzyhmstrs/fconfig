@@ -94,7 +94,7 @@ internal object ConfigApiImpl {
     }
 
     internal fun getWrapperLookup(): Provider {
-        return wrapperLookup ?: VanillaRegistries.createLookup().also { wrapperLookup = it }
+        return wrapperLookup ?: VanillaRegistries.createReloadableLookup(VanillaRegistries.createWorldLookup()).also { wrapperLookup = it }
     }
 
     internal const val CHECK_NON_SYNC: Byte = 0
