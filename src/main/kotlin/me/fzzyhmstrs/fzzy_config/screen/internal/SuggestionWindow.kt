@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.screen.internal
 
 import com.google.common.collect.Lists
+import com.mojang.blaze3d.platform.InputConstants
 import com.mojang.blaze3d.systems.RenderSystem
 import com.mojang.brigadier.suggestion.Suggestion
 import com.mojang.brigadier.suggestion.Suggestions
@@ -19,7 +20,6 @@ import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.network.chat.Component
 import net.minecraft.util.CommonColors
 import net.minecraft.util.Mth
-import org.lwjgl.glfw.GLFW
 import java.util.function.Consumer
 import kotlin.math.max
 import kotlin.math.min
@@ -119,7 +119,7 @@ class SuggestionWindow(
     @Suppress("UNUSED_PARAMETER")
     fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
         when (keyCode) {
-            GLFW.GLFW_KEY_UP -> {
+            InputConstants.KEY_UP -> {
                 val d = if (up)
                     1
                 else
@@ -134,7 +134,7 @@ class SuggestionWindow(
                     index += 1
                 return true
             }
-            GLFW.GLFW_KEY_DOWN -> {
+            InputConstants.KEY_DOWN -> {
                 val d = if (up)
                     -1
                 else
@@ -149,7 +149,7 @@ class SuggestionWindow(
                     index += 1
                 return true
             }
-            GLFW.GLFW_KEY_ENTER, GLFW.GLFW_KEY_KP_ENTER, GLFW.GLFW_KEY_TAB -> {
+            InputConstants.KEY_RETURN, InputConstants.KEY_NUMPADENTER, InputConstants.KEY_TAB -> {
                 return if (selection != -1) {
                     applier.accept(suggestions[selection].text)
                     closer.accept(this)
@@ -158,7 +158,7 @@ class SuggestionWindow(
                     false
                 }
             }
-            GLFW.GLFW_KEY_ESCAPE -> {
+            InputConstants.KEY_ESCAPE -> {
                 closer.accept(this)
                 return true
             }

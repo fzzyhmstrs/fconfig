@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.config
 
+import com.mojang.blaze3d.Blaze3D
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.entry.EntryCreator
 import me.fzzyhmstrs.fzzy_config.entry.EntryFlag
@@ -328,12 +329,12 @@ class ConfigAction @JvmOverloads constructor(
                         val screen = client.gui.screen()
                         client.gui.setScreen(ConfirmLinkScreen({ confirmed: Boolean ->
                             if (confirmed) {
-                                Util.getPlatform().openUri(uRI)
+                                Blaze3D.openUri(uRI)
                             }
                             client.gui.setScreen(screen)
-                        }, uRI.toString(), false))
+                        }, uRI, false))
                     } else {
-                        Util.getPlatform().openUri(uRI)
+                        Blaze3D.openUri(uRI)
                     }
                     return true
                 } catch (var4: URISyntaxException) {
@@ -341,7 +342,7 @@ class ConfigAction @JvmOverloads constructor(
                     return false
                 }
             } else if (clickEvent is ClickEvent.OpenFile) {
-                Util.getPlatform().openFile(clickEvent.file())
+                Blaze3D.openPath(clickEvent.file().toPath())
                 return true
             } else if (clickEvent.action() == ClickEvent.Action.SUGGEST_COMMAND) {
                 FC.LOGGER.error("Can't suggest a command from a config action")
