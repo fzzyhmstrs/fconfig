@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
+import com.mojang.blaze3d.platform.InputConstants
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
@@ -28,7 +29,6 @@ import net.minecraft.network.chat.MutableComponent
 import net.minecraft.network.chat.Component
 import net.minecraft.ChatFormatting
 import net.minecraft.util.ARGB
-import org.lwjgl.glfw.GLFW
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.util.Locale
@@ -165,8 +165,8 @@ open class ValidationBackedNumberFieldWidget<T: Number>(
 
     override fun keyPressed(input: KeyEvent): Boolean {
         val inc = when (input.input()) {
-            GLFW.GLFW_KEY_RIGHT -> increment
-            GLFW.GLFW_KEY_LEFT -> -increment
+            InputConstants.KEY_RIGHT -> increment
+            InputConstants.KEY_LEFT -> -increment
             else -> 0.0
         }
         return if (inc != 0.0) {

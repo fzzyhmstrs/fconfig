@@ -28,7 +28,6 @@ import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.attachTo
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.map
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.gui.components.AbstractWidget
 import com.mojang.blaze3d.platform.InputConstants
 import net.minecraft.network.chat.MutableComponent
@@ -36,7 +35,6 @@ import net.minecraft.network.chat.Component
 import net.minecraft.ChatFormatting
 import net.peanuuutz.tomlkt.*
 import org.jetbrains.annotations.ApiStatus.Internal
-import org.lwjgl.glfw.GLFW
 import java.lang.ref.SoftReference
 import java.util.function.Function
 import java.util.function.UnaryOperator
@@ -325,15 +323,15 @@ open class ValidatedKeybind(defaultValue: FzzyKeybind): ValidatedField<FzzyKeybi
         fun setupHandler() {
             Minecraft.getInstance().gui.screen()?.nullCast<ConfigScreen>()?.setGlobalInputHandler { key, released, type, ctrl, shift, alt ->
                 if (!released || justCLickedToggle || justClickedShift) {
-                    if (released && (key == GLFW.GLFW_KEY_LEFT_SHIFT || key == GLFW.GLFW_KEY_RIGHT_SHIFT)) {
+                    if (released && (key == InputConstants.KEY_LSHIFT || key == InputConstants.KEY_RSHIFT)) {
                         justClickedShift = false
                     }
-                    if (released && (key == GLFW.GLFW_MOUSE_BUTTON_1 || (key == InputConstants.KEY_RETURN || key == InputConstants.KEY_SPACE || key == InputConstants.KEY_NUMPADENTER))) {
+                    if (released && (key == InputConstants.MOUSE_BUTTON_LEFT || (key == InputConstants.KEY_RETURN || key == InputConstants.KEY_SPACE || key == InputConstants.KEY_NUMPADENTER))) {
                         justCLickedToggle = false
                     }
                     return@setGlobalInputHandler TriState.FALSE
                 }
-                if (key == GLFW.GLFW_KEY_ESCAPE && !ctrl && !shift && !alt) {
+                if (key == InputConstants.KEY_ESCAPE && !ctrl && !shift && !alt) {
                     if (!compounding) {
                         this@ValidatedKeybind.accept(FzzyKeybindUnbound)
                     }

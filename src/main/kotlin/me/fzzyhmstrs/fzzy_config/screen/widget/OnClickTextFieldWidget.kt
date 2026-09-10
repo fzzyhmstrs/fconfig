@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
+import com.mojang.blaze3d.platform.InputConstants
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomTextWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomWidget
 import me.fzzyhmstrs.fzzy_config.simpleId
@@ -20,7 +21,6 @@ import net.minecraft.client.gui.TextAlignment
 import net.minecraft.client.gui.ActiveTextCollector
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.components.Tooltip
-import org.lwjgl.glfw.GLFW
 import java.util.function.Consumer
 import java.util.function.Supplier
 
@@ -71,13 +71,13 @@ class OnClickTextFieldWidget(private val textSupplier: Supplier<String>, private
     }
 
     private fun isNavigation(keyCode: Int): Boolean {
-        return keyCode == GLFW.GLFW_KEY_TAB
-                || keyCode == GLFW.GLFW_KEY_RIGHT
-                || keyCode == GLFW.GLFW_KEY_LEFT
-                || keyCode == GLFW.GLFW_KEY_DOWN
-                || keyCode == GLFW.GLFW_KEY_UP
-                || keyCode == GLFW.GLFW_KEY_LEFT_SHIFT
-                || keyCode == GLFW.GLFW_KEY_RIGHT_SHIFT
+        return keyCode == InputConstants.KEY_TAB
+                || keyCode == InputConstants.KEY_RIGHT
+                || keyCode == InputConstants.KEY_LEFT
+                || keyCode == InputConstants.KEY_DOWN
+                || keyCode == InputConstants.KEY_UP
+                || keyCode == InputConstants.KEY_LSHIFT
+                || keyCode == InputConstants.KEY_RSHIFT
     }
 
     /**

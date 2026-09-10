@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.validation.misc
 
+import com.mojang.blaze3d.platform.InputConstants
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryHandler
@@ -58,7 +59,6 @@ import net.minecraft.network.chat.TextColor
 import net.minecraft.util.Mth
 import net.peanuuutz.tomlkt.*
 import org.jetbrains.annotations.ApiStatus.Internal
-import org.lwjgl.glfw.GLFW
 import java.awt.Color
 import java.util.function.Consumer
 import java.util.function.Predicate
@@ -1059,19 +1059,19 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
 
         override fun onKey(event: CustomWidget.KeyEvent): Boolean {
             return when(event.key()) {
-                GLFW.GLFW_KEY_LEFT -> {
+                InputConstants.KEY_LEFT -> {
                     incrementL(-HORIZONTAL_INC)
                     true
                 }
-                GLFW.GLFW_KEY_RIGHT -> {
+                InputConstants.KEY_RIGHT -> {
                     incrementL(HORIZONTAL_INC)
                     true
                 }
-                GLFW.GLFW_KEY_UP -> {
+                InputConstants.KEY_UP -> {
                     incrementH(-VERTICAL_INC)
                     true
                 }
-                GLFW.GLFW_KEY_DOWN -> {
+                InputConstants.KEY_DOWN -> {
                     incrementH(VERTICAL_INC)
                     true
                 }
