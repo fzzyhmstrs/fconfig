@@ -8,11 +8,6 @@
 * If you did not, see <https://github.com/fzzyhmstrs/Timefall-Development-Licence-Modified>.
 * */
 
-import com.matthewprenger.cursegradle.CurseArtifact
-import com.matthewprenger.cursegradle.CurseProject
-import com.matthewprenger.cursegradle.CurseRelation
-import com.matthewprenger.cursegradle.Options
-import org.jetbrains.kotlin.cli.common.toBooleanLenient
 import java.net.URI
 
 plugins {
@@ -20,8 +15,9 @@ plugins {
     val kotlinVersion: String by System.getProperties()
     kotlin("jvm").version(kotlinVersion)
     kotlin("plugin.serialization") version "1.9.22"
-    id("com.modrinth.minotaur") version "2.+"
-    id("com.matthewprenger.cursegradle") version "1.4.0"
+    //id("com.modrinth.minotaur") version "2.+"
+    //id("com.matthewprenger.cursegradle") version "1.4.0"
+    id("com.hypherionmc.modutils.modpublisher") version "2.2.3"
     `maven-publish`
 }
 
@@ -124,12 +120,12 @@ tasks {
         targetCompatibility = javaVersion
         withSourcesJar()
     }
-    modrinth.get().group = "upload"
-    modrinthSyncBody.get().group = "upload"
+    //modrinth.get().group = "upload"
+    //modrinthSyncBody.get().group = "upload"
 }
 
 
-if (System.getenv("MODRINTH_TOKEN") != null) {
+/*if (System.getenv("MODRINTH_TOKEN") != null) {
     modrinth {
         val releaseType: String by project
         val mcVersions: String by project
@@ -151,9 +147,50 @@ if (System.getenv("MODRINTH_TOKEN") != null) {
         }
         debugMode.set(uploadDebugMode.toBooleanLenient() ?: true)
     }
+}*/
+
+if (System.getenv("CURSEFORGE_TOKEN") != null || System.getenv("MODRINTH_TOKEN") != null) {
+    publisher {
+        val releaseType: String by project
+        val mcVersions: String by project
+        val uploadDebugMode: String by project
+        val loaderVersions: String by project
+
+        apiKeys {
+            curseforge(System.getenv("CURSEFORGE_TOKEN") ?: "")
+            modrinth(System.getenv("MODRINTH_TOKEN") ?: "")
+        }
+
+        debug.set(uploadDebugMode.toBooleanStrictOrNull() ?: true)
+        gameType.set("minecraft")
+        curseID.set("1005914")
+        modrinthID.set("fzzy-config")
+        versionType.set(releaseType)
+        changelog.set(log)
+        projectVersion.set("${project.version}")
+        displayName.set("${base.archivesName.get()}-${project.version}")
+        gameVersions.set(mcVersions.split(","))
+        loaders.set(loaderVersions.split(","))
+        curseEnvironment.set("both")
+
+        artifact.set(tasks.remapJar.get().archiveFile.get())
+
+        addAdditionalFile {
+            artifact(tasks.remapSourcesJar)
+            changelog("Source files for ${base.archivesName.get()}-${project.version}")
+            fileType("sources-jar")
+        }
+
+        modrinthDepends {
+            required("kotlin-for-forge")
+        }
+        curseDepends {
+            required("kotlin-for-forge")
+        }
+    }
 }
 
-if (System.getenv("CURSEFORGE_TOKEN") != null) {
+/*if (System.getenv("CURSEFORGE_TOKEN") != null) {
     curseforge {
         val releaseType: String by project
         val mcVersions: String by project
@@ -191,12 +228,13 @@ if (System.getenv("CURSEFORGE_TOKEN") != null) {
             debug = uploadDebugMode.toBooleanLenient() ?: true
         })
     }
-}
+}*/
 
 tasks.register("uploadAll") {
     group = "upload"
-    dependsOn(tasks.modrinth.get())
-    dependsOn(tasks.curseforge.get())
+    dependsOn(tasks.publishMod.get())
+    //dependsOn(tasks.modrinth.get())
+    //dependsOn(tasks.curseforge.get())
     dependsOn(tasks.publish.get())
 }
 
