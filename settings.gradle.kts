@@ -13,6 +13,7 @@ pluginManagement {
         maven("https://maven.fabricmc.net") { name = "Fabric" }
         mavenCentral()
         gradlePluginPortal()
+        maven("https://maven.firstdark.dev/releases")
     }
     plugins {
         val loomVersion: String by settings
