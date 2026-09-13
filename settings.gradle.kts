@@ -15,6 +15,7 @@ pluginManagement {
         maven("https://files.minecraftforge.net/maven/")
         mavenCentral()
         gradlePluginPortal()
+        maven("https://maven.firstdark.dev/releases")
     }
     plugins {
         val mdgVersion: String by settings
