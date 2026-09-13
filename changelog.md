@@ -34,3 +34,4 @@
 * Fixed `registerAndLoadNoGuiConfig` not properly hiding the config from the GUI in all circumstances
 * Fixed translation issue in datagen
 * Fixed issues with some packet registration on some more obscure Neo versions
+* Fixed enums with non-CAPS member naming of `ValidatedEnum` not deserializing properly.
