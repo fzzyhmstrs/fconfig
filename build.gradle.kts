@@ -120,8 +120,8 @@ dependencies {
 
     testmodImplementation(sourceSets.main.get().output)
 
-    dokkaPlugin("me.fzzyhmstrs:internal-skip-plugin:1.0-SNAPSHOT")
-    dokkaPlugin("org.jetbrains.dokka:versioning-plugin:1.9.20")
+    //dokkaPlugin("me.fzzyhmstrs:internal-skip-plugin:1.0-SNAPSHOT")
+    //dokkaPlugin("org.jetbrains.dokka:versioning-plugin:1.9.20")
 }
 
 loom {
