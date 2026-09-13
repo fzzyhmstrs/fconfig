@@ -79,13 +79,22 @@ open class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, 
      */
     constructor(clazz: Class<T>, widgetType: WidgetType): this(clazz.enumConstants[0], widgetType)
 
+    private val validCaseInsensitiveLookup by lazy {
+        defaultValue.declaringJavaClass.enumConstants.let { it.map { a -> a.name.uppercase() }.toSet().size == it.size }
+    }
+
     @Suppress("UNCHECKED_CAST")
-    private val valuesMap: Map<String, T> = defaultValue.declaringJavaClass.enumConstants.associateBy { (it as Enum<*>).name } as Map<String, T>
+    private val valuesMap: Map<String, T> by lazy {
+        if (validCaseInsensitiveLookup)
+            defaultValue.declaringJavaClass.enumConstants.associateBy { (it as Enum<*>).name.uppercase() } as Map<String, T>
+        else
+            defaultValue.declaringJavaClass.enumConstants.associateBy { (it as Enum<*>).name } as Map<String, T>
+    }
 
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<T> {
         return try {
-            val string = toml.toString().uppercase()
+            val string = if (validCaseInsensitiveLookup) toml.toString().uppercase() else toml.toString()
             val chkEnum = valuesMap[string] ?: return ValidationResult.error(storedValue, ValidationResult.Errors.DESERIALIZATION, "Invalid enum for [$fieldName]. Possible values are: [${valuesMap.keys}]")
             ValidationResult.success(chkEnum)
         } catch (e: Throwable) {
