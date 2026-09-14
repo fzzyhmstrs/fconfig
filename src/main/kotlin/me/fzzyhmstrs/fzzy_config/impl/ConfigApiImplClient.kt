@@ -31,11 +31,11 @@ import net.minecraft.resources.Identifier
 internal object ConfigApiImplClient {
 
     internal fun setClipboard(value: Any?) {
-        MinecraftClient.getInstance().keyboard.clipboard = value.toString()
+        Minecraft.getInstance().keyboardHandler.clipboard = value.toString()
     }
 
     internal fun getClipboard(): String? {
-        return MinecraftClient.getInstance().keyboard.clipboard.takeIf { it.isNotEmpty() }
+        return Minecraft.getInstance().keyboardHandler.clipboard.takeIf { it.isNotEmpty() }
     }
 
     internal fun getPerms(): Map<String, Map<String, Boolean>> {

@@ -20,7 +20,7 @@ import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl.configSectionClass
 import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.Walkable
-import net.minecraft.util.Identifier
+import net.minecraft.resources.Identifier
 import net.peanuuutz.tomlkt.TomlComment
 import java.lang.reflect.Modifier
 import java.lang.reflect.Modifier.isTransient
@@ -44,7 +44,7 @@ internal object TranslationImpl {
     }
 
     internal fun <T: Any> buildTranslations(clazz: KClass<T>, id: Identifier, lang: String, builder: BiConsumer<String, String>, logWarnings: Boolean = true) {
-        buildTranslations(clazz, id.toTranslationKey(), lang, builder, logWarnings)
+        buildTranslations(clazz, id.toLanguageKey(), lang, builder, logWarnings)
     }
 
     private fun buildTranslations(clazz: KClass<*>, prefix: String, lang: String, builder: BiConsumer<String, String>, logWarnings: Boolean, keyComposer: (String, String) -> String = { a, b -> "$a.$b" }) {

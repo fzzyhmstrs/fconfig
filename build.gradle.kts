@@ -8,9 +8,7 @@
 * If you did not, see <https://github.com/fzzyhmstrs/Timefall-Development-Licence-Modified>.
 * */
 
-import net.fabricmc.loom.task.RemapJarTask
 import org.gradle.jvm.tasks.Jar
-import org.jetbrains.kotlin.cli.common.toBooleanLenient
 import java.net.URI
 
 plugins {
@@ -299,13 +297,7 @@ if (System.getenv("CURSEFORGE_TOKEN") != null || System.getenv("MODRINTH_TOKEN")
         loaders.set(loaderVersions.split(","))
         curseEnvironment.set("both")
 
-        artifact.set(tasks.remapJar.get().archiveFile.get())
-
-        addAdditionalFile {
-            artifact(tasks.remapSourcesJar)
-            changelog("Source files for ${base.archivesName.get()}-${project.version}")
-            fileType("sources-jar")
-        }
+        artifact.set(tasks.jar.get().archiveFile.get())
 
         modrinthDepends {
             required("kotlin-for-forge")
