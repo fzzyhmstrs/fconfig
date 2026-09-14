@@ -36,7 +36,7 @@ internal class RegistrarImpl<T: Any>(private val namespace: String, private val 
     }
 
     override fun <F : T> register(name: String, entrySupplier: Supplier<F>): RegistrySupplier<F> {
-        return RegistrySupplierImpl(deferred.register(name, entrySupplier))
+        return RegistrySupplierImpl(deferred.register(name, entrySupplier)) as RegistrySupplier<F>
     }
 
     override fun getRegistry(): Registry<T> {
