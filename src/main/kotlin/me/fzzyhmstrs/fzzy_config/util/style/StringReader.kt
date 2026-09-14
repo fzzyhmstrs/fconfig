@@ -10,7 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.util.style
 
-import net.minecraft.util.StringIdentifiable
+import net.minecraft.util.StringRepresentable
 import java.util.function.Predicate
 
 class StringReader(private val input: String, private var currentLine: Int = 1, val last: Boolean = false) {
@@ -83,13 +83,13 @@ class StringReader(private val input: String, private var currentLine: Int = 1, 
         return currentIndex == 0 && input == test
     }
 
-    fun <T: StringIdentifiable> peekCandidate(candidates: List<T>): T? {
+    fun <T: StringRepresentable> peekCandidate(candidates: List<T>): T? {
         if (!canRead()) return null
-        var c: List<T> = candidates.filter { canRead(it.asString().length) }
+        var c: List<T> = candidates.filter { canRead(it.serializedName.length) }
         var offset = 0
         while (canRead(offset + 1) && c.size > 1) {
             val char = peek(offset)
-            c = c.filter { it.asString()[offset] == char }
+            c = c.filter { it.serializedName[offset] == char }
             offset += 1
         }
         return c.firstOrNull()
