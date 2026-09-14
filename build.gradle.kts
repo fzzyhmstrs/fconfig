@@ -10,13 +10,14 @@
 
 import org.gradle.api.internal.artifacts.dependencies.DefaultImmutableVersionConstraint.strictly
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.gradle.jvm.tasks.Jar
 import java.net.URI
 
 plugins {
     id("net.neoforged.moddev")
     val kotlinVersion: String by System.getProperties()
     kotlin("jvm").version(kotlinVersion)
-    kotlin("plugin.serialization") version "1.9.22"
+    kotlin("plugin.serialization") version "2.3.20"
     //id("com.modrinth.minotaur") version "2.+"
     //id("com.matthewprenger.cursegradle") version "1.4.0"
     id("com.hypherionmc.modutils.modpublisher") version "2.2.3"
@@ -217,13 +218,7 @@ if (System.getenv("CURSEFORGE_TOKEN") != null || System.getenv("MODRINTH_TOKEN")
         loaders.set(loaderVersions.split(","))
         curseEnvironment.set("both")
 
-        artifact.set(tasks.remapJar.get().archiveFile.get())
-
-        addAdditionalFile {
-            artifact(tasks.remapSourcesJar)
-            changelog("Source files for ${base.archivesName.get()}-${project.version}")
-            fileType("sources-jar")
-        }
+        artifact.set(tasks.jar.get().archiveFile.get())
 
         modrinthDepends {
             required("kotlin-for-forge")
