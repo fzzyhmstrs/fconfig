@@ -9,6 +9,11 @@
 * */
 
 import org.gradle.jvm.tasks.Jar
+import org.jetbrains.dokka.base.DokkaBase
+import org.jetbrains.dokka.base.DokkaBaseConfiguration
+import org.jetbrains.dokka.gradle.DokkaTask
+import org.jetbrains.dokka.versioning.VersioningConfiguration
+import org.jetbrains.dokka.versioning.VersioningPlugin
 import java.net.URI
 
 plugins {
