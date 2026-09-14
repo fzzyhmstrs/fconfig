@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
+import com.mojang.blaze3d.platform.InputConstants
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.nullCast
@@ -45,7 +46,6 @@ import net.minecraft.client.input.MouseButtonEvent
 import net.minecraft.network.chat.CommonComponents
 import net.minecraft.network.chat.Component
 import net.minecraft.resources.Identifier
-import org.lwjgl.glfw.GLFW
 import java.util.*
 import java.util.function.*
 import java.util.function.Function
@@ -179,11 +179,11 @@ class PopupWidget
             return true
         }
         val guiNavigation: FocusNavigationEvent? = when(input.input()) {
-            GLFW.GLFW_KEY_LEFT -> getArrowNavigation(ScreenDirection.LEFT)
-            GLFW.GLFW_KEY_RIGHT -> getArrowNavigation(ScreenDirection.RIGHT)
-            GLFW.GLFW_KEY_UP -> getArrowNavigation(ScreenDirection.UP)
-            GLFW.GLFW_KEY_DOWN -> getArrowNavigation(ScreenDirection.DOWN)
-            GLFW.GLFW_KEY_TAB ->  getTabNavigation()
+            InputConstants.KEY_LEFT -> getArrowNavigation(ScreenDirection.LEFT)
+            InputConstants.KEY_RIGHT -> getArrowNavigation(ScreenDirection.RIGHT)
+            InputConstants.KEY_UP -> getArrowNavigation(ScreenDirection.UP)
+            InputConstants.KEY_DOWN -> getArrowNavigation(ScreenDirection.DOWN)
+            InputConstants.KEY_TAB ->  getTabNavigation()
             else -> null
         }
         if(guiNavigation != null) {

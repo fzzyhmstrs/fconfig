@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config_test.test
 
+import com.mojang.blaze3d.platform.InputConstants
 import me.fzzyhmstrs.fzzy_config.annotations.*
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigAction
@@ -40,7 +41,6 @@ import net.minecraft.server.level.ServerPlayer
 import net.minecraft.network.chat.HoverEvent
 import net.minecraft.resources.Identifier
 import net.minecraft.world.item.ItemStackTemplate
-import org.lwjgl.glfw.GLFW
 
 @RequiresRestart
 class TestConfigImpl4: Config(Identifier.fromNamespaceAndPath("fzzy_config_test","test_config4")) {
@@ -117,16 +117,16 @@ class TestConfigImpl4: Config(Identifier.fromNamespaceAndPath("fzzy_config_test"
     var myTriState = TriState.TRUE
     var myTriState2 = ValidatedTriState(TriState.FALSE, ValidatedTriState.WidgetType.CYCLING)
 
-    var myKeybind = ValidatedKeybind(GLFW.GLFW_KEY_BACKSPACE, ContextInput.KEYBOARD, ctrl = false, shift = true, alt = false)
+    var myKeybind = ValidatedKeybind(InputConstants.KEY_BACKSPACE, ContextInput.KEYBOARD, ctrl = false, shift = true, alt = false)
 
     var keybindButton = ConfigAction.Builder().title("Test Keybind".lit()).decoration(TextureDeco.DECO_QUESTION).build(Runnable {
         FC.LOGGER.warn(
             "Testing Shift Backspace combination: {}",
-            myKeybind.relevant(GLFW.GLFW_KEY_BACKSPACE, ctrl = false, shift = true, alt = false)
+            myKeybind.relevant(InputConstants.KEY_BACKSPACE, ctrl = false, shift = true, alt = false)
         )
         FC.LOGGER.warn(
             "Testing Tab key: {}",
-            myKeybind.relevant(GLFW.GLFW_KEY_TAB, ctrl = false, shift = false, alt = false)
+            myKeybind.relevant(InputConstants.KEY_TAB, ctrl = false, shift = false, alt = false)
         )
     })
 

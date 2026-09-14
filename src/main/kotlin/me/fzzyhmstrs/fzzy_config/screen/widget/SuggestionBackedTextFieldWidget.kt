@@ -24,7 +24,6 @@ import net.minecraft.client.Minecraft
 import net.minecraft.client.input.MouseButtonEvent
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.input.KeyEvent
-import org.lwjgl.glfw.GLFW
 import java.util.concurrent.CompletableFuture
 import java.util.function.Consumer
 import java.util.function.Supplier
@@ -152,7 +151,7 @@ class SuggestionBackedTextFieldWidget(
     }
 
     override fun keyPressed(input: KeyEvent): Boolean {
-        val bl = window?.keyPressed(input.input(), input.scancode, input.modifiers) ?: super.keyPressed(input)
+        val bl = window?.keyPressed(input.input(), input.keycode, input.modifiers) ?: super.keyPressed(input)
         if (closeWindow) {
             pendingSuggestions = null
             window = null

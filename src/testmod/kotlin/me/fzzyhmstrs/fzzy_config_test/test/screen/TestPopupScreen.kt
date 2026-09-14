@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config_test.test.screen
 
 import com.google.common.base.Suppliers
+import com.mojang.blaze3d.platform.InputConstants
 import me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen
 import me.fzzyhmstrs.fzzy_config.screen.widget.ConfigScreenWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutWidget
@@ -32,7 +33,6 @@ import net.minecraft.client.gui.components.Button
 import net.minecraft.client.gui.components.StringWidget
 import net.minecraft.client.input.KeyEvent
 import net.minecraft.network.chat.ClickEvent
-import org.lwjgl.glfw.GLFW
 import java.util.function.BiFunction
 import java.util.function.Supplier
 
@@ -95,10 +95,10 @@ class TestPopupScreen(size: Int = 5): PopupWidgetScreen(FcText.empty()) {
     }
 
     override fun keyPressed(input: KeyEvent): Boolean {
-        if (input.key == GLFW.GLFW_KEY_PAGE_UP) {
+        if (input.key == InputConstants.KEY_PAGEUP) {
             listTestWidget.page(true)
             return true
-        } else if (input.key == GLFW.GLFW_KEY_PAGE_DOWN) {
+        } else if (input.key == InputConstants.KEY_PAGEDOWN) {
             listTestWidget.page(false)
             return true
         }

@@ -27,8 +27,6 @@ import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
-import me.fzzyhmstrs.fzzy_config.util.PortingUtils.isAltDown
-import me.fzzyhmstrs.fzzy_config.util.PortingUtils.isControlDown
 import me.fzzyhmstrs.fzzy_config.util.PortingUtils.isShiftDown
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import me.fzzyhmstrs.fzzy_config.util.TriState
@@ -44,6 +42,7 @@ import net.minecraft.client.gui.components.AbstractWidget
 import net.minecraft.client.gui.layouts.LinearLayout
 import net.minecraft.client.gui.components.StringWidget
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout
+import net.minecraft.client.gui.narration.NarrationTrigger
 import net.minecraft.client.input.KeyEvent
 import net.minecraft.network.chat.CommonComponents
 import net.minecraft.network.chat.Component
@@ -334,7 +333,7 @@ internal class ConfigScreen(
         return bl
     }
 
-    override fun updateNarratorStatus(previouslyDisabled: Boolean) {
+    override fun updateNarratorStatus(previouslyDisabled: Boolean, trigger: NarrationTrigger) {
         if (previouslyDisabled) {
             this.setScreenNarrationDelay(TimeUnit.SECONDS.toMillis(2L), false)
         }

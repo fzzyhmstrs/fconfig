@@ -16,6 +16,7 @@ import net.fabricmc.api.Environment
 import net.minecraft.client.gui.narration.NarrationThunk
 import net.minecraft.client.gui.narration.NarrationElementOutput
 import net.minecraft.client.gui.narration.NarratedElementType
+import net.minecraft.client.gui.narration.NarrationTrigger
 import net.minecraft.network.chat.Component
 import net.minecraft.util.StringDecomposer
 import java.util.function.Consumer
@@ -145,6 +146,10 @@ internal class ConfigScreenNarrator(vararg narrateOnceStrings: String) {
 
         override fun nest(): NarrationElementOutput {
             return this@ConfigScreenNarrator.MessageBuilder(this.depth + 1)
+        }
+
+        override fun narrationTrigger(): NarrationTrigger {
+            TODO("Not yet implemented!")
         }
     }
 
