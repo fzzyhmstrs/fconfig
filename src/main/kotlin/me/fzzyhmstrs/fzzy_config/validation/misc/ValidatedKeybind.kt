@@ -190,15 +190,15 @@ open class ValidatedKeybind(defaultValue: FzzyKeybind): ValidatedField<FzzyKeybi
             }
             val key = input.lowercase()
             val int = key2Int[key] ?: return
-            if (int == GLFW.GLFW_KEY_LEFT_CONTROL || int == GLFW.GLFW_KEY_RIGHT_CONTROL) {
+            if (int == InputConstants.KEY_LCONTROL || int == InputConstants.KEY_RCONTROL) {
                 ctrl = true
                 spaceIndex = reader.peekTo { it == ' ' }
                 continue
-            } else if (int == GLFW.GLFW_KEY_LEFT_SHIFT || int == GLFW.GLFW_KEY_RIGHT_SHIFT) {
+            } else if (int == InputConstants.KEY_LSHIFT || int == InputConstants.KEY_RSHIFT) {
                 shift = true
                 spaceIndex = reader.peekTo { it == ' ' }
                 continue
-            } else if (int == GLFW.GLFW_KEY_LEFT_ALT || int == GLFW.GLFW_KEY_RIGHT_ALT) {
+            } else if (int == InputConstants.KEY_LALT || int == InputConstants.KEY_RALT) {
                 alt = true
                 spaceIndex = reader.peekTo { it == ' ' }
                 continue
