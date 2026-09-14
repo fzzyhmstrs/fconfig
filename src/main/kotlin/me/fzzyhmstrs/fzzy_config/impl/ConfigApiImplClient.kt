@@ -30,6 +30,14 @@ import net.minecraft.resources.Identifier
 
 internal object ConfigApiImplClient {
 
+    internal fun setClipboard(value: Any?) {
+        Minecraft.getInstance().keyboardHandler.clipboard = value.toString()
+    }
+
+    internal fun getClipboard(): String? {
+        return Minecraft.getInstance().keyboardHandler.clipboard.takeIf { it.isNotEmpty() }
+    }
+
     internal fun getPerms(): Map<String, Map<String, Boolean>> {
         return ClientConfigRegistry.getPerms()
     }

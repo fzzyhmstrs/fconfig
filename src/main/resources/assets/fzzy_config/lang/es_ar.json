@@ -294,5 +294,9 @@
 "fc.button.info.back.desc": "Vuelve a la pantalla de configuración anterior",
 "fc.button.info.search.desc": "Abre el menú 'Ir a'",
 "fc.button.info.info.desc": "Abre esta ventana emergente",
-"fc.button.info.full_exit.desc": "Sale de todas las interfaces gráficas de configuración abiertas y las guarda, según corresponda"
+"fc.button.info.full_exit.desc": "Sale de todas las interfaces gráficas de configuración abiertas y las guarda, según corresponda",
+
+"fzzy_config.text.or_2": "%1$s o %2$s",
+"fzzy_config.text.or_3": "%1$s, %2$s",
+"fzzy_config.text.and_2": "%1$s y %2$s"
 }
