@@ -204,7 +204,7 @@ object FC: ModInitializer {
         }
     }
 
-    class TestStatusEffect(): StatusEffect(StatusEffectCategory.NEUTRAL, 0xFFFFFF) {
+    class TestStatusEffect(): MobEffect(MobEffectCategory.NEUTRAL, 0xFFFFFF) {
 
     }
 }
