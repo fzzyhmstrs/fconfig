@@ -294,10 +294,10 @@ if (System.getenv("CURSEFORGE_TOKEN") != null || System.getenv("MODRINTH_TOKEN")
         }
 
         modrinthDepends {
-            required("kotlin-for-forge")
+            required("fabric-api", "fabric-language-kotlin")
         }
         curseDepends {
-            required("kotlin-for-forge")
+            required("fabric-api", "fabric-language-kotlin")
         }
     }
 }
