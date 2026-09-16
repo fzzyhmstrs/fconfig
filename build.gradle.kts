@@ -221,10 +221,10 @@ if (System.getenv("CURSEFORGE_TOKEN") != null || System.getenv("MODRINTH_TOKEN")
         artifact.set(tasks.jar.get().archiveFile.get())
 
         modrinthDepends {
-            required("fabric-api", "fabric-language-kotlin")
+            required("kotlin-lang-forge")
         }
         curseDepends {
-            required("fabric-api", "fabric-language-kotlin")
+            required("kotlinlangforge")
         }
     }
 }

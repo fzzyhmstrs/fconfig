@@ -99,14 +99,17 @@ internal object ConfigApiImpl {
             try {
                 val immutable = RegistryAccess.fromRegistryOfRegistries(BuiltInRegistries.REGISTRY)
                 val clazz = VanillaRegistries::class.java
-                val fld = clazz.getDeclaredField("BUILDER")
+                val fld = clazz.getDeclaredField("WORLD_BUILDER")
                 fld.isAccessible = true
                 val builder = fld.get(null) as RegistrySetBuilder
+                val fld2 = clazz.getDeclaredField("RELOADABLE_BUILDER")
+                fld2.isAccessible = true
+                val builder2 = fld2.get(null) as RegistrySetBuilder
                 FC.DEVLOG.warn("Created my own lookup without validation")
-                builder.build(immutable)
+                builder2.build(builder.build(immutable))
             } catch (e: Exception) {
                 FC.DEVLOG.error("couldn't create my own wrapper lookup")
-                VanillaRegistries.createLookup()
+                VanillaRegistries.createReloadableLookup(VanillaRegistries.createWorldLookup())
             }}.also { wrapperLookup = it }
     }
 
