@@ -17,21 +17,4 @@
 
 -------------------------------------
 
-### Additions
-* Added zh_cn lang support (thank you Po-Cu on github)
-* Added the ability to copy-paste from/to outside of Minecraft into/out of settings
-* Added `platform` method to `PlatformApi`. This returns an enum providing `FABRIC`, `FORGE`, or `NEOFORGE`, which can be checked via their method `forgelike()` to quickly see if the platform is one of the forge-like types.
-
-### Changes
-* Improved how Registrar generics work so that registrars now return a `RegistryEntry<F>`, `F` being the specific type of the registered object rather than it's more generic supertype (`Item`, `Block`, etc.)
-
-### Fixes
-* Removed unneeded metadata warning in 1.20.1 forge version.
-* Crash possibly caused with use of `ValidatedIdentifier.ofRegistryKey`
-* Fixed Neo instances seeing blank popups under certain inconsistent circumstances
-* Fixed issue with ValidatedSet translation
-* Fixed decoder expeption on Neo for very large configs
-* Fixed `registerAndLoadNoGuiConfig` not properly hiding the config from the GUI in all circumstances
-* Fixed translation issue in datagen
-* Fixed issues with some packet registration on some more obscure Neo versions
-* Fixed enums with non-CAPS member naming of `ValidatedEnum` not deserializing properly.
+Fixed semantic versioning mishaps
