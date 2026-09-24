@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.screen
 
+import com.mojang.blaze3d.platform.InputConstants
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import me.fzzyhmstrs.fzzy_config.util.TriState
 import net.minecraft.client.input.MouseButtonEvent
@@ -65,7 +66,7 @@ interface PopupParentElement: ContainerEventHandler, PopupController {
         for (element in this.children()) {
             if (element.mouseClicked(click, doubled)) {
                 this.focused = element
-                if (click.button() == 0) {
+                if (click.button() == InputConstants.MOUSE_BUTTON_LEFT) {
                     this.isDragging = true
                 }
 
