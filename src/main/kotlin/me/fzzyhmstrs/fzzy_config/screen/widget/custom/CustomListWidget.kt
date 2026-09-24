@@ -344,7 +344,7 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
 
     private fun updateScrollingState(mouseY: Double, button: Int) {
         if (noScroll()) return
-        if (button != 0) return
+        if (button != InputConstants.MOUSE_BUTTON_LEFT) return
         this.scrollingY = mouseY
         if (scrollingY > 0.0) {
             if (scrollType.get() == ScrollBarType.DYNAMIC) {

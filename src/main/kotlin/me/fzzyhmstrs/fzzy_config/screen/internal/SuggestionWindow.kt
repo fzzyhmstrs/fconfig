@@ -78,7 +78,7 @@ class SuggestionWindow(
     }
 
     fun mouseClicked(mouseX: Int, mouseY: Int, button: Int): Boolean {
-        if (button != 0) return false
+        if (button != InputConstants.MOUSE_BUTTON_LEFT) return false
         if (mouseX < x || mouseX > x + w || mouseY < y || mouseY > y + h) return false
         var testY = if(up) y + h - 12 else y
         for (l in index until index + suggestionSize) {
