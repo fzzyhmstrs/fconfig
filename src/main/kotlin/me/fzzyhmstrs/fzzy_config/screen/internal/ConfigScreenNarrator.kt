@@ -50,9 +50,9 @@ internal class ConfigScreenNarrator(vararg narrateOnceStrings: String) {
      *
      * @param builderConsumer a consumer that adds the narrations to a [NarrationMessageBuilder]
      */
-    fun buildNarrations(builderConsumer: Consumer<NarrationElementOutput>) {
+    fun buildNarrations(builderConsumer: Consumer<NarrationElementOutput>, trigger: NarrationTrigger = NarrationTrigger.SYSTEM) {
         currentMessageIndex++
-        builderConsumer.accept(MessageBuilder(0))
+        builderConsumer.accept(MessageBuilder(0, trigger))
     }
 
     /**
@@ -122,7 +122,7 @@ internal class ConfigScreenNarrator(vararg narrateOnceStrings: String) {
         }
     }
 
-    inner class MessageBuilder internal constructor(private val depth: Int) : NarrationElementOutput {
+    inner class MessageBuilder internal constructor(private val depth: Int, private val trigger: NarrationTrigger) : NarrationElementOutput {
 
         override fun add(part: NarratedElementType, narration: NarrationThunk<*>) {
             (this@ConfigScreenNarrator.narrations.computeIfAbsent(PartIndex(part, this.depth)) { _ -> Message() })
@@ -143,11 +143,11 @@ internal class ConfigScreenNarrator(vararg narrateOnceStrings: String) {
         }
 
         override fun nest(): NarrationElementOutput {
-            return this@ConfigScreenNarrator.MessageBuilder(this.depth + 1)
+            return this@ConfigScreenNarrator.MessageBuilder(this.depth + 1, this.trigger)
         }
 
         override fun narrationTrigger(): NarrationTrigger {
-            TODO("Not yet implemented!")
+            return trigger
         }
     }
 

@@ -31,20 +31,20 @@ import me.fzzyhmstrs.fzzy_config.util.PortingUtils.isShiftDown
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import me.fzzyhmstrs.fzzy_config.util.TriState
 import net.minecraft.client.Minecraft
-import net.minecraft.client.input.MouseButtonEvent
 import net.minecraft.client.gui.GuiGraphicsExtractor
-import net.minecraft.client.gui.components.Renderable
-import net.minecraft.client.gui.narration.NarratableEntry
-import net.minecraft.client.gui.screens.Screen
-import net.minecraft.client.gui.narration.NarrationElementOutput
-import net.minecraft.client.gui.components.Tooltip
 import net.minecraft.client.gui.components.AbstractWidget
-import net.minecraft.client.gui.layouts.LinearLayout
+import net.minecraft.client.gui.components.Renderable
 import net.minecraft.client.gui.components.StringWidget
+import net.minecraft.client.gui.components.Tooltip
 import net.minecraft.client.gui.components.events.GuiEventListener
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout
+import net.minecraft.client.gui.layouts.LinearLayout
+import net.minecraft.client.gui.narration.NarratableEntry
+import net.minecraft.client.gui.narration.NarrationElementOutput
 import net.minecraft.client.gui.narration.NarrationTrigger
+import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.input.KeyEvent
+import net.minecraft.client.input.MouseButtonEvent
 import net.minecraft.network.chat.CommonComponents
 import net.minecraft.network.chat.Component
 import net.minecraft.resources.Identifier
@@ -82,6 +82,7 @@ internal class ConfigScreen(
     }
     private var elementNarrationStartTime = Long.MIN_VALUE
     private var screenNarrationStartTime = Long.MAX_VALUE
+    private var nextNarrationType = NarrationTrigger.SYSTEM
 
     private val menuListBackground: Identifier = "textures/gui/menu_list_background.png".simpleId()
     private val inWorldMenuListBackground: Identifier = "textures/gui/inworld_menu_list_background.png".simpleId()
@@ -312,14 +313,17 @@ internal class ConfigScreen(
 
     override fun afterMouseMove() {
         this.setScreenNarrationDelay(750L, false)
+        this.nextNarrationType = NarrationTrigger.MOUSE
     }
 
     override fun afterMouseAction() {
         this.setScreenNarrationDelay(200L, true)
+        this.nextNarrationType = NarrationTrigger.MOUSE
     }
 
     override fun afterKeyboardAction() {
         this.setScreenNarrationDelay(200L, true)
+        this.nextNarrationType = NarrationTrigger.KEYBOARD
     }
 
     private fun isNarratorActive(): Boolean {
@@ -348,7 +352,7 @@ internal class ConfigScreen(
         if (this.isNarratorActive()) {
             val l = Util.getMillis()
             if (l > this.screenNarrationStartTime && l > this.elementNarrationStartTime) {
-                this.narrateScreen(true)
+                this.narrateScreen(true, this.nextNarrationType)
                 this.screenNarrationStartTime = Long.MAX_VALUE
             }
         }
@@ -356,15 +360,19 @@ internal class ConfigScreen(
 
     override fun triggerImmediateNarration(onlyChangedNarrations: Boolean) {
         if (this.isNarratorActive()) {
-            this.narrateScreen(onlyChangedNarrations)
+            this.narrateScreen(onlyChangedNarrations, NarrationTrigger.SYSTEM)
         }
     }
 
-    private fun narrateScreen(onlyChangedNarrations: Boolean) {
-        this.narrator.buildNarrations { messageBuilder: NarrationElementOutput -> this.updateNarrationState(messageBuilder) }
+    private fun narrateScreen(onlyChangedNarrations: Boolean, trigger: NarrationTrigger) {
+        this.narrator.buildNarrations({ messageBuilder: NarrationElementOutput ->
+            this.updateNarrationState(
+                messageBuilder
+            )
+        })
         val string = this.narrator.buildNarratorText(!onlyChangedNarrations)
         if (string.isNotEmpty()) {
-            minecraft?.narrator?.saySystemChatQueued(Component.literal(string))
+            minecraft.narrator.saySystemChatQueued(Component.literal(string))
         }
     }
 
