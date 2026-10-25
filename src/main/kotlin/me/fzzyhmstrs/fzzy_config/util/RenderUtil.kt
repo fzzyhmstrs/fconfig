@@ -157,6 +157,7 @@ object RenderUtil {
         context.matrices.push()
         context.matrices.translate(x, y, 0f)
         context.draw()
+        RenderSystem.disableDepthTest()
         MinecraftClient.getInstance().gameRenderer.renderBlur(delta)
         MinecraftClient.getInstance().framebuffer.beginWrite(false)
         context.matrices.pop()
