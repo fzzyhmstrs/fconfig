@@ -10,7 +10,6 @@
 
 package me.fzzyhmstrs.fzzy_config.util
 
-import com.mojang.blaze3d.systems.RenderSystem
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.render.RenderLayer
@@ -210,7 +209,6 @@ object RenderUtil {
         context.matrices.push()
         context.matrices.translate(x, y, 0f)
         context.draw()
-        RenderSystem.disableDepthTest()
         MinecraftClient.getInstance().gameRenderer.renderBlur()
         context.matrices.pop()
     }
