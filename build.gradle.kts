@@ -17,7 +17,7 @@ plugins {
     kotlin("plugin.serialization") version "1.9.22"
     //id("com.modrinth.minotaur") version "2.+"
     //id("com.matthewprenger.cursegradle") version "1.4.0"
-    id("com.hypherionmc.modutils.modpublisher") version "2.2.3"
+    id("com.hypherionmc.modutils.modpublisher") version "2.2.4"
     `maven-publish`
 }
 
